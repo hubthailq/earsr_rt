@@ -224,7 +224,9 @@ class PerceptualMetrics:
         out = {}
         if not self.fn:
             return out
-        with torch.no_grad():
+        from ..device import full_precision
+
+        with torch.no_grad(), full_precision():
             x = torch.from_numpy(sr).permute(2, 0, 1).float().div(255).unsqueeze(0)
             y = torch.from_numpy(hr).permute(2, 0, 1).float().div(255).unsqueeze(0)
             for k, runner in self.fn.items():

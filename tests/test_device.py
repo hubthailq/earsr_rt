@@ -128,6 +128,102 @@ def test_describe_device_warns_when_no_gpu():
     assert "cpu" in s and (torch.cuda.is_available() or "CẢNH BÁO" in s)
 
 
+# ----------------------------------------------------------------- chấm ở FP32 đầy đủ (TF32 tắt)
+
+def _tf32():
+    return torch.backends.cudnn.allow_tf32, torch.backends.cuda.matmul.allow_tf32
+
+
+@pytest.fixture
+def tf32_on():
+    """Giả lập mặc định của GPU đời mới: TF32 bật cho tích chập."""
+    old = _tf32()
+    torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+    yield
+    torch.backends.cudnn.allow_tf32, torch.backends.cuda.matmul.allow_tf32 = old
+
+
+def test_full_precision_turns_tf32_off_and_restores(tf32_on):
+    from earsr.device import full_precision
+
+    with full_precision():
+        assert _tf32() == (False, False)
+        with full_precision():
+            assert _tf32() == (False, False)
+        assert _tf32() == (False, False)                    # khối lồng nhau không bật lại sớm
+    assert _tf32() == (True, True)
+    with pytest.raises(ZeroDivisionError):
+        with full_precision():
+            1 / 0
+    assert _tf32() == (True, True)                          # có lỗi vẫn trả lại trạng thái cũ
+
+
+class _Spy(torch.nn.Module):
+    """Mô hình ×4 giả ghi lại trạng thái TF32 ở mỗi lượt gọi."""
+
+    seen: list = []
+
+    def __init__(self):
+        super().__init__()
+        self.w = torch.nn.Parameter(torch.ones(1))
+
+    def forward(self, x, gate=None):
+        _Spy.seen.append(_tf32())
+        return torch.nn.functional.interpolate(x, scale_factor=4, mode="nearest") * self.w
+
+
+def test_every_scoring_path_runs_at_full_precision(tf32_on, monkeypatch, tmp_path):
+    import earsr.models.registry as reg
+    from earsr.eval.infer import evaluate_on_bench, make_predictor
+    from earsr.eval.metrics import PerceptualMetrics
+    from earsr.io import imwrite_rgb
+    from earsr.train import finetune
+
+    class Spec:
+        scale = 4
+
+    monkeypatch.setitem(reg.SPECS, "spy", Spec())
+    monkeypatch.setattr(reg, "build_model", lambda name, **kw: _Spy().eval())
+    lr = np.random.default_rng(0).integers(0, 256, (12, 10, 3), dtype=np.uint8)
+    hr = np.repeat(np.repeat(lr, 4, 0), 4, 1)
+
+    # 1. hàm dự đoán của kho mô hình (T2, phép thử ngữ cảnh)
+    _Spy.seen = []
+    make_predictor("spy", 4, "cpu")(lr)
+    assert _Spy.seen == [(False, False)] and _tf32() == (True, True)
+
+    # 2. validation lúc huấn luyện
+    monkeypatch.setattr(finetune, "val_pairs", lambda *a, **k: [(lr, hr)])
+    _Spy.seen = []
+    assert finetune.make_validator("x", "x", 2, 4, (40,))(_Spy()) > 60
+    assert _Spy.seen == [(False, False)] and _tf32() == (True, True)
+
+    # 3. chấm bằng hàm dự đoán tự cấp (cách train.py chấm test) và số đo cảm nhận đi kèm
+    import csv
+
+    bench = tmp_path / "bench"
+    imwrite_rgb(bench / "lr" / "hr40_x4_bic" / "000_front.png", lr)
+    imwrite_rgb(bench / "hr40" / "000_front.png", hr)
+    with open(bench / "manifest.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["dataset", "subject", "view", "tier", "file"])
+        w.writeheader()
+        w.writerow({"dataset": "ami", "subject": "000", "view": "front", "tier": 40, "file": "hr40/000_front.png"})
+    spy, seen_metric = _Spy(), []
+    pm = PerceptualMetrics("cpu", want=())
+    pm._add("fake", lambda d: d, lambda net, x, y: seen_metric.append(_tf32()) or 0.0)
+
+    @torch.no_grad()
+    def own_predict(img):
+        from earsr.io import to_tensor, to_uint8
+
+        return to_uint8(spy(to_tensor(img)))
+
+    _Spy.seen = []
+    evaluate_on_bench("own", bench, 40, 4, "bic", None, tmp_path / "o.csv", predictor=own_predict, perceptual=pm)
+    assert _Spy.seen == [(False, False)] and seen_metric == [(False, False)] and _tf32() == (True, True)
+
+
 # ----------------------------------------------------------------- nối vào đường suy luận
 
 class _FakeSR(torch.nn.Module):

@@ -123,18 +123,27 @@ def infer(a):
 def consistency(a):
     if not a.device.startswith("cuda"):
         return {"skip": True, "lý do": "đang chạy trên CPU"}
+    from earsr.device import full_precision
+    from earsr.io import imread_rgb, to_tensor
     from earsr.models.registry import build_model
 
+    # Ảnh LR thật của benchmark. Không dùng nhiễu trắng: với nhiễu trắng đầu ra của SPAN vọt ra ngoài
+    # [0, 1] hàng chục lần và mạng nhạy tới mức sai số làm tròn cũng bị khuếch đại thành vài đơn vị.
+    f = sorted((Path(a.bench) / "lr" / "hr144_x4_bic").glob("*.png"))[0]
+    x = to_tensor(imread_rgb(f))
     m = build_model("span_ch48")
-    x = torch.rand(1, 3, 51, 36, generator=torch.Generator().manual_seed(0))
     with torch.no_grad():
         y_cpu = m(x)
-        y_gpu = m.to(a.device)(x.to(a.device)).cpu()
-        y_half = m.half()(x.to(a.device).half()).float().cpu()
-    d, dh = float((y_cpu - y_gpu).abs().max()), float((y_cpu - y_half).abs().max())
-    if d > 1e-3:
-        raise RuntimeError(f"GPU lệch CPU {d:.2e}")
-    return {"lệch FP32 lớn nhất": d, "lệch FP16 lớn nhất": dh}
+        m, xg = m.to(a.device), x.to(a.device)
+        d_default = float((m(xg).cpu() - y_cpu).abs().max())          # theo mặc định của máy (TF32 nếu GPU có)
+        with full_precision():
+            d = float((m(xg).cpu() - y_cpu).abs().max())               # cách mọi phép chấm của project chạy
+            dh = float((m.half()(xg.half()).float().cpu() - y_cpu).abs().max())
+    res = {"ảnh": f.name, "lệch khi chấm (FP32 đầy đủ)": d, "lệch theo mặc định của máy": d_default,
+           "TF32 mặc định bật": bool(torch.backends.cudnn.allow_tf32), "lệch FP16": dh}
+    if d > 1e-4:
+        raise RuntimeError(f"GPU lệch CPU {d:.2e} ở FP32 đầy đủ (mong đợi cỡ 1e-6): {res}")
+    return res
 
 
 def _train(a, amp: bool, objective: str, iters: int, tag: str):

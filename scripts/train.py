@@ -253,8 +253,11 @@ def test(a, rid, run_dir: Path, model, folds, eval_tiers, val_tiers, perc) -> di
         if a.objective == "n3s2":
             from earsr.models.optional.n3 import choose_operating_points
 
-            ops = choose_operating_points(model, val_pairs(a.bench, a.folds, a.fold, a.scale, tuple(val_tiers), a.degrade),
-                                          a.scale)
+            from earsr.device import full_precision
+
+            with full_precision():
+                ops = choose_operating_points(model, val_pairs(a.bench, a.folds, a.fold, a.scale, tuple(val_tiers),
+                                                               a.degrade), a.scale)
             with open(run_dir / "operating_points.json", "w") as f:
                 json.dump(ops, f, indent=1)
             print(f"điểm vận hành (chọn trên validation): F={ops['F']}  P={ops['P']}")

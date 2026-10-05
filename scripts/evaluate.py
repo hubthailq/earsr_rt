@@ -83,7 +83,7 @@ def main(argv=None) -> None:
         models = [m for m in models if m in BASELINES or SPECS[m].group in a.groups]
     out_dir = Path(a.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    print(describe_device(a.device), flush=True)
+    print(describe_device(a.device) + ". Mọi phép chấm chạy ở FP32 đầy đủ (TF32 tắt)", flush=True)
     perc = None
     if not a.no_perceptual:
         from earsr.eval.metrics import PYIQA_FR

@@ -42,6 +42,10 @@ Script dùng lệnh `python`, không có thì `python3`; chỉ định lệnh kh
 Sau bước này là **điểm kiểm tra 1** (mục 1.10 của kế hoạch). Chỉnh `configs/criteria.yaml` một lần nếu
 `results/t2_summary/mde.csv` cho thấy ngưỡng nào nhỏ hơn mức chênh phát hiện được, rồi commit.
 
+**Độ chính xác khi chấm.** Mọi phép chấm (suy luận, validation, LPIPS, DISTS) chạy ở FP32 đầy đủ với TF32 tắt, để
+số trên GPU khớp số trên CPU (lệch cỡ 1e-6 thay vì 3e-4). Các bước huấn luyện dùng mặc định của PyTorch. Độ trễ
+trong `bench_local.py` cũng đo theo mặc định; cột `host` ghi trạng thái TF32 lúc đo.
+
 **Khi GPU dùng chung bị đầy.** `evaluate.py` và `run_t6_context.py` in thiết bị ở dòng đầu. Chúng ưu tiên GPU;
 ảnh nào gặp lỗi hết bộ nhớ GPU thì chạy trên CPU, và GPU được thử lại sau 15 giây (quãng chờ nhân đôi tới 240 giây
 nếu vẫn đầy). Mỗi lần chuyển in một dòng `[thiết bị] ...`; cột `device` trong file theo ảnh ghi thiết bị của từng

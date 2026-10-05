@@ -45,7 +45,8 @@ def main() -> None:
     print(describe_device(a.device, on_oom="hết bộ nhớ thì chờ rồi đo lại, không đo thay trên CPU"), flush=True)
     host = f"{platform.processor() or platform.machine()} | torch {torch.__version__} | threads {torch.get_num_threads()}"
     if a.device.startswith("cuda"):
-        host += f" | {torch.cuda.get_device_name(0)}"
+        # độ trễ đo theo mặc định của PyTorch (TF32 nếu GPU có), khác với các phép chấm chất lượng (FP32 đầy đủ)
+        host += f" | {torch.cuda.get_device_name(0)} | cudnn.allow_tf32={torch.backends.cudnn.allow_tf32}"
     rows = []
 
     def add(name, kind, model, scale, extra=None):

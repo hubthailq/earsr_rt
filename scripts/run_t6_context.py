@@ -69,7 +69,7 @@ def main() -> None:
         torch.set_num_threads(a.threads)
     if not (a.ami_raw or a.generic):
         ap.error("cần --ami-raw hoặc --generic")
-    print(describe_device(a.device), flush=True)
+    print(describe_device(a.device) + ". Mọi phép chấm chạy ở FP32 đầy đủ (TF32 tắt)", flush=True)
     models = a.models if a.models else ["bicubic"] + [m for m in list_models(4, available_only=True)
                                                        if SPECS[m].group in a.groups]
     images = list(iter_images(a))

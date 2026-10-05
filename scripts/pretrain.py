@@ -26,6 +26,7 @@ from torch.utils.data import Dataset  # noqa: E402
 
 from earsr.data.datasets import list_images  # noqa: E402
 from earsr.data.resize import imresize, modcrop  # noqa: E402
+from earsr.device import full_precision  # noqa: E402
 from earsr.eval.metrics import crop_border, psnr, rgb_to_y  # noqa: E402
 from earsr.io import imread_rgb, to_tensor, to_uint8  # noqa: E402
 from earsr.train.finetune import build_trainable  # noqa: E402
@@ -87,7 +88,8 @@ def make_validator(val_paths, scale, device, max_images=20, max_side=480):
     def validate(model):
         v = []
         for lr, hr in pairs:
-            sr = to_uint8(model(to_tensor(lr).to(device)))
+            with full_precision():
+                sr = to_uint8(model(to_tensor(lr).to(device)))
             v.append(psnr(crop_border(rgb_to_y(sr), scale), crop_border(rgb_to_y(hr), scale)))
         return float(np.mean(v))
 

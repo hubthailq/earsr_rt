@@ -107,7 +107,7 @@ configs/criteria.yaml   tiêu chí đạt ghi trước
 splits/ami_5fold.json   chia 5 fold theo người (có mã băm)
 docs/        DATA_AND_OUTPUTS.md, RUNBOOK.md, AMI_PERMISSION.md, STATUS.md, ANDROID.md, THIRD_PARTY.md
 results/     kết quả sơ bộ của giai đoạn 1 (CPU)
-tests/       137 kiểm thử
+tests/       139 kiểm thử
 ```
 
 ## Kiểm thử
@@ -143,6 +143,10 @@ Không có trọng số hoặc Set5 thì các kiểm thử cần chúng tự b�
 - **Dải giá trị của SPAN** (`img_range`) nằm trong state_dict: trọng số chính thức học với ảnh vào nhân 255, bản
   của đội 44 thì không. Checkpoint của project mang theo giá trị này; trọng số công bố không có khóa đó thì giữ
   giá trị lúc dựng.
+- **Mọi phép chấm chạy ở FP32 đầy đủ, TF32 tắt** (suy luận, validation, LPIPS, DISTS; `earsr.device.full_precision`).
+  Trên GPU RTX 30, PyTorch mặc định dùng TF32 cho tích chập; đo trên RTX 3080 với ảnh AMI thật, đầu ra GPU lệch
+  CPU 3,4e-4 khi bật và 1,6e-6 khi tắt. Các bước huấn luyện vẫn dùng mặc định của PyTorch. Bài nên ghi điều này
+  ở phần giao thức.
 - **MSRResNet** (KAIR): không nguồn nào nêu dữ liệu tiền huấn luyện, nên cột đó để "không rõ". Mốc "CNN cỡ vừa"
   chính là EDSR-baseline.
 - **ECBSR** chưa có trong kho.

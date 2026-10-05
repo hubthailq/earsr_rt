@@ -9,6 +9,7 @@ Chỉ lỗi hết bộ nhớ mới được đỡ; mọi lỗi khác vẫn nổi
 """
 from __future__ import annotations
 
+import contextlib
 import time
 from typing import Callable
 
@@ -21,6 +22,24 @@ _OOM_TYPES = tuple({t for t in (getattr(torch, "OutOfMemoryError", None),
 def is_oom(e: BaseException) -> bool:
     """True nếu ``e`` là lỗi hết bộ nhớ của thiết bị (kể cả dạng RuntimeError của CUDA)."""
     return isinstance(e, _OOM_TYPES) or (isinstance(e, RuntimeError) and "out of memory" in str(e).lower())
+
+
+@contextlib.contextmanager
+def full_precision():
+    """Tắt TF32 trong khối lệnh: mọi phép chấm (suy luận, validation, số đo) chạy ở FP32 đầy đủ.
+
+    Trên GPU đời Ampere trở lên, PyTorch mặc định cho tích chập chạy TF32 (10 bit định trị). Đo trên
+    RTX 3080 với ảnh AMI thật: đầu ra GPU lệch CPU 3,4e-4 khi bật TF32 và 1,6e-6 khi tắt. Tắt TF32 lúc
+    chấm thì số GPU khớp CPU, và ảnh nào phải chạy trên CPU (GPU hết bộ nhớ) không lệch với phần còn lại.
+    Các bước huấn luyện không nằm trong khối này nên vẫn dùng mặc định của PyTorch.
+    """
+    old = (torch.backends.cudnn.allow_tf32, torch.backends.cuda.matmul.allow_tf32)
+    torch.backends.cudnn.allow_tf32 = False
+    torch.backends.cuda.matmul.allow_tf32 = False
+    try:
+        yield
+    finally:
+        torch.backends.cudnn.allow_tf32, torch.backends.cuda.matmul.allow_tf32 = old
 
 
 def free_gpu_cache() -> None:

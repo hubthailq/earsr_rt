@@ -15,7 +15,7 @@ import torch
 from ..data.ami import read_manifest
 from ..data.resize import imresize
 from ..data.splits import fold_of_subject, load_folds
-from ..device import GpuFirst
+from ..device import GpuFirst, full_precision
 from ..io import imread_rgb, imwrite_rgb, to_tensor, to_uint8
 from .metrics import PerceptualMetrics, fr_metrics
 
@@ -45,7 +45,8 @@ def make_predictor(model_name: str, scale: int, device: str = "cpu"):
 
     @torch.no_grad()
     def predict(lr: np.ndarray) -> np.ndarray:
-        return runner.run(lambda model, dev: to_uint8(model(to_tensor(lr).to(dev))))
+        with full_precision():
+            return runner.run(lambda model, dev: to_uint8(model(to_tensor(lr).to(dev))))
 
     predict.runner = runner
     return predict
@@ -90,7 +91,8 @@ def evaluate_on_bench(model_name: str, bench_root: str | Path, tier: int, scale:
         hr = imread_rgb(bench_root / r["file"])
         lr = imread_rgb(lr_dir / f"{key}.png")
         t0 = time.perf_counter()
-        sr = predict(lr)
+        with full_precision():   # cả với hàm dự đoán tự cấp (ví dụ lúc chấm test ở cuối train.py)
+            sr = predict(lr)
         dt = (time.perf_counter() - t0) * 1000.0
         if sr.shape != hr.shape:
             raise RuntimeError(f"{model_name} {key}: đầu ra {sr.shape}, đáp án {hr.shape}")
@@ -103,8 +105,9 @@ def evaluate_on_bench(model_name: str, bench_root: str | Path, tier: int, scale:
             if box[2] - box[0] < 8 or box[3] - box[1] < 8:
                 box = None
         m = fr_metrics(sr, hr, scale, perceptual=perceptual, box=box)
-        for f in (extra_metrics or []):
-            m.update(f(sr, hr, r))
+        with full_precision():
+            for f in (extra_metrics or []):
+                m.update(f(sr, hr, r))
         if save_sr_dir is not None:
             imwrite_rgb(Path(save_sr_dir) / f"{key}.png", sr)
         row = {"model": model_name, "dataset": r.get("dataset", "ami"), "subject": r["subject"],

@@ -14,7 +14,7 @@ from ..data.ami import read_manifest, scan_ami
 from ..data.datasets import MixedDataset, SRTrainDataset
 from ..data.splits import load_folds
 from ..degrade.pipelines import DegradeParams
-from ..device import GpuFirst
+from ..device import GpuFirst, full_precision
 from ..eval.metrics import crop_border, psnr, rgb_to_y
 from ..io import imread_rgb, to_tensor, to_uint8
 from ..models.optional.heads import TwoHeadGated
@@ -168,7 +168,8 @@ def make_validator(bench_root: str | Path, folds_path: str | Path, fold: int, sc
         dev = next(model.parameters()).device
         vals = []
         for lr, hr in pairs:
-            sr = to_uint8(model(to_tensor(lr).to(dev)))
+            with full_precision():   # validation đo đúng như test: FP32 đầy đủ, không TF32
+                sr = to_uint8(model(to_tensor(lr).to(dev)))
             if metric == "psnr":
                 vals.append(psnr(crop_border(rgb_to_y(sr), scale), crop_border(rgb_to_y(hr), scale)))
             else:
@@ -214,9 +215,10 @@ def predictor_from_run(run_dir: str | Path, device: str = "cpu", ckpt: str = "be
 
     @torch.no_grad()
     def predict(lr):
-        if two_heads:
-            return runner.run(lambda m, dev: to_uint8(m(to_tensor(lr).to(dev), gate=gate)))
-        return runner.run(lambda m, dev: to_uint8(m(to_tensor(lr).to(dev))))
+        with full_precision():
+            if two_heads:
+                return runner.run(lambda m, dev: to_uint8(m(to_tensor(lr).to(dev), gate=gate)))
+            return runner.run(lambda m, dev: to_uint8(m(to_tensor(lr).to(dev))))
 
     predict.scale = int(cfg["extra"]["scale"])
     predict.run_id = cfg["run_id"]
