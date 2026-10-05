@@ -1,0 +1,204 @@
+{
+ "x4_hr96": {
+  "tau_b": 0.20291986247835694,
+  "concordant": 20,
+  "discordant": 13,
+  "tied_a_only": 1,
+  "tied_b_only": 2,
+  "n_pairs": 36,
+  "reversals": [
+   [
+    "efdn",
+    "safmnpp"
+   ],
+   [
+    "msrresnet",
+    "swinir_light"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "smfan",
+    "msrresnet"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch26",
+    "efdn"
+   ],
+   [
+    "span_ch26",
+    "rlfn"
+   ],
+   [
+    "span_ch26",
+    "safmnpp"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "rlfn"
+   ],
+   [
+    "span_ch28",
+    "safmnpp"
+   ],
+   [
+    "span_ch48",
+    "smfan"
+   ],
+   [
+    "span_ch48",
+    "swinir_light"
+   ]
+  ],
+  "tau_mean_rank": 0.1111111111111111,
+  "tau_lo": 0.1111111111111111,
+  "tau_hi": 0.2222222222222222,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "swinir_light"
+  ],
+  "order_a": [
+   "swinir_light",
+   "msrresnet",
+   "span_ch48",
+   "rlfn",
+   "smfan",
+   "efdn",
+   "safmnpp",
+   "span_ch28",
+   "span_ch26"
+  ],
+  "order_b": [
+   "smfan",
+   "span_ch48",
+   "msrresnet",
+   "span_ch26",
+   "swinir_light",
+   "span_ch28",
+   "rlfn",
+   "safmnpp",
+   "efdn"
+  ],
+  "flipped": true
+ },
+ "x4_hr144": {
+  "tau_b": 0.14506471329641488,
+  "concordant": 19,
+  "discordant": 14,
+  "tied_a_only": 0,
+  "tied_b_only": 3,
+  "n_pairs": 36,
+  "reversals": [
+   [
+    "efdn",
+    "smfan"
+   ],
+   [
+    "msrresnet",
+    "swinir_light"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch26",
+    "efdn"
+   ],
+   [
+    "span_ch26",
+    "rlfn"
+   ],
+   [
+    "span_ch26",
+    "safmnpp"
+   ],
+   [
+    "span_ch26",
+    "swinir_light"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "rlfn"
+   ],
+   [
+    "span_ch28",
+    "safmnpp"
+   ],
+   [
+    "span_ch28",
+    "span_ch26"
+   ],
+   [
+    "span_ch48",
+    "smfan"
+   ],
+   [
+    "span_ch48",
+    "span_ch26"
+   ]
+  ],
+  "tau_mean_rank": 0.1111111111111111,
+  "tau_lo": 0.05555555555555555,
+  "tau_hi": 0.16666666666666666,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "swinir_light"
+  ],
+  "order_a": [
+   "swinir_light",
+   "msrresnet",
+   "span_ch48",
+   "rlfn",
+   "efdn",
+   "smfan",
+   "safmnpp",
+   "span_ch28",
+   "span_ch26"
+  ],
+  "order_b": [
+   "msrresnet",
+   "smfan",
+   "span_ch26",
+   "span_ch48",
+   "swinir_light",
+   "span_ch28",
+   "rlfn",
+   "safmnpp",
+   "efdn"
+  ],
+  "flipped": true
+ }
+}

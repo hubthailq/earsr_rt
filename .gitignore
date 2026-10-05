@@ -1,0 +1,15 @@
+# dữ liệu, trọng số và sản phẩm sinh ra khi chạy (xem docs/DATA_AND_OUTPUTS.md); results/ thì đưa lên git.
+# Dấu / ở đầu: chỉ thư mục ở gốc repo (earsr/data/ là mã nguồn, không được bỏ qua).
+/data/
+/runs/
+/jobs/
+/weights/*
+!/weights/README.txt
+/deploy_jetson/onnx/
+/deploy_jetson/logs/
+/results_prelim_cpu/
+.stage1_run
+
+__pycache__/
+.pytest_cache/
+.DS_Store

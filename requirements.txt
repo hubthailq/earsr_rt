@@ -1,0 +1,18 @@
+# lõi (giai đoạn 1 và 2)
+torch>=2.3
+torchvision>=0.15
+numpy
+opencv-python
+pandas
+scipy
+pyyaml
+matplotlib
+Pillow
+# số đo cảm nhận (LPIPS, DISTS); thiếu thì các cột này để trống
+lpips>=0.1.4
+pyiqa
+# xuất và kiểm tra ONNX
+onnx
+onnxruntime
+# kiểm thử
+pytest

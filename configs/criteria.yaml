@@ -1,0 +1,75 @@
+# Tiêu chí đạt, chép từ kế hoạch (bản 21, mục 1.2b, 1.4, 1.5, 1.8b, 1.10).
+# File này được commit TRƯỚC lần huấn luyện đầu tiên. Chỉ được sửa một lần, sau
+# T2, theo quy tắc "ngưỡng nào nhỏ hơn mức chênh nhỏ nhất phát hiện được thì
+# nâng lên"; ghi ngày và lý do vào mục history ở cuối.
+version: 21
+alpha: 0.05
+bootstrap: {unit: subject, n_boot: 2000}
+
+N5b:  # kiến trúc cho ảnh vào nhỏ hơn vùng nhìn của mạng
+  a_context_loss: {test: "PSNR(đủ ngữ cảnh) - PSNR(không ngữ cảnh) > 0", ci_excludes_zero: true}
+  b_variant_gain_db: {min: 0.10, ci_excludes_zero: true, same_pretrain_budget: true,
+                      then: "biến thể thắng, tiền huấn luyện đủ, phải hơn mốc dùng trọng số công bố ở cùng độ trễ (chênh ≤ 10%)"}
+  c_interaction: {test: "phần hơn ở ảnh vào 36 px - phần hơn ở ảnh vào lớn > 0", ci_excludes_zero: true}
+  padding_device_gate: {max_slowdown_vs_zero: 0.10}  # T3: chậm hơn thì loại khỏi T6 (iv)
+
+N5a:  # giao thức huấn luyện; mặc định không tính là điểm mới
+  claim_if_any:
+    - {test: "rand - fixed", min_db: 0.10, ci_excludes_zero: true}
+    - {test: "một mô hình rand không kém mô hình fixed của từng cỡ", max_deficit_db: 0.05, tiers: [96, 144, 192]}
+
+N2:  # suy giảm ước lượng từ ảnh tai thật
+  a_realism: "bộ phân loại 'mô phỏng hay thật' gần 50% hơn so với suy giảm tổng quát"
+  b_viewers: {test: "tỉ lệ người xem chọn > 50%", ci_excludes: 0.5}
+
+N1:  # đầu phụ cấu trúc (tùy chọn)
+  landmark_dev_rel_reduction: {min: 0.05, ci_excludes_zero: true, same_sign_each_seed: true}
+  dynamic_range: {baseline_dev_over_noise_floor_min: 2.0}
+  no_harm: {ridge_and_lpips_max_rel_worsening: 0.02}
+  psnr_not_lower: true
+  beats_unlabeled_control: true
+
+N3:  # cổng điểm ảnh (tùy chọn)
+  psnr_budget_db: 0.5
+  lpips_vs_blend_rel: {min: 0.03, at: "cùng PSNR", ci_excludes_zero: true}
+  lpips_vs_ldl_rel: {min: 0.03, ci_excludes_zero: true}
+  oracle_gate_T4: {min_lpips_gain_over_blend: 0.10}
+
+choose_between_N1_N3:
+  default: N1
+  exception: "giữ N3 khi phần hơn của N1 < 1,5 lần ngưỡng và phần hơn của N3 so với đường trộn ≥ 2 lần ngưỡng"
+
+model:
+  fidelity_point_max_psnr_deficit_db: 0.05
+
+realtime:
+  input_hw: {x4: [68, 48], x2: [136, 96]}
+  precision: fp16
+  batch: 1
+  warmup_runs: 50
+  timed_runs: 500
+  report: [median, p95]
+  thresholds_ms: {realtime: 33, near_realtime: 66}
+  matched_latency_tolerance: 0.10
+
+ranking_T2:
+  tie_if_ci_contains_zero: true
+  flipped_if: "có ít nhất một cặp đổi chiều có ý nghĩa ở cả hai điều kiện, hoặc tau_b < 0.7 và cận trên KTC của tau < 0.9"
+
+pretrain_budget:
+  start_fraction: 0.20
+  flat: {last_frac: 0.10, max_gain_db: 0.02}
+  rank_stable_at: [0.5, 1.0]
+  skip_pretrain_if_gain_below_db: 0.05
+
+fair_comparison:  # mục 1.8b
+  controlled_track:
+    models: [proposed, span_reference, span_widened_matched_latency, rlfn]
+    pretrain: "nhóm tự huấn luyện lại từ khởi tạo ngẫu nhiên; cùng script, dữ liệu, số bước"
+    architecture_claim_requires: "thắng SPAN gốc và SPAN nới rộng ở ngân sách đủ, trên cả 5 fold, khoảng tin cậy không chứa 0"
+  published_track: "trọng số công bố rồi tinh chỉnh; báo cạnh nhánh có kiểm soát, không gộp"
+  lr_trials_per_model: 3
+  recipe_sanity: {own_span_vs_published_max_deficit_db: 0.10, on: [Set5, DIV2K_valid]}
+
+history:
+  - {date: "2026-10-05", change: "thêm mục fair_comparison (bản 21); không đổi ngưỡng nào; trước mọi lần huấn luyện"}
