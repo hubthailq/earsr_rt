@@ -17,3 +17,6 @@ N2_span-zero+xearvn_pub_rand_x4_hrall_bicjpeg75_f2,done,,2026-10-06 11:03:14,202
 N2_disp26-zero+xearvn_pub_rand_x4_hrall_bicjpeg75_f2,done,,2026-10-06 11:27:53,2026-10-06 11:52:01,,labai217,N2,2,l1,35.114291980390114,20000,20000,1445.6,max,True,31.219,29.907,1.8,0.0,0
 N2_span-zero+pa_pub_rand_x4_hrall_bic_f2,done,,2026-10-06 11:52:02,2026-10-06 12:22:26,,labai217,N2,2,l1,39.35368146457807,9000,20000,1821.5,max,True,34.707,31.461,1.8,0.0,0
 N2_disp26-zero+pa_pub_rand_x4_hrall_bic_f2,done,,2026-10-06 12:22:27,2026-10-06 12:52:35,,labai217,N2,2,l1,39.22417927162175,19000,20000,1806.0,max,True,34.537,31.461,1.8,0.0,0
+N2_span-zero+xearvn_pub_rand_x4_hrall_bic_f3,done,,2026-10-06 15:42:45,2026-10-06 16:06:22,,labai217,N2,3,l1,39.30997612824881,9000,20000,1413.8,max,True,34.554,31.473,1.8,0.0,0
+N2_span-zero+xearvn_pub_rand_x4_hrall_generic_f3,done,,2026-10-06 16:06:24,2026-10-06 16:39:58,,labai217,N2,3,l1,31.436661948192643,19000,20000,2011.1,max,True,27.702,25.658,1.8,0.746,0
+N2_span-zero+xearvn_pub_rand_x4_hrall_est_f3,running,,2026-10-06 16:40:00,2026-10-06 16:40:00,,labai217,N2,3,l1,,,,,,,,,,,
