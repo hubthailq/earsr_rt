@@ -1,23 +1,123 @@
 {
  "x4_hr96": {
-  "tau_b": 0.20291986247835694,
-  "concordant": 20,
-  "discordant": 13,
-  "tied_a_only": 1,
-  "tied_b_only": 2,
-  "n_pairs": 36,
+  "tau_b": 0.12698812642120721,
+  "concordant": 68,
+  "discordant": 52,
+  "tied_a_only": 7,
+  "tied_b_only": 5,
+  "n_pairs": 136,
   "reversals": [
+   [
+    "dscf26",
+    "disp26"
+   ],
+   [
+    "dscf26",
+    "errn26"
+   ],
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "dscf26"
+   ],
+   [
+    "efdn",
+    "errn26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
    [
     "efdn",
     "safmnpp"
+   ],
+   [
+    "efdn",
+    "span26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
    ],
    [
     "msrresnet",
     "swinir_light"
    ],
    [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "pds26",
+    "pkdsr26"
+   ],
+   [
+    "pkdsr26",
+    "disp26"
+   ],
+   [
+    "pkdsr26",
+    "dscf26"
+   ],
+   [
+    "pkdsr26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "disp26"
+   ],
+   [
+    "rlfn",
+    "dscf26"
+   ],
+   [
+    "rlfn",
+    "pds26"
+   ],
+   [
+    "rlfn",
+    "pkdsr26"
+   ],
+   [
     "rlfn",
     "smfan"
+   ],
+   [
+    "rlfn",
+    "span26"
+   ],
+   [
+    "safmnpp",
+    "dscf26"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "pds26"
+   ],
+   [
+    "safmnpp",
+    "pkdsr26"
+   ],
+   [
+    "safmnpp",
+    "span26"
    ],
    [
     "smfan",
@@ -28,8 +128,36 @@
     "swinir_light"
    ],
    [
+    "span26",
+    "disp26"
+   ],
+   [
+    "span26",
+    "errn26"
+   ],
+   [
+    "span26",
+    "pkdsr26"
+   ],
+   [
+    "span_ch26",
+    "disp26"
+   ],
+   [
+    "span_ch26",
+    "dscf26"
+   ],
+   [
     "span_ch26",
     "efdn"
+   ],
+   [
+    "span_ch26",
+    "errn26"
+   ],
+   [
+    "span_ch26",
+    "pkdsr26"
    ],
    [
     "span_ch26",
@@ -41,7 +169,19 @@
    ],
    [
     "span_ch28",
+    "disp26"
+   ],
+   [
+    "span_ch28",
     "efdn"
+   ],
+   [
+    "span_ch28",
+    "errn26"
+   ],
+   [
+    "span_ch28",
+    "pkdsr26"
    ],
    [
     "span_ch28",
@@ -50,6 +190,10 @@
    [
     "span_ch28",
     "safmnpp"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
    ],
    [
     "span_ch48",
@@ -58,13 +202,26 @@
    [
     "span_ch48",
     "swinir_light"
+   ],
+   [
+    "span_ch48_t44",
+    "smfan"
+   ],
+   [
+    "span_ch48_t44",
+    "swinir_light"
+   ],
+   [
+    "swinir_light",
+    "pkdsr26"
    ]
   ],
-  "tau_mean_rank": 0.1111111111111111,
-  "tau_lo": 0.1111111111111111,
-  "tau_hi": 0.2222222222222222,
+  "tau_mean_rank": 0.09629629629629631,
+  "tau_lo": 0.05185185185185185,
+  "tau_hi": 0.1851851851851852,
   "models": [
    "span_ch48",
+   "span_ch48_t44",
    "span_ch28",
    "span_ch26",
    "rlfn",
@@ -72,59 +229,198 @@
    "safmnpp",
    "smfan",
    "msrresnet",
-   "swinir_light"
+   "edsr_baseline",
+   "swinir_light",
+   "span26",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
   ],
   "order_a": [
    "swinir_light",
    "msrresnet",
    "span_ch48",
+   "edsr_baseline",
+   "span_ch48_t44",
    "rlfn",
+   "disp26",
    "smfan",
    "efdn",
+   "errn26",
    "safmnpp",
+   "dscf26",
    "span_ch28",
-   "span_ch26"
+   "span26",
+   "span_ch26",
+   "pds26",
+   "pkdsr26"
   ],
   "order_b": [
+   "edsr_baseline",
    "smfan",
+   "span_ch48_t44",
    "span_ch48",
    "msrresnet",
+   "pkdsr26",
    "span_ch26",
    "swinir_light",
+   "dscf26",
+   "pds26",
+   "span26",
    "span_ch28",
+   "disp26",
    "rlfn",
    "safmnpp",
+   "errn26",
    "efdn"
   ],
   "flipped": true
  },
  "x4_hr144": {
-  "tau_b": 0.14506471329641488,
-  "concordant": 19,
-  "discordant": 14,
-  "tied_a_only": 0,
-  "tied_b_only": 3,
-  "n_pairs": 36,
+  "tau_b": 0.12601941636211517,
+  "concordant": 68,
+  "discordant": 52,
+  "tied_a_only": 4,
+  "tied_b_only": 10,
+  "n_pairs": 136,
   "reversals": [
+   [
+    "dscf26",
+    "disp26"
+   ],
+   [
+    "dscf26",
+    "errn26"
+   ],
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "dscf26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
    [
     "efdn",
     "smfan"
+   ],
+   [
+    "efdn",
+    "span26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
    ],
    [
     "msrresnet",
     "swinir_light"
    ],
    [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "pkdsr26",
+    "disp26"
+   ],
+   [
+    "pkdsr26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "dscf26"
+   ],
+   [
+    "rlfn",
+    "pds26"
+   ],
+   [
+    "rlfn",
+    "pkdsr26"
+   ],
+   [
     "rlfn",
     "smfan"
+   ],
+   [
+    "rlfn",
+    "span26"
+   ],
+   [
+    "safmnpp",
+    "dscf26"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "pds26"
+   ],
+   [
+    "safmnpp",
+    "pkdsr26"
+   ],
+   [
+    "safmnpp",
+    "span26"
+   ],
+   [
+    "smfan",
+    "disp26"
    ],
    [
     "smfan",
     "swinir_light"
    ],
    [
+    "span26",
+    "disp26"
+   ],
+   [
+    "span26",
+    "dscf26"
+   ],
+   [
+    "span26",
+    "errn26"
+   ],
+   [
+    "span26",
+    "pkdsr26"
+   ],
+   [
+    "span_ch26",
+    "disp26"
+   ],
+   [
     "span_ch26",
     "efdn"
+   ],
+   [
+    "span_ch26",
+    "errn26"
    ],
    [
     "span_ch26",
@@ -133,6 +429,10 @@
    [
     "span_ch26",
     "safmnpp"
+   ],
+   [
+    "span_ch26",
+    "span26"
    ],
    [
     "span_ch26",
@@ -140,7 +440,23 @@
    ],
    [
     "span_ch28",
+    "disp26"
+   ],
+   [
+    "span_ch28",
+    "dscf26"
+   ],
+   [
+    "span_ch28",
     "efdn"
+   ],
+   [
+    "span_ch28",
+    "errn26"
+   ],
+   [
+    "span_ch28",
+    "pkdsr26"
    ],
    [
     "span_ch28",
@@ -156,18 +472,35 @@
    ],
    [
     "span_ch48",
+    "edsr_baseline"
+   ],
+   [
+    "span_ch48",
     "smfan"
    ],
    [
     "span_ch48",
+    "swinir_light"
+   ],
+   [
+    "span_ch48_t44",
+    "smfan"
+   ],
+   [
+    "span_ch48_t44",
     "span_ch26"
+   ],
+   [
+    "swinir_light",
+    "pkdsr26"
    ]
   ],
-  "tau_mean_rank": 0.1111111111111111,
-  "tau_lo": 0.05555555555555555,
-  "tau_hi": 0.16666666666666666,
+  "tau_mean_rank": 0.11111111111111112,
+  "tau_lo": 0.06666666666666667,
+  "tau_hi": 0.15555555555555559,
   "models": [
    "span_ch48",
+   "span_ch48_t44",
    "span_ch28",
    "span_ch26",
    "rlfn",
@@ -175,29 +508,363 @@
    "safmnpp",
    "smfan",
    "msrresnet",
-   "swinir_light"
+   "edsr_baseline",
+   "swinir_light",
+   "span26",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
   ],
   "order_a": [
    "swinir_light",
    "msrresnet",
    "span_ch48",
+   "edsr_baseline",
+   "span_ch48_t44",
    "rlfn",
    "efdn",
+   "disp26",
    "smfan",
+   "errn26",
    "safmnpp",
+   "span26",
    "span_ch28",
-   "span_ch26"
+   "pkdsr26",
+   "dscf26",
+   "span_ch26",
+   "pds26"
   ],
   "order_b": [
+   "edsr_baseline",
    "msrresnet",
    "smfan",
    "span_ch26",
    "span_ch48",
+   "pkdsr26",
+   "span_ch48_t44",
+   "dscf26",
    "swinir_light",
+   "span26",
    "span_ch28",
+   "pds26",
+   "disp26",
    "rlfn",
    "safmnpp",
-   "efdn"
+   "efdn",
+   "errn26"
+  ],
+  "flipped": true
+ },
+ "x4_hr192": {
+  "tau_b": -0.040011524979029996,
+  "concordant": 55,
+  "discordant": 60,
+  "tied_a_only": 7,
+  "tied_b_only": 13,
+  "n_pairs": 136,
+  "reversals": [
+   [
+    "dscf26",
+    "disp26"
+   ],
+   [
+    "dscf26",
+    "errn26"
+   ],
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "dscf26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
+   [
+    "efdn",
+    "smfan"
+   ],
+   [
+    "efdn",
+    "span26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "msrresnet",
+    "swinir_light"
+   ],
+   [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "dscf26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "pkdsr26",
+    "disp26"
+   ],
+   [
+    "pkdsr26",
+    "dscf26"
+   ],
+   [
+    "pkdsr26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "disp26"
+   ],
+   [
+    "rlfn",
+    "dscf26"
+   ],
+   [
+    "rlfn",
+    "pds26"
+   ],
+   [
+    "rlfn",
+    "pkdsr26"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "rlfn",
+    "span26"
+   ],
+   [
+    "safmnpp",
+    "dscf26"
+   ],
+   [
+    "safmnpp",
+    "pds26"
+   ],
+   [
+    "safmnpp",
+    "pkdsr26"
+   ],
+   [
+    "safmnpp",
+    "span26"
+   ],
+   [
+    "smfan",
+    "disp26"
+   ],
+   [
+    "smfan",
+    "dscf26"
+   ],
+   [
+    "span26",
+    "disp26"
+   ],
+   [
+    "span26",
+    "dscf26"
+   ],
+   [
+    "span26",
+    "errn26"
+   ],
+   [
+    "span_ch26",
+    "disp26"
+   ],
+   [
+    "span_ch26",
+    "dscf26"
+   ],
+   [
+    "span_ch26",
+    "efdn"
+   ],
+   [
+    "span_ch26",
+    "errn26"
+   ],
+   [
+    "span_ch26",
+    "msrresnet"
+   ],
+   [
+    "span_ch26",
+    "pds26"
+   ],
+   [
+    "span_ch26",
+    "pkdsr26"
+   ],
+   [
+    "span_ch26",
+    "rlfn"
+   ],
+   [
+    "span_ch26",
+    "safmnpp"
+   ],
+   [
+    "span_ch26",
+    "smfan"
+   ],
+   [
+    "span_ch26",
+    "span26"
+   ],
+   [
+    "span_ch26",
+    "swinir_light"
+   ],
+   [
+    "span_ch28",
+    "disp26"
+   ],
+   [
+    "span_ch28",
+    "dscf26"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "errn26"
+   ],
+   [
+    "span_ch28",
+    "rlfn"
+   ],
+   [
+    "span_ch28",
+    "safmnpp"
+   ],
+   [
+    "span_ch28",
+    "span_ch26"
+   ],
+   [
+    "span_ch48",
+    "dscf26"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
+   ],
+   [
+    "span_ch48",
+    "span_ch26"
+   ],
+   [
+    "span_ch48_t44",
+    "dscf26"
+   ],
+   [
+    "span_ch48_t44",
+    "pkdsr26"
+   ],
+   [
+    "span_ch48_t44",
+    "rlfn"
+   ],
+   [
+    "span_ch48_t44",
+    "smfan"
+   ],
+   [
+    "span_ch48_t44",
+    "span_ch26"
+   ],
+   [
+    "swinir_light",
+    "dscf26"
+   ]
+  ],
+  "tau_mean_rank": -0.05185185185185185,
+  "tau_lo": -0.08148148148148149,
+  "tau_hi": 0.03703703703703704,
+  "models": [
+   "span_ch48",
+   "span_ch48_t44",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "span26",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "msrresnet",
+   "edsr_baseline",
+   "rlfn",
+   "span_ch48_t44",
+   "efdn",
+   "disp26",
+   "smfan",
+   "safmnpp",
+   "errn26",
+   "pkdsr26",
+   "pds26",
+   "span26",
+   "span_ch28",
+   "dscf26",
+   "span_ch26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "span_ch26",
+   "dscf26",
+   "msrresnet",
+   "pkdsr26",
+   "span_ch48",
+   "smfan",
+   "swinir_light",
+   "span_ch28",
+   "span26",
+   "span_ch48_t44",
+   "pds26",
+   "disp26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "errn26"
   ],
   "flipped": true
  }

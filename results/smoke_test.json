@@ -1,0 +1,139 @@
+[
+ {
+  "step": "môi trường",
+  "status": "ĐẠT",
+  "seconds": 1.2,
+  "info": {
+   "python": "3.12.3",
+   "torch": "2.11.0+cu130",
+   "cuda": true,
+   "device": "cuda",
+   "gpu": "NVIDIA GeForce RTX 3080",
+   "gpu_mem_gb": 9.6,
+   "torchvision": "0.26.0+cu130",
+   "cv2": "4.13.0",
+   "pandas": "3.0.2",
+   "scipy": "1.17.1",
+   "yaml": "6.0.3",
+   "onnx": "1.23.1",
+   "onnxruntime": "1.30.0",
+   "lpips": "có",
+   "pyiqa": "0.1.15.post2"
+  }
+ },
+ {
+  "step": "trọng số công bố",
+  "status": "ĐẠT",
+  "seconds": 0.0,
+  "info": {
+   "có": 24,
+   "thiếu": []
+  }
+ },
+ {
+  "step": "bộ AMI và benchmark",
+  "status": "ĐẠT",
+  "seconds": 0.0,
+  "info": {
+   "n_images": 700,
+   "bench": "data/bench/ami"
+  }
+ },
+ {
+  "step": "suy luận trên thiết bị, LPIPS và DISTS",
+  "status": "ĐẠT",
+  "seconds": 2.6,
+  "info": {
+   "bicubic": {
+    "psnr_y": 35.3948,
+    "lpips": 0.2938,
+    "dists": 0.2823
+   },
+   "span_ch48": {
+    "psnr_y": 37.2383,
+    "lpips": 0.2044,
+    "dists": 0.2224
+   },
+   "cảm nhận dùng được": [
+    "lpips",
+    "dists"
+   ],
+   "cảm nhận không dùng được": {}
+  }
+ },
+ {
+  "step": "GPU và CPU cho cùng kết quả",
+  "status": "ĐẠT",
+  "seconds": 0.1,
+  "info": {
+   "ảnh": "000_back.png",
+   "lệch khi chấm (FP32 đầy đủ)": 1.5497207641601562e-06,
+   "lệch theo mặc định của máy": 0.0003360658884048462,
+   "TF32 mặc định bật": true,
+   "lệch FP16": 0.0016088485717773438
+  }
+ },
+ {
+  "step": "huấn luyện L1, FP32",
+  "status": "ĐẠT",
+  "seconds": 32.0,
+  "info": {
+   "bước/giây": 6.31,
+   "ước lượng 20.000 bước (giờ)": 0.88,
+   "PSNR val trước": 39.095,
+   "PSNR val sau": 39.188
+  }
+ },
+ {
+  "step": "huấn luyện L1, AMP (FP16)",
+  "status": "ĐẠT",
+  "seconds": 32.9,
+  "info": {
+   "bước/giây": 6.12,
+   "ước lượng 20.000 bước (giờ)": 0.91,
+   "PSNR val trước": 39.095,
+   "PSNR val sau": 39.188
+  }
+ },
+ {
+  "step": "huấn luyện GAN (tải VGG19)",
+  "status": "ĐẠT",
+  "seconds": 20.0,
+  "info": {
+   "bước/giây": 2.08,
+   "ước lượng 20.000 bước (giờ)": 2.67,
+   "PSNR val trước": 39.095,
+   "PSNR val sau": 39.108
+  }
+ },
+ {
+  "step": "xuất ONNX và so với PyTorch",
+  "status": "ĐẠT",
+  "seconds": 0.8,
+  "info": {
+   "max_abs_diff": 2.384185791015625e-06,
+   "rel_diff": 2.343235495050091e-06,
+   "opset": 13
+  }
+ },
+ {
+  "step": "chỉ số không tham chiếu (pyiqa)",
+  "status": "ĐẠT",
+  "seconds": 3.3,
+  "info": {
+   "dùng được": [
+    "niqe",
+    "maniqa",
+    "musiq",
+    "clipiqa"
+   ],
+   "không dùng được": {},
+   "giá trị thử": {
+    "niqe": 36.40382452876318,
+    "maniqa": 0.3220234811306,
+    "musiq": 48.03016662597656,
+    "clipiqa": 0.5858892798423767
+   }
+  }
+ }
+]

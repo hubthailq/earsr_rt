@@ -1,0 +1,2 @@
+available: {'lpips': 'lpips ?, net=alex, v0.1', 'dists': 'pyiqa 0.1.15.post2, dists, lower_better=True'}
+unavailable: {}
