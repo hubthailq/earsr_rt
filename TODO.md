@@ -7,53 +7,47 @@ trạng thái kiểm của mã nằm ở `docs/STATUS.md`, lệnh đầy đủ �
 Ký hiệu người làm: **[Bạn]** việc chỉ bạn làm được; **[labai217]** lệnh chạy trên máy GPU; **[Claude]** việc sửa mã hoặc
 phân tích trên máy Mac.
 
-## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 06/10/2026, tối)
+## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 07/10/2026)
 
-**Trạng thái (06/10, tối):** hàng đợi `n2b` trên labai217 đã xong cả 10 lần, **cả 10 qua phép thử ảnh sáng, không ảnh nào
-hỏng** (SPAN/bic: 39,31 dB ở ảnh gốc, 34,67 dB ở ảnh sáng ×1,8; lần trước là 8,45 dB). Trên validation AMI, mô hình tinh chỉnh
-hơn bicubic 1,41 dB (JPEG 75) và 1,54 dB (suy giảm ước lượng) với SPAN; 1,15 và 1,25 dB với DISP. Bản chỉ AMI có tăng cường
-(`+pa`) cho 39,35 dB (SPAN) và 39,22 dB (DISP), ngang bản có ảnh EarVN (39,31 và 39,16). **Bước 1 đã xong; đang ở bước 2.**
+**Quyết định của người dùng (06/10, đêm):** làm trước **một mô hình real-time tốt hơn các mô hình có sẵn** (hướng A). Hướng
+kiến trúc (B, C ở mục 2b) để sau; câu hỏi cho thầy vẫn còn mở.
 
-**Khi người dùng báo "n2 xong" hoặc hỏi "làm gì tiếp", trả lời theo đúng thứ tự dưới đây.**
+**Trạng thái:** khối `n2` chạy lại trên fold 2 đã xong và đã phân tích (mục 2.0 của kế hoạch bài báo). Còn thiếu hai thứ, đang
+làm: (a) các mô hình `n2` chưa được chấm trên EarVN1.0 và AWEx với ảnh vào có nén; (b) mới một fold, tiêu chí cần ba.
 
-1. **[labai217] Kiểm 10 lần chạy.** `tail -3 n2b.log` phải có `{'done': 10, 'failed': 0, ...}`. Rồi
-   `grep "phép thử ảnh sáng" jobs/n2b.txt.logs/*.log`: cả 10 dòng phải là ỔN ĐỊNH. Dòng nào CẢNH BÁO thì ghi lại, lần chạy đó
-   không dùng được.
-2. **[labai217] Chấm 10 mô hình mới** (chỉ các lần chạy có dấu `+` trong mã):
+**Khi người dùng hỏi "làm gì tiếp", trả lời theo đúng thứ tự dưới đây.**
+
+1. **[Bạn] Commit và push** (script `score_n2.sh`, `make_n2b_jobs.sh` có thêm FOLDS, kết quả EarVN dời sang `results/n2_earvn/`).
+2. **[labai217] Chấm 10 mô hình fold 2 trên cả ba bộ ảnh** (khoảng 20 đến 30 phút), rồi đẩy về:
    ```bash
-   python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --kinds bic \
-       --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
-   python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpeg75 generic est \
-       --degrade-params configs/degrade_estimated.json --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
-   ls results/n2 | wc -l        # phải là 66 (13 mô hình × 5 cấu hình, cộng 1 file thông tin)
+   git pull
+   bash scripts/score_n2.sh          # cuối cùng in số file của results/n2, n2_earvn, n2_awex rồi "Xong."
+   git add results && git commit -m "N2 fold 2 scored on AMI, EarVN, AWEx" && git push
    ```
-   Lần trước lệnh thứ hai không có kết quả trong commit; lần này phải kiểm con số 66.
-3. **[labai217] Chấm trên EarVN1.0 và AWEx (kiểm độ tổng quát của phát hiện giai đoạn 1)**, nếu chưa tự chạy:
-   `nohup bash scripts/run_wild_t2.sh > wild_t2.log 2>&1 &` (1 đến 2 giờ; xong thì log in "Xong. Đọc: ...").
-4. **[labai217] Đẩy kết quả về:** `git add results && git commit -m "N2 rerun scored; wild-set T2" && git push`.
-   Trên máy Mac: `git pull`, rồi kiểm `git log` có commit đó chưa trước khi phân tích.
-5. **[Claude] Đọc kết quả N2.** Chỉ tin bảng khi: (a) cả 10 lần chạy ỔN ĐỊNH; (b) SPAN và DISP tinh chỉnh với bicubic không
-   kém mốc công bố trên EarVN (lần trước: −14,3 dB và khoảng −2,6 dB). Đạt thì trả lời ba câu:
-   - Mô hình học với suy giảm ước lượng (`est`) có hơn mô hình học với `generic` không? (điều kiện của N2)
-   - Nó có hơn mô hình học với `bicjpeg75` không? (nếu không thì "phép ước lượng" không phải đóng góp)
-   - Ảnh EarVN thêm vào có giúp không? (so `+xearvn` với `+pa` ở nhánh bicubic)
-   Lưu ý khi đọc: bảng trên AMI thiên vị theo thiết kế (mô hình nào cũng thắng ở đúng kiểu suy giảm của nó); trên EarVN
-   ảnh vào là bicubic nên nhánh `bic` có lợi thế. Không đạt (a) hoặc (b) thì thử: giảm tốc độ học (khối `lr`), dừng sớm.
-6. **[Claude] Đọc kết quả EarVN1.0 và AWEx.** Trả lời: phát hiện "mô hình có sẵn kém bicubic khi ảnh bị nén" có đúng ngoài
-   AMI không, và đúng từ mức nén nào. Lần thử 12 ảnh gợi ý: đúng ở JPEG 75, đảo chiều ở JPEG 93, xấp xỉ hòa với suy giảm
-   ước lượng. Nếu xác nhận thì sửa C2 trong kế hoạch (mục 2.0, 2.2, 2.6) thành "lợi thế so với bicubic biến mất, và thành
-   âm khi nén từ khoảng mức 85 trở xuống".
-7. **[Claude] Cập nhật** mục 2.0 của kế hoạch bài báo, `docs/STATUS.md` và file này theo kết quả.
-8. **[Bạn] Hỏi thầy câu quyết định**, mang theo kết quả ở bước 5, 6 và ba hướng ở mục 2b: bài cần **một kiến trúc mới**,
-   hay **một mô hình real-time cho ảnh tai tốt hơn các mô hình có sẵn** là đủ?
-9. **Rẽ nhánh theo câu trả lời của thầy:**
-   - *Không cần kiến trúc mới:* khảo sát người xem trên ảnh nhỏ thật (nửa sau của tiêu chí N2) → dò tốc độ học (khối `lr`)
-     → ba giao thức huấn luyện (T6 ii) → điểm kiểm tra 2 → chạy chính trên 5 fold (S2) → S4, S5 → đo trên Jetson → dựng
-     bảng, hình và viết. Khối `pad` bỏ hoặc để cuối. Chi tiết ở mục 3.
-   - *Cần kiến trúc mới:* làm phép thử rẻ của hướng B hoặc C (mục 2b) **trước** các khối dài; nếu có tín hiệu thì thiết kế
-     mô hình quanh đó, và S2, S5 chạy với mô hình mới.
-10. **Các quyết định nhỏ còn treo** (mục 2): loại `span26` trùng `span_ch28` rồi chạy lại `summarize_t2.py`; có thêm SPAN 52
-    kênh không; bộ dữ liệu thứ ba (EarVN2.0, Imperial College, UERC).
+   Số file mong đợi với 10 lần chạy: `n2` 195, `n2_earvn` 52, `n2_awex` 104.
+3. **[labai217] Huấn luyện fold 3 và 4: 20 lần, khoảng 9 đến 10 giờ** (để qua đêm):
+   ```bash
+   FOLDS="3 4" bash scripts/make_n2b_jobs.sh jobs/n2b_f34.txt     # phải in: 20 lệnh, fold: 3 4
+   nohup python scripts/run_queue.py jobs/n2b_f34.txt > n2b_f34.log 2>&1 &
+   ```
+   Kiểm sau khi xong: `tail -3 n2b_f34.log` có `{'done': 20, 'failed': 0, ...}`, và
+   `grep -c "phép thử ảnh sáng: ỔN ĐỊNH" jobs/n2b_f34.txt.logs/*.log | grep -c ":1"` ra 20.
+4. **[labai217] Chấm lại sau khi fold 3 và 4 xong** (script bỏ qua file đã có, chỉ chấm lần chạy mới), rồi đẩy về:
+   ```bash
+   bash scripts/score_n2.sh
+   git add results && git commit -m "N2 folds 3 and 4 trained and scored" && git push
+   ```
+   Số file mong đợi với 30 lần chạy: `n2` 495, `n2_earvn` 132, `n2_awex` 264.
+5. **[Claude] Phân tích.** Sau bước 2: mô hình của bài so với mô hình có sẵn và bicubic trên EarVN1.0 và AWEx với ảnh nén; ước
+   lượng so với JPEG 75 ở JPEG 93. Sau bước 4: gộp ba fold (60 người test của AMI), so sánh ghép cặp, bootstrap theo người,
+   áp tiêu chí. Cập nhật mục 2.0 của kế hoạch, `docs/STATUS.md` và file này.
+6. **Tiếp theo của hướng A:** khảo sát người xem trên ảnh nhỏ thật (nửa sau của tiêu chí N2) → dò tốc độ học (khối `lr`) → ba
+   giao thức huấn luyện (T6 ii) → điểm kiểm tra 2 → chạy chính trên 5 fold (S2) → S4, S5 → đo trên Jetson → dựng bảng, hình và
+   viết. Khối `pad` bỏ hoặc để cuối. Mọi khối huấn luyện đều thêm ảnh EarVN (kết quả `n2` cho thấy bắt buộc).
+7. **[Bạn] Hỏi thầy** khi tiện: bài có cần một kiến trúc mới không. Nếu có: phép thử rẻ của hướng B hoặc C (mục 2b) trước các
+   khối dài.
+8. **Các quyết định nhỏ còn treo** (mục 2): loại `span26` (trùng `span_ch28`) rồi chạy lại `summarize_t2.py`; có thêm SPAN 52
+   kênh không; bộ dữ liệu thứ ba (EarVN2.0, Imperial College, UERC).
 
 Việc song song không phụ thuộc gì: rà tài liệu có hệ thống (mục 4), tìm Jetson Nano (mục 3).
 
@@ -65,7 +59,9 @@ Việc song song không phụ thuộc gì: rà tài liệu có hệ thống (m�
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
-- [ ] **[labai217]** Hàng đợi `n2b` đang chạy (10 lần; bắt đầu 06/10). Việc tiếp theo: mục 0.
+- [x] 06/10 **[labai217]** Hàng đợi `n2b`: 10 lần xong, cả 10 qua phép thử ảnh sáng; đã chấm trên EarVN (ảnh sạch) và AMI
+      (bốn kiểu ảnh vào). `run_wild_t2.sh` xong: mọi mô hình có sẵn trên EarVN1.0, AWEx, và quét mức nén trên AMI.
+- [x] 06/10 **[Claude]** Đọc kết quả `n2` và kết quả ngoài AMI; ghi vào mục 2.0 của kế hoạch bài báo (C2, C4, C5 cập nhật).
 - [x] 06/10 **[Bạn]** Commit và push bản sửa (`0466f7c`); pull trên labai217; khởi động hàng đợi `n2b`.
 - [x] 06/10 **[Claude]** Script chấm trên EarVN1.0 và AWEx (`scripts/run_wild_t2.sh`), đã chạy thử 12 ảnh mỗi bộ.
 - [x] 06/10 **[Claude]** Tái hiện lỗi từ checkpoint, tìm cơ chế, thêm tăng cường độ sáng và phép thử ảnh sáng, chạy thử
@@ -132,7 +128,7 @@ Các hướng không loại trừ nhau. Quyết định sau khi có kết quả 
 
 ## 3. Thí nghiệm còn lại, theo thứ tự của kế hoạch
 
-- [ ] **[labai217] Kiểm độ tổng quát của phát hiện giai đoạn 1 ngoài AMI** (chỉ chấm, không huấn luyện; khoảng 1 đến 2 giờ):
+- [x] 06/10 **[labai217] Kiểm độ tổng quát của phát hiện giai đoạn 1 ngoài AMI** (xong; kết quả ở mục 0 và mục 2.0 của kế hoạch) (chỉ chấm, không huấn luyện; khoảng 1 đến 2 giờ):
       `nohup bash scripts/run_wild_t2.sh > wild_t2.log 2>&1 &`, chạy sau khi hàng đợi `n2b` xong, rồi commit `results/`.
       Script chấm mọi mô hình có trọng số công bố trên EarVN1.0 (nhóm test: 158 ảnh, cỡ 96) và AWEx (217 ảnh cỡ 96, 60 ảnh
       cỡ 144) với ảnh vào bicubic, JPEG 75, JPEG 93 và suy giảm ước lượng; và quét mức nén 60, 85, 93 trên AMI.
