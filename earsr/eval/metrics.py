@@ -19,10 +19,11 @@ import cv2
 import numpy as np
 
 __all__ = ["rgb_to_y", "psnr", "ssim", "ms_ssim", "gmsd", "grad_psnr", "lr_psnr", "crop_border", "crop_center",
-           "PerceptualMetrics", "fr_metrics", "PYIQA_FR"]
+           "PerceptualMetrics", "fr_metrics", "PYIQA_FR", "LR_PSNR_CAP"]
 
 # số đo có tham chiếu lấy từ pyiqa (tên theo pyiqa; CHƯA CHẠY THẬT ở máy dựng project)
 PYIQA_FR = ("dists", "stlpips", "topiq_fr", "fsim", "vif", "pieapp")
+LR_PSNR_CAP = 100.0   # dB; xem lr_psnr
 
 
 def rgb_to_y(img: np.ndarray) -> np.ndarray:
@@ -164,11 +165,14 @@ def lr_psnr(sr: np.ndarray, hr: np.ndarray, scale: int) -> float:
     """Độ nhất quán với ảnh vào (LR-PSNR): thu nhỏ bicubic cả ảnh SR lẫn ảnh đáp án rồi
     tính PSNR-Y. Mô hình bịa chi tiết có thể đạt LPIPS tốt nhưng làm đổi nội dung
     tần thấp; số đo này bắt việc đó. Dùng ảnh đáp án thu nhỏ (không dùng ảnh LR đã
-    suy giảm) để số đo có nghĩa với mọi kiểu suy giảm."""
+    suy giảm) để số đo có nghĩa với mọi kiểu suy giảm.
+
+    Chặn trên ở ``LR_PSNR_CAP`` (100 dB): ảnh SR thu nhỏ lại trùng khít ảnh đáp án thu nhỏ cho PSNR vô cực,
+    và một giá trị vô cực làm hỏng mọi trung bình."""
     from ..data.resize import imresize
 
     h, w = hr.shape[0] // scale, hr.shape[1] // scale
-    return psnr(rgb_to_y(imresize(sr, out_size=(h, w))), rgb_to_y(imresize(hr, out_size=(h, w))))
+    return min(LR_PSNR_CAP, psnr(rgb_to_y(imresize(sr, out_size=(h, w))), rgb_to_y(imresize(hr, out_size=(h, w)))))
 
 
 class PerceptualMetrics:

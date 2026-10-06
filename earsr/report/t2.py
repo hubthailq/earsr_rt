@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..eval.metrics import LR_PSNR_CAP
 from ..stats.bootstrap import mean_ci, paired_diff
 from ..stats.mde import mde_paired
 from ..stats.ranking import kendall_tau_b, pairwise_signs, tau_bootstrap_ci
@@ -40,8 +41,10 @@ def quality_table(df: pd.DataFrame, meta: dict | None = None, n_boot: int = 2000
             for col in ("lpips", "dists", "ms_ssim_y", "gmsd", "grad_psnr", "lr_psnr_y", "stlpips", "topiq_fr",
                         "fsim", "vif", "pieapp", "ridge_f1", "lm_dev"):
                 if col in gm and gm[col].notna().any():
-                    v = gm[col].replace([float("inf"), float("-inf")], float("nan"))
-                    row[col] = v.mean()
+                    v = gm[col]
+                    if col == "lr_psnr_y":  # file chấm trước 06/10/2026 chưa chặn: vô cực nghĩa là trùng khít
+                        v = v.replace(float("inf"), LR_PSNR_CAP)
+                    row[col] = v.replace([float("inf"), float("-inf")], float("nan")).mean()
             if len(base) == len(gm) and (base.key.values == gm.key.values).all() and model != "bicubic":
                 d = paired_diff(gm.psnr_y.values, base.psnr_y.values, gm.subject.values, n_boot=n_boot)
                 row.update(gain=d.point, gain_lo=d.lo, gain_hi=d.hi)

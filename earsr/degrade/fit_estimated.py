@@ -85,7 +85,8 @@ def ks_distance(a, b) -> float:
 
 
 def fit(real_small: list, large: list, scale: int = 4, target_short: tuple[int, int] = (24, 48),
-        blur_candidates=((0.2, 0.6), (0.2, 1.0), (0.2, 1.5), (0.5, 1.5), (0.5, 2.0), (1.0, 2.5), (1.0, 3.0)),
+        blur_candidates=((0.0, 0.0), (0.0, 0.3), (0.0, 0.6), (0.2, 0.6), (0.2, 1.0), (0.2, 1.5), (0.5, 1.5),
+                         (0.5, 2.0), (1.0, 2.5), (1.0, 3.0)),
         seed: int = 0, max_images: int = 2000) -> dict:
     """Trả về dict tham số theo dạng ``DegradeParams`` cùng số liệu chẩn đoán.
 
@@ -118,6 +119,9 @@ def fit(real_small: list, large: list, scale: int = 4, target_short: tuple[int, 
     noise_rng = (float(np.quantile(sig, 0.05)), float(np.quantile(sig, 0.95)))
 
     def simulate(blur_rng):
+        # Mỗi ứng viên dùng lại cùng một dòng số ngẫu nhiên (cùng cỡ ảnh, nhiễu, mức nén cho từng ảnh),
+        # nên các ứng viên chỉ khác nhau ở độ mờ và kết quả không phụ thuộc thứ tự hay số ứng viên.
+        rng = np.random.default_rng(seed)
         out = []
         for p in large:
             img = cv2.imread(str(p), cv2.IMREAD_COLOR)
@@ -147,10 +151,14 @@ def fit(real_small: list, large: list, scale: int = 4, target_short: tuple[int, 
     if not diag:
         raise ValueError("không mô phỏng được: ảnh lớn không đủ to cho cỡ ảnh nhỏ cần mô phỏng")
     best = min(diag, key=lambda d: d["ks"])
+    # Tối ưu ở mức mờ lớn nhất của lưới nghĩa là lưới chưa đủ rộng. Tối ưu ở "không mờ" thì không phải lỗi
+    # của lưới (không thể mờ ít hơn), nhưng nghĩa là suy giảm ước lượng gần như không thêm độ mờ nào.
+    top = max(d["blur_sigma"][1] for d in diag)
+    edge = {"best_is_no_blur": best["blur_sigma"][1] == 0.0, "best_at_upper_edge": best["blur_sigma"][1] == top}
     return {"params": {"blur_sigma": best["blur_sigma"], "blur_prob": 1.0, "noise_sigma": list(noise_rng),
                        "noise_prob": 1.0, "jpeg_q": jpeg_q, "jpeg_prob": 1.0,
                        "source": f"fit_estimated: {len(real_small)} ảnh nhỏ thật, {len(large)} ảnh lớn"},
-            "diagnostics": {"blur_candidates": diag, "n_jpeg_tables": len(qs),
+            "diagnostics": {"blur_candidates": diag, **edge, "n_real_small": len(sharp_real), "n_jpeg_tables": len(qs),
                             "jpeg_q_median": float(np.median(qs)), "noise_sigma_median": float(np.median(sig)),
                             "limitation": "độ mờ chỉ khớp theo phân bố độ nét; nhiễu là cận dưới vì đã qua nén"}}
 

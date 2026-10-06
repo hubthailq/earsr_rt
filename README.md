@@ -107,7 +107,7 @@ configs/criteria.yaml   tiêu chí đạt ghi trước
 splits/ami_5fold.json   chia 5 fold theo người (có mã băm)
 docs/        DATA_AND_OUTPUTS.md, RUNBOOK.md, AMI_PERMISSION.md, STATUS.md, ANDROID.md, THIRD_PARTY.md
 results/     kết quả sơ bộ của giai đoạn 1 (CPU)
-tests/       139 kiểm thử
+tests/       141 kiểm thử
 ```
 
 ## Kiểm thử

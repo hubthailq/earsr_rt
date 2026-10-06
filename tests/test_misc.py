@@ -82,6 +82,65 @@ def test_wild_selection_and_roles(tmp_path):
     assert "trùng" in why["s1/dup.png"] and "cạnh ngắn" in why["s1/small.png"] and "tỉ lệ" in why["s2/wide.png"]
     man = wild.build_hr(root, keep, tmp_path / "out", 96, "toy")
     assert man.exists() and len(man.read_text().splitlines()) == 3
+
+
+def test_wild_reads_png_with_opaque_alpha(tmp_path):
+    """Phần AWE và CVLE của AWEx là PNG 4 kênh với alpha đặc: phải đọc được, cho đúng điểm ảnh RGB.
+    Ảnh có vùng trong suốt thì loại (không tự ghép nền)."""
+    rng = np.random.default_rng(0)
+    bgr = rng.integers(0, 256, (40, 30, 3), dtype=np.uint8)
+    (tmp_path / "s").mkdir()
+    cv2.imwrite(str(tmp_path / "s" / "rgb.png"), bgr)
+    cv2.imwrite(str(tmp_path / "s" / "opaque.png"), np.dstack([bgr, np.full((40, 30), 255, np.uint8)]))
+    holes = np.full((40, 30), 255, np.uint8)
+    holes[:5] = 0
+    cv2.imwrite(str(tmp_path / "s" / "holes.png"), np.dstack([bgr, holes]))
+    cv2.imwrite(str(tmp_path / "s" / "gray.png"), bgr[..., 0])
+    rows = {r["path"]: r for r in wild.scan(tmp_path)}
+    assert rows["s/rgb.png"]["ok"] and rows["s/opaque.png"]["ok"]
+    assert rows["s/opaque.png"]["sha1"] == rows["s/rgb.png"]["sha1"]          # cùng nội dung sau khi bỏ alpha
+    assert not rows["s/holes.png"]["ok"] and "trong suốt" in rows["s/holes.png"]["why"]
+    assert not rows["s/gray.png"]["ok"]
+    img, why = wild._read(tmp_path / "s" / "opaque.png")
+    assert why == "" and np.array_equal(img, bgr[:, :, ::-1])
+
+
+def test_fit_estimated_recovers_blur_and_flags_grid_edges(tmp_path):
+    """Phép khớp độ mờ: tìm lại đúng mức mờ đã dùng để tạo ảnh "thật", kết quả không phụ thuộc
+    thứ tự ứng viên, và chẩn đoán báo khi tối ưu nằm ở "không mờ" hoặc ở biên trên của lưới."""
+    from earsr.data.resize import imresize
+    from earsr.degrade import ops
+    from earsr.degrade.fit_estimated import fit
+
+    rng = np.random.default_rng(0)
+    large, i = [], 0
+    for i in range(30):
+        base = cv2.GaussianBlur(rng.integers(0, 256, (320, 260, 3), dtype=np.uint8), (0, 0), 1.2)
+        p = tmp_path / f"large_{i}.png"
+        cv2.imwrite(str(p), base)
+        large.append(p)
+
+    def make_real(sigma, tag):
+        out = []
+        for j, p in enumerate(large):
+            hr = imresize(cv2.imread(str(p))[:, :, ::-1], out_size=(160, 128))
+            x = ops.bicubic_down(ops.gaussian_blur(np.ascontiguousarray(hr), sigma * 2.0), 4)
+            q = tmp_path / f"real_{tag}_{j}.jpg"
+            cv2.imwrite(str(q), x[:, :, ::-1], [cv2.IMWRITE_JPEG_QUALITY, 90])
+            out.append(q)
+        return out
+
+    cands = ((0.0, 0.0), (0.7, 0.9), (1.9, 2.1))
+    for sigma, tag, want, flags in ((0.0, "sharp", [0.0, 0.0], (True, False)), (0.8, "mid", [0.7, 0.9], (False, False)),
+                                    (2.0, "blurry", [1.9, 2.1], (False, True))):
+        real = make_real(sigma, tag)
+        a = fit(real, large, target_short=(32, 32), blur_candidates=cands)
+        b = fit(real, large, target_short=(32, 32), blur_candidates=cands[::-1])
+        assert a["params"]["blur_sigma"] == want == b["params"]["blur_sigma"]
+        d = a["diagnostics"]
+        assert (d["best_is_no_blur"], d["best_at_upper_edge"]) == flags
+        ks = lambda r: {tuple(c["blur_sigma"]): c["ks"] for c in r["diagnostics"]["blur_candidates"]}
+        assert ks(a) == ks(b)                                                  # không phụ thuộc thứ tự ứng viên
     roles = wild.assign_roles([f"s{i}" for i in range(20)], {"train": 0.5, "test": 0.2, "fit": 0.1, "clf": 0.1, "viewer": 0.1})
     assert len(roles) == 20 and sorted(set(roles.values())) == ["clf", "fit", "test", "train", "viewer"]
     with pytest.raises(ValueError):

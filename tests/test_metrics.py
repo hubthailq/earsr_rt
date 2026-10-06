@@ -48,7 +48,8 @@ def test_gmsd_ms_ssim_grad_and_lr_consistency():
     hr = cv2.GaussianBlur(rng.integers(0, 256, (204, 144, 3), dtype=np.uint8), (0, 0), 2.0)
     y = rgb_to_y(hr)
     # trùng nhau: giá trị tốt nhất
-    assert gmsd(y, y) == 0.0 and np.isinf(grad_psnr(y, y)) and np.isinf(lr_psnr(hr, hr, 4))
+    assert gmsd(y, y) == 0.0 and np.isinf(grad_psnr(y, y))
+    assert lr_psnr(hr, hr, 4) == 100.0                 # trùng khít: chặn ở 100 dB, không trả về vô cực
     v, n = ms_ssim(y, y)
     assert v == pytest.approx(1.0) and n == 4          # 144 px: 4 tầng (144/8 = 18 ≥ 11, 144/16 = 9 < 11)
     assert ms_ssim(y[:20, :20], y[:20, :20])[1] == 1 and ms_ssim(y[:8, :8], y[:8, :8])[1] == 0

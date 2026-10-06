@@ -113,9 +113,15 @@ rồi chạy lại cùng lệnh là được.
 
 ## 3. N2 (cần EarVN1.0, cấu trúc `root/<người>/<ảnh>`)
 
+Thứ tự nên theo: hai lệnh đầu (ước lượng, bộ phân loại) chỉ mất vài phút và là thứ quyết định N2 theo tiêu chí ghi
+trước; xem `results/n2_realism.json` rồi mới chạy khối huấn luyện `n2` (6 lần, khoảng 6 giờ). Sáu lần huấn luyện đó
+không tự quyết định N2: mô hình nào cũng thắng ở đúng kiểu suy giảm nó được huấn luyện. Hai file do lệnh đầu tạo
+(`splits/earvn_roles.json`, `configs/degrade_estimated.json`) chỉ được tạo một lần, trước mọi lần huấn luyện; commit ngay.
+
 ```bash
 python scripts/fit_degradation.py --root /data/EarVN1.0 --roles splits/earvn_roles.json   # tạo file vai; commit
-python scripts/realism_classifier.py --root /data/EarVN1.0 --degrade-params configs/degrade_estimated.json
+python scripts/realism_classifier.py --root /data/EarVN1.0 --degrade-params configs/degrade_estimated.json \
+       --kinds bic bicjpeg75 generic est      # bicjpeg75: mốc đơn giản; est phải thật hơn cả nó, không chỉ hơn generic
 python scripts/build_wild.py --root /data/EarVN1.0 --name earvn --out data/bench/earvn --tiers 96 \
        --roles splits/earvn_roles.json --role test
 python scripts/build_wild.py --root /data/awex --name awex --out data/bench/awex_s20 --tiers 96 144 --safety 2.0

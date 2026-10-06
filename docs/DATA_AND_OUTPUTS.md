@@ -68,6 +68,7 @@ Hai loại file: **theo từng ảnh** (một dòng mỗi ảnh; là dữ liệu
 Cột của file theo từng ảnh: `model, dataset, subject, view, key, fold, scale, tier, degrade, psnr_y, ssim_y,
 psnr_rgb, psnr_y_c, ssim_y_c` (hậu tố `_c` = vùng giữa ảnh), `ms_ssim_y, ms_ssim_scales, gmsd, grad_psnr, lr_psnr_y`
 (luôn có), `lpips, dists` (nếu cài được), `stlpips, topiq_fr, fsim, vif, pieapp` (`--more-metrics`), `host_ms`,
+`lr_psnr_y` chặn trên ở 100 dB (ảnh SR thu nhỏ lại trùng khít đáp án thu nhỏ; file chấm trước 06/10/2026 ghi `inf` ở các ảnh đó và bảng tổng hợp đọc `inf` thành 100).
 `device` (thiết bị đã chạy ảnh đó: `cuda`, hoặc `cpu` nếu lúc ấy GPU hết bộ nhớ; `host_ms` chỉ so được trong cùng thiết bị); thêm
 `ridge_false, ridge_missed, ridge_f1` (`--ridge`), `lm_dev, lm_floor_noise, lm_floor_jpeg` (`--landmark-ckpt`),
 `psnr_y_box` (`--boxes`), `niqe, maniqa, musiq, clipiqa, ntire_score` (`--nr`).

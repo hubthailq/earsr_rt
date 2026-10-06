@@ -32,6 +32,12 @@ def _read(path: Path):
     img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
     if img is None:
         return None, "không đọc được"
+    if img.dtype == np.uint8 and img.ndim == 3 and img.shape[2] == 4:
+        # PNG có kênh alpha (phần AWE và CVLE của AWEx). Alpha đặc hoàn toàn thì bỏ kênh đó;
+        # alpha không đặc thì loại, vì ghép nền là tự thêm nội dung vào ảnh.
+        if int(img[:, :, 3].min()) < 255:
+            return None, "ảnh 4 kênh có vùng trong suốt (alpha < 255)"
+        img = img[:, :, :3]
     if img.dtype != np.uint8 or img.ndim != 3 or img.shape[2] != 3:
         return None, f"không phải ảnh 8 bit 3 kênh ({img.dtype}, {img.shape})"
     return np.ascontiguousarray(img[:, :, ::-1]), ""
