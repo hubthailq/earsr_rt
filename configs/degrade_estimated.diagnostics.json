@@ -1,0 +1,91 @@
+{
+ "blur_candidates": [
+  {
+   "blur_sigma": [
+    0.0,
+    0.0
+   ],
+   "ks": 0.17767042404723565,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.0,
+    0.3
+   ],
+   "ks": 0.17069243156199682,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.0,
+    0.6
+   ],
+   "ks": 0.11808910359634997,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.2,
+    0.6
+   ],
+   "ks": 0.10574342458400429,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.2,
+    1.0
+   ],
+   "ks": 0.15029522275899082,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.2,
+    1.5
+   ],
+   "ks": 0.23778851315083194,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.5,
+    1.5
+   ],
+   "ks": 0.32152442297369827,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    0.5,
+    2.0
+   ],
+   "ks": 0.37090713902308103,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    1.0,
+    2.5
+   ],
+   "ks": 0.5856146001073537,
+   "n_sim": 81
+  },
+  {
+   "blur_sigma": [
+    1.0,
+    3.0
+   ],
+   "ks": 0.6247987117552335,
+   "n_sim": 81
+  }
+ ],
+ "best_is_no_blur": false,
+ "best_at_upper_edge": false,
+ "n_real_small": 621,
+ "n_jpeg_tables": 621,
+ "jpeg_q_median": 75.0,
+ "noise_sigma_median": 2.1859960448632236,
+ "limitation": "\u0111\u1ed9 m\u1edd ch\u1ec9 kh\u1edbp theo ph\u00e2n b\u1ed1 \u0111\u1ed9 n\u00e9t; nhi\u1ec5u l\u00e0 c\u1eadn d\u01b0\u1edbi v\u00ec \u0111\u00e3 qua n\u00e9n"
+}
