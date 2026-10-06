@@ -42,6 +42,12 @@ Script dùng lệnh `python`, không có thì `python3`; chỉ định lệnh kh
 Sau bước này là **điểm kiểm tra 1** (mục 1.10 của kế hoạch). Chỉnh `configs/criteria.yaml` một lần nếu
 `results/t2_summary/mde.csv` cho thấy ngưỡng nào nhỏ hơn mức chênh phát hiện được, rồi commit.
 
+**Mô hình hỏng trên ảnh sáng.** Tinh chỉnh chỉ trên AMI cho mô hình ra nhiễu trên ảnh có vùng sáng (AMI không có ảnh
+nào như vậy), trong khi PSNR validation vẫn đẹp. Vì thế `train.py` mặc định đổi độ sáng, tông và màu của ảnh huấn luyện
+(`--photo-aug 0.75`; `0` để tắt), và sau mỗi lần huấn luyện in một dòng `phép thử ảnh sáng: ỔN ĐỊNH ...` hoặc
+`CẢNH BÁO: phép thử ảnh sáng: KHÔNG ỔN ĐỊNH ...` (chi tiết ở `runs/<mã>/stress.json`, cột `stress_*` trong
+`results/runs.csv`). Lần chạy nào báo KHÔNG ỔN ĐỊNH thì không dùng kết quả của nó.
+
 **Độ chính xác khi chấm.** Mọi phép chấm (suy luận, validation, LPIPS, DISTS) chạy ở FP32 đầy đủ với TF32 tắt, để
 số trên GPU khớp số trên CPU (lệch cỡ 1e-6 thay vì 3e-4). Các bước huấn luyện dùng mặc định của PyTorch. Độ trễ
 trong `bench_local.py` cũng đo theo mặc định; cột `host` ghi trạng thái TF32 lúc đo.
@@ -62,11 +68,14 @@ mkdir -p jobs
 A="--ami-raw /data/AMI --bench data/bench/ami"
 
 # 2.0 (bản 22) Hai phép thử rẻ, chạy TRƯỚC mọi thứ khác của giai đoạn 2.
-#   N2 sớm (cần EarVN1.0; xem mục 3 để tạo configs/degrade_estimated.json):
-python scripts/make_jobs.py n2 $A --degrade-params configs/degrade_estimated.json > jobs/n2.txt && python scripts/run_queue.py jobs/n2.txt
-python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --kinds bic --runs runs/N2_* --out results/n2
+#   N2 sớm (cần EarVN1.0; xem mục 3 để tạo configs/degrade_estimated.json và data/bench/earvn).
+#   Mười lần huấn luyện: 2 thân × 4 kiểu suy giảm, có ảnh EarVN nhóm train; cộng 2 lần chỉ AMI (nhãn +pa).
+bash scripts/make_n2b_jobs.sh jobs/n2b.txt && python scripts/run_queue.py jobs/n2b.txt
+#   chỉ chấm các lần chạy mới (có dấu + trong mã); 8 lần chạy đầu, không có dấu +, đã bị loại
+python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --kinds bic \
+       --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
 python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpeg75 generic est \
-       --degrade-params configs/degrade_estimated.json --runs runs/N2_* --out results/n2
+       --degrade-params configs/degrade_estimated.json --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
 #   Kiểu đệm trên trọng số công bố (không tiền huấn luyện), ba mốc mặc định: span, disp26, errn26
 python scripts/make_jobs.py pad $A > jobs/pad.txt && python scripts/run_queue.py jobs/pad.txt
 

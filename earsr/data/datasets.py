@@ -85,6 +85,21 @@ class _LRU:
         return v
 
 
+def photometric_jitter(img: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """Đổi độ sáng, tông và cân bằng màu của một ảnh uint8 RGB; phần vượt 255 bị cắt như ở ảnh chụp cháy sáng.
+
+    Lý do có hàm này: AMI chụp trong phòng, nền tối, không ảnh nào có vùng sáng (phân vị 99 của điểm ảnh
+    cao nhất là 199). Mô hình tinh chỉnh chỉ trên AMI cho đầu ra hỏng hẳn trên ảnh có vùng sáng: SPAN từ
+    39,6 dB xuống 11 dB khi nhân độ sáng ảnh validation lên 1,6 lần, trong khi mô hình công bố vẫn 35 dB.
+    Dải: hệ số sáng 0,7 đến 2,2 (theo thang log), gamma 0,7 đến 1,4, mỗi kênh màu lệch tối đa 10%.
+    """
+    gain = float(np.exp(rng.uniform(np.log(0.7), np.log(2.2))))
+    gamma = float(np.exp(rng.uniform(np.log(0.7), np.log(1.4))))
+    ch = rng.uniform(0.9, 1.1, size=3)
+    x = (img.astype(np.float64) / 255.0) ** gamma * (gain * ch)
+    return np.clip(np.round(x * 255.0), 0, 255).astype(np.uint8)
+
+
 class SRTrainDataset(Dataset):
     """Mỗi phần tử: (lr, hr) tensor float [0, 1], cỡ patch_lr và patch_lr × scale.
 
@@ -96,6 +111,9 @@ class SRTrainDataset(Dataset):
     min_downscale: ảnh gốc phải được thu nhỏ ít nhất ngần này lần để thành ảnh HR
                 (biên an toàn cho ảnh JPEG ngoài thực tế; AMI dùng 1,0). Ảnh không
                 đủ lớn cho cỡ nào thì bị loại; ``self.dropped`` ghi số ảnh loại.
+    photo_prob: xác suất áp ``photometric_jitter`` lên ảnh HR **trước** khi suy giảm (ảnh LR được sinh
+                từ ảnh HR đã đổi, nên vùng cháy sáng và vết nén nằm đúng chỗ). 0 thì không đổi gì và
+                mẫu rút ra giống hệt bản không có tùy chọn này.
     landmarks : dict đường dẫn ảnh (str) -> mảng (K, 2) toạ độ (x, y) trên ảnh gốc
                 (N1). Nếu có, mỗi phần tử là (lr, hr, bản đồ, có_nhãn): bản đồ Gauss
                 ở độ phân giải LR; ``có_nhãn`` = 0 với ảnh không có điểm mốc.
@@ -109,9 +127,12 @@ class SRTrainDataset(Dataset):
                  degrade_kind: str = "bic", params: DegradeParams | None = None, hflip: bool = True,
                  rot90: bool = False, seed: int = 0, cache_items: int = 4096,
                  landmarks: dict | None = None, n_landmarks: int = 55, aux_mode: str = "heatmap",
-                 aux_sigma: float = 1.0, min_downscale: float = 1.0):
+                 aux_sigma: float = 1.0, min_downscale: float = 1.0, photo_prob: float = 0.0):
         if protocol not in PROTOCOLS:
             raise ValueError(f"protocol phải thuộc {PROTOCOLS}")
+        if not 0.0 <= photo_prob <= 1.0:
+            raise ValueError("photo_prob phải nằm trong [0, 1]")
+        self.photo_prob = float(photo_prob)
         if not paths:
             raise ValueError("danh sách ảnh rỗng")
         self.paths = [Path(p) for p in paths]
@@ -173,7 +194,16 @@ class SRTrainDataset(Dataset):
         else:
             s = int(rng.choice(self.sizes[i]))
         hr = self._hr_image(i, s)
-        if self.kind == "bic":
+        jitter = False
+        if self.photo_prob > 0.0:
+            # bộ sinh riêng, để bật tùy chọn này không làm đổi các lần rút khác (ảnh, cỡ, vị trí cắt, lật)
+            prng = np.random.default_rng([self.seed, int(idx), 7919])
+            jitter = bool(prng.random() < self.photo_prob)
+            if jitter:
+                hr = photometric_jitter(hr, prng)
+        if self.kind == "bic" and jitter:
+            lr = degrade(hr, self.scale, "bic")            # ảnh HR đã đổi: không dùng bộ đệm
+        elif self.kind == "bic":
             lr = self._lr.get((i, s), lambda: degrade(hr, self.scale, "bic"))
         else:  # suy giảm ngẫu nhiên: sinh mới mỗi lần
             lr = degrade(hr, self.scale, self.kind, seed=int(rng.integers(1 << 31)), key=str(idx),

@@ -48,7 +48,7 @@ from earsr.train.trainer import TrainConfig, train  # noqa: E402
 
 HPARAMS = ("iters", "batch_size", "patch_lr", "lr", "ema", "amp", "init_ckpt", "degrade_params", "extra_dir",
            "extra_roles", "extra_role", "extra_min_downscale", "extra_prob", "landmarks", "aux_mode", "aux_sigma",
-           "w_aux", "tau", "w_gan", "w_percep", "lr_d", "select_metric", "select", "val_tiers")
+           "w_aux", "tau", "w_gan", "w_percep", "lr_d", "select_metric", "select", "val_tiers", "photo_aug")
 OBJECTIVES = ("l1", "gan", "ldl", "aux", "n3s1A", "n3s1B", "n3s2")
 
 
@@ -96,6 +96,10 @@ def parse_args(argv=None):
     ap.add_argument("--extra-name", default="extra", help="tên ngắn đưa vào mã lần chạy")
     ap.add_argument("--extra-min-downscale", type=float, default=2.0)
     ap.add_argument("--extra-prob", type=float, default=None)
+    ap.add_argument("--photo-aug", type=float, default=0.75,
+                    help="xác suất đổi độ sáng, tông và màu của ảnh HR trước khi suy giảm (0 để tắt). Bật theo mặc định: "
+                         "tinh chỉnh chỉ trên AMI mà không có nó cho mô hình hỏng trên ảnh có vùng sáng")
+    ap.add_argument("--no-stress", action="store_true", help="bỏ phép thử ảnh sáng sau khi huấn luyện")
     # N1
     ap.add_argument("--landmarks", default=None, help=".npz: paths (đường dẫn ảnh), points (N, K, 2)")
     ap.add_argument("--aux-mode", default="heatmap", choices=["heatmap", "points"])
@@ -200,6 +204,7 @@ def main(argv=None) -> dict:
     if a.objective == "aux":
         ds_kw = dict(landmarks=lm, n_landmarks=next(iter(lm.values())).shape[0], aux_mode=a.aux_mode,
                      aux_sigma=a.aux_sigma)
+    ds_kw["photo_prob"] = a.photo_aug
     extras = extra_paths(a)
     train_set = make_train_set(a.ami_raw, a.folds, a.fold, a.scale, a.protocol, a.tier, a.patch_lr,
                                degrade_kind=a.degrade, params=params if a.degrade in ("est", "generic") else None,
@@ -233,6 +238,8 @@ def main(argv=None) -> dict:
         summary = train(model, train_set, validate, cfg, objective)
         print(summary, f"| tỉ lệ tham số được học: {trainable_fraction(model):.3f}")
         out = dict(summary)
+        if not a.no_stress:
+            out.update(stress(a, run_dir, model, val_tiers, params if a.degrade in ("est", "generic") else None))
         if not a.no_test:
             out.update(test(a, rid, run_dir, model, folds, eval_tiers, val_tiers, perc))
     except BaseException as e:
@@ -241,6 +248,30 @@ def main(argv=None) -> dict:
         raise
     runlog.record(a.runs_csv, str(rid), "done", **{k: v for k, v in out.items() if k != "run_id"})
     return out
+
+
+def stress(a, run_dir: Path, model, val_tiers, params) -> dict:
+    """Phép thử ảnh sáng trên checkpoint đã chọn (earsr/eval/stress.py). Chỉ báo động, không chọn checkpoint."""
+    from earsr.device import full_precision
+    from earsr.eval.stress import brightness_stress, describe
+
+    best = torch.load(run_dir / "ckpt" / "best.pt", map_location="cpu", weights_only=False)
+    model.load_state_dict(best["model"])
+    model = model.to(a.device).eval()
+    hrs = [hr for _, hr in val_pairs(a.bench, a.folds, a.fold, a.scale, tuple(val_tiers), a.degrade)]
+
+    @torch.no_grad()
+    def predict(lr):
+        with full_precision():
+            return to_uint8(model(to_tensor(lr).to(a.device)))
+
+    res = brightness_stress(predict, hrs, a.scale, a.degrade, params)
+    with open(run_dir / "stress.json", "w") as f:
+        json.dump(res, f, indent=1)
+    print(("" if res["stable"] else "CẢNH BÁO: ") + "phép thử ảnh sáng: " + describe(res), flush=True)
+    return {"stress_stable": res["stable"], "stress_psnr_y": round(res["model"][-1], 3),
+            "stress_bicubic_psnr_y": round(res["bicubic"][-1], 3), "stress_gain": res["gains"][-1],
+            "stress_gap_drop": round(res["gap_drop"], 3), "stress_n_broken": sum(res["n_broken"])}
 
 
 def test(a, rid, run_dir: Path, model, folds, eval_tiers, val_tiers, perc) -> dict:

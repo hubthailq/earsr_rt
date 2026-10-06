@@ -196,7 +196,8 @@ def _nt26(module: str, cls: str, **kw):
 for _s in [
     ModelSpec("span26", 4, _span(28, True, img_range=255.0), "nt26_team00_SPAN.pth", None, group="light",
               pretrain="DIV2K+LSDIR (baseline chính thức NTIRE 2026)", source=_NT26,
-              note="SPAN 28 kênh, baseline chính thức của NTIRE 2026 ESR"),
+              note="SPAN 28 kênh, baseline chính thức của NTIRE 2026 ESR. File trọng số trùng từng byte với "
+                   "span_ch28 (bản thắng NTIRE 2024), nên hai tên cho cùng kết quả; trong bảng của bài chỉ đếm một"),
     ModelSpec("pds26", 4, _nt26("nt26_pds", "PDS"), "nt26_team01_PDS.pth", None, group="light",
               pretrain="theo đội 01 NTIRE 2026", source=_NT26, note="hạng 2 NTIRE 2026; SPANF cắt kênh và chưng cất"),
     ModelSpec("pkdsr26", 4, _nt26("nt26_pkdsr", "SPANFPrunedKD", num_in_ch=3, num_out_ch=3, upscale=4,

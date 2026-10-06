@@ -1,6 +1,6 @@
 # SR real-time cho ảnh tai độ phân giải thấp: đề xuất và bản phác thảo bài báo
 
-Ngày lập: 05/10/2026. **Bản 24:** bổ sung ba chỗ còn thiếu của Phần 2: script dựng bảng so sánh và vẽ hình (mục 2.5), Bảng 1 công trình liên quan điền tới mức đã xác minh (mục 2.5b), và thư mẫu xin phép dùng ảnh AMI; mục 3.14 cập nhật theo. **Bản 23:** viết lại Phần 2 (khung bản thảo): câu chuyện, ba câu hỏi nghiên cứu, chín luận điểm kèm bảng, hình và file kết quả tương ứng, câu viết sẵn cho nhánh đạt và không đạt, và quy trình điền bài sau khi có kết quả. **Bản 22:** thêm mục 1.2c: trọng tâm chuyển sang N2 theo kết quả sơ bộ của giai đoạn 1; thân mô hình chọn trong nhóm NTIRE 2026 (sáu mô hình đã vào kho) thay vì gắn với SPAN gốc; chạy phép thử N2 và phép thử kiểu đệm rẻ trước khi tiền huấn luyện; thêm số đo MS-SSIM, GMSD, PSNR của gradient, LR-PSNR và nhóm số đo qua pyiqa. **Bản 21:** thêm mục 1.8b, giao thức so sánh công bằng: hai nhánh so sánh (có kiểm soát; trọng số công bố), quy tắc "chỉ khác một yếu tố", và việc nhóm tự tiền huấn luyện lại các mốc chủ chốt trở thành bắt buộc. **Bản 20:** thêm mục 3.14 (dữ liệu đặt ở đâu, script nào, file kết quả nào cho từng việc) và một đoạn ở mục 1.6 giải thích vì sao benchmark chính là AMI; các quyết định khoa học không đổi so với bản 19. **Bản 19, sửa theo phản biện vòng 9.** Phản biện không còn ý kiến nào về ý tưởng. Bản này đưa Phần 3 (pipeline) theo kịp Phần 1: nhánh chính của mô hình là thân N5b huấn luyện với suy giảm N2; thêm giai đoạn tiền huấn luyện, công cụ cho hai phép thử lõi, ba trường trong mã lần chạy, một nhóm kiểm thử; và đổi thứ tự: tháng đầu chỉ chạy các phép thử không cần huấn luyện, T4 và T5 dời ra sau điểm kiểm tra 1. Chi tiết ở **Phụ lục 6**. Các bản trước: bản 18 (vòng 8, Phụ lục 5), bản 17 (vòng 7, Phụ lục 4), bản 16 (Phụ lục 3).
+Ngày lập: 05/10/2026. **Bản 25 (06/10/2026):** giai đoạn 1 đã chạy đủ trên GPU và phép thử đầu của N2 (bộ phân loại) đã có kết quả. Phần 2 được cập nhật theo số thật: thêm mục 2.0 (dữ kiện đã có và bảng theo dõi luận điểm); viết hẹp lại C2 (chỉ đúng trên số đo độ trung thực), C3 (chỉ đúng khi suy giảm lệch) và C5 (suy giảm đơn giản đo từ dữ liệu là đủ, hơn suy giảm tổng quát); điền các chỗ `[X]` đã có số ở mục 2.3 và 2.6. Phần 1 không đổi; số sơ bộ ở mục 1.2c được thay bằng số ở mục 2.0. **Bản 24:** bổ sung ba chỗ còn thiếu của Phần 2: script dựng bảng so sánh và vẽ hình (mục 2.5), Bảng 1 công trình liên quan điền tới mức đã xác minh (mục 2.5b), và thư mẫu xin phép dùng ảnh AMI; mục 3.14 cập nhật theo. **Bản 23:** viết lại Phần 2 (khung bản thảo): câu chuyện, ba câu hỏi nghiên cứu, chín luận điểm kèm bảng, hình và file kết quả tương ứng, câu viết sẵn cho nhánh đạt và không đạt, và quy trình điền bài sau khi có kết quả. **Bản 22:** thêm mục 1.2c: trọng tâm chuyển sang N2 theo kết quả sơ bộ của giai đoạn 1; thân mô hình chọn trong nhóm NTIRE 2026 (sáu mô hình đã vào kho) thay vì gắn với SPAN gốc; chạy phép thử N2 và phép thử kiểu đệm rẻ trước khi tiền huấn luyện; thêm số đo MS-SSIM, GMSD, PSNR của gradient, LR-PSNR và nhóm số đo qua pyiqa. **Bản 21:** thêm mục 1.8b, giao thức so sánh công bằng: hai nhánh so sánh (có kiểm soát; trọng số công bố), quy tắc "chỉ khác một yếu tố", và việc nhóm tự tiền huấn luyện lại các mốc chủ chốt trở thành bắt buộc. **Bản 20:** thêm mục 3.14 (dữ liệu đặt ở đâu, script nào, file kết quả nào cho từng việc) và một đoạn ở mục 1.6 giải thích vì sao benchmark chính là AMI; các quyết định khoa học không đổi so với bản 19. **Bản 19, sửa theo phản biện vòng 9.** Phản biện không còn ý kiến nào về ý tưởng. Bản này đưa Phần 3 (pipeline) theo kịp Phần 1: nhánh chính của mô hình là thân N5b huấn luyện với suy giảm N2; thêm giai đoạn tiền huấn luyện, công cụ cho hai phép thử lõi, ba trường trong mã lần chạy, một nhóm kiểm thử; và đổi thứ tự: tháng đầu chỉ chạy các phép thử không cần huấn luyện, T4 và T5 dời ra sau điểm kiểm tra 1. Chi tiết ở **Phụ lục 6**. Các bản trước: bản 18 (vòng 8, Phụ lục 5), bản 17 (vòng 7, Phụ lục 4), bản 16 (Phụ lục 3).
 
 Cấu trúc: Phần 1 đề xuất; Phần 2 khung bản thảo; Phần 3 thiết kế project; Phụ lục 1 và 2 trả lời phản biện vòng 5 và 6; Phụ lục 3 thay đổi của bản 16; Phụ lục 4, 5 và 6 trả lời phản biện vòng 7, 8 và 9.
 
@@ -451,16 +451,70 @@ Tổng khoảng 7 đến 10 tháng, chưa gồm tiền huấn luyện. Con số 
 
 Phần này là bản thiết kế của bài báo: kể câu chuyện gì, nêu vấn đề gì, chứng minh luận điểm nào bằng bảng và hình nào, và mỗi con số lấy từ file kết quả nào. Sau khi chạy xong, nhóm đọc kết quả, điền các chỗ `[X]`, chọn câu theo nhánh "đạt" hoặc "không đạt" đã viết sẵn, rồi viết bình luận. Phần chữ tiếng Anh là khung câu; *[ghi chú]* là hướng dẫn điền. Phần này thay cho bảng luận điểm ở mục 1.2 ở chỗ nào hai bên khác nhau.
 
+## 2.0 Kết quả đã có (bản 25, ngày 06/10/2026)
+
+Mọi số ở mục này là số đo thật: 700 ảnh AMI của 100 người, ×4, chạy trên RTX 3080, chấm ở FP32 đầy đủ (TF32 tắt). Khoảng trong ngoặc vuông là khoảng tin cậy 95%, bootstrap theo người. "16 mô hình" là các mô hình tối ưu PSNR khác nhau có trọng số công bố: 12 mô hình nhẹ (trong đó có baseline và năm mô hình đầu bảng của NTIRE 2026), 3 mô hình cỡ vừa, và RRDB. Kho có 18 tên, nhưng hai tên không được đếm trong bài: `span26` trùng từng byte với `span_ch28` (baseline của NTIRE 2026 chính là SPAN 28 kênh của 2024), và `span_ch48_t44` là bộ trọng số thứ hai của SPAN 48 kênh. Các file trong `results/t2_summary/` hiện còn tính cả hai tên đó; số thứ hạng dưới đây đã được tính lại không có chúng.
+
+**Dữ kiện từ giai đoạn 1.**
+
+| Dữ kiện | Ảnh vào 24 px | Ảnh vào 36 px (ô chính) | Ảnh vào 48 px | Nguồn |
+|---|---|---|---|---|
+| Bicubic, PSNR-Y (suy giảm bicubic) | 34,30 dB | 36,73 dB | 38,13 dB | `results/t2_summary/quality.csv` |
+| SPAN 48 kênh hơn bicubic | +2,73 [2,63; 2,84] | +2,32 [2,21; 2,42] | +1,84 [1,75; 1,94] | như trên, cột `gain` |
+| Dải phần hơn của 16 mô hình | +2,39 đến +3,22 | +2,03 đến +2,55 | +1,63 đến +1,99 | như trên |
+| JPEG 75: 16 mô hình so với bicubic, PSNR-Y | −0,29 đến −0,49 | −0,40 đến −0,53 | −0,40 đến −0,50 | như trên |
+| JPEG 75: số mô hình **kém** bicubic có ý nghĩa trên PSNR, SSIM, MS-SSIM, GMSD, LR-PSNR | 16/16 ở cả năm số đo | 16/16 | 16/16 | ghép cặp từ `results/t2/*.csv` |
+| JPEG 75: số mô hình **hơn** bicubic có ý nghĩa trên LPIPS và trên DISTS | 16/16 ở cả hai | 16/16 | 16/16 | như trên |
+| τ-b giữa thứ hạng ở bicubic và ở JPEG 75 (15 mô hình nhẹ và vừa khác nhau) | 0,08 | 0,09 | −0,06 | tính lại bằng `earsr.report.t2.rank_agreement`; file `ranking.json` (17 tên) ghi 0,13; 0,13; −0,04 |
+| Số cặp đổi chiều có ý nghĩa (trên 105 cặp) | 44 | 42 | 48 | như trên |
+| RRDB trừ SPAN 48 kênh (39 lần tham số), suy giảm bicubic | +0,49 [0,46; 0,51] | +0,23 [0,22; 0,25] | +0,14 [0,13; 0,15] | ghép cặp từ `results/t2/*.csv` |
+| RRDB trừ SPAN 48 kênh, JPEG 75 | −0,05 [−0,06; −0,04] | −0,04 [−0,05; −0,04] | −0,03 [−0,03; −0,02] | như trên |
+| RRDB trừ SPAN 26 kênh (128 lần tham số), suy giảm bicubic | +0,82 | +0,52 | +0,36 | như trên |
+| Mất khi thiếu ngữ cảnh: SPAN 48 kênh so với bicubic | 0,274 so với 0,214 dB | 0,129 so với 0,096 dB | | `results/t6_summary/context.csv` |
+
+Thêm: ở ×2 (ảnh vào 72 px) SwinIR-light hơn bicubic 2,41 dB khi suy giảm bicubic và kém 0,53 dB khi có JPEG 75. SPAN 48 kênh mất 5,1 dB khi ảnh vào bị nén (39,04 xuống 33,93 dB ở ô chính). Mức chênh nhỏ nhất phát hiện được ở ô chính là 0,013 dB (60 người). Các số ghép cặp ghi "ghép cặp từ `results/t2/*.csv`" được tính trực tiếp từ file theo ảnh; khi dựng bảng cho bài phải sinh lại bằng `compare_table.py`.
+
+**Dữ kiện từ phép thử đầu của N2** (`results/n2_realism.json`; bộ phân loại học 3.000 bước, 3 seed; chấm trên ảnh của 4 người giữ riêng: 218 ảnh nhỏ thật, 512 ảnh mô phỏng). Càng gần 50% thì ảnh mô phỏng càng khó phân biệt với ảnh nhỏ thật của EarVN1.0.
+
+| Kiểu mô phỏng | Độ chính xác cân bằng |
+|---|---|
+| Bicubic | 80,1% [77,3; 86,6] |
+| Tổng quát (kiểu Real-ESRGAN) | 78,0% [76,8; 80,0] |
+| Ước lượng từ ảnh tai (N2) | 58,5% [56,8; 59,9] |
+| Bicubic rồi JPEG 75 | 56,7% [55,7; 60,5] |
+
+Suy giảm ước lượng gần 50% hơn suy giảm tổng quát 19,5 điểm [17,1; 22,8] và hơn bicubic 21,6 điểm [19,3; 29,9]; so với "bicubic rồi JPEG 75" thì không thấy khác biệt (−1,8 điểm [−2,7; +3,7]). Tham số đã chốt (`configs/degrade_estimated.json`, từ 621 ảnh nhỏ thật của 16 người): độ mờ σ từ 0,2 đến 0,6 (KS 0,106; "không mờ" cho KS 0,178); nhiễu σ từ 0,85 đến 6,3; JPEG mức 75 ở 52% ảnh và mức 93 ở 44% ảnh.
+
+**Bảng theo dõi luận điểm** (yêu cầu ở mục 2.7, bước 1).
+
+| # | Trạng thái | Căn cứ | Hệ quả cho bài |
+|---|---|---|---|
+| C1 | **Đạt** | Mọi mô hình hơn bicubic 1,6 đến 3,2 dB; phần hơn giảm đều khi ảnh vào lớn lên | Giữ nguyên. Hình 2 (đường theo cỡ ảnh vào) còn chờ `run_size_sweep.py` |
+| C2 | **Đạt trên số đo độ trung thực; không đạt trên số đo cảm nhận** | 16/16 mô hình kém bicubic trên năm số đo độ trung thực, 16/16 hơn bicubic trên LPIPS và DISTS, ở cả ba cỡ; thứ hạng đảo ở cả ba cỡ | Viết hẹp lại (mục 2.2). Không dùng chữ "fails" trần; chọn tiêu đề 2 (mục 2.3) |
+| C3 | **Đạt khi suy giảm lệch; chỉ đạt ở ô chính khi suy giảm khớp** | Dưới JPEG 75, mô hình lớn gấp 39 lần không hơn (−0,04 dB). Dưới bicubic nó hơn 0,23 dB ở ô chính (dưới ngưỡng bác bỏ 0,5 dB) nhưng 0,49 dB ở ảnh vào 24 px, và 0,82 dB so với mô hình 0,13 triệu tham số | Viết lại thành hai vế (mục 2.2). Quan sát "ảnh càng nhỏ, dung lượng càng có giá trị" đưa vào mục 3.5 của bài |
+| C4 | Chưa có | Cần các lần tinh chỉnh | |
+| C5 | **Nửa đầu đạt theo tiêu chí ghi trước; nửa sau chưa có** | Tiêu chí N2 (a): suy giảm ước lượng gần 50% hơn suy giảm tổng quát, khoảng tin cậy không chứa 0. Nhưng nó không hơn "bicubic rồi JPEG 75". Khảo sát người xem (N2 b) chưa làm | Đổi cách phát biểu đóng góp (mục 2.2). Thêm "bicubic rồi JPEG 75" làm mốc ở mọi bảng của N2 |
+| C6 | **Cơ sở (a) đạt về hình thức; triển vọng thấp** | Mọi mô hình mất 0,10 đến 0,41 dB khi thiếu ngữ cảnh, nhưng trên ảnh tai bicubic cũng mất 0,10 đến 0,21 dB; phần riêng của SPAN 48 kênh chỉ 0,03 đến 0,06 dB, dưới ngưỡng 0,10 dB của tiêu chí (b). Trên DIV2K phần riêng của mạng rõ hơn (0,10 đến 0,17 so với 0,03 dB) | Chỉ chạy phép thử `pad` rẻ; không tiền huấn luyện trừ khi `pad` cho thấy phần hơn. Nhiều khả năng thành mục phân tích (nhánh "không đạt" ở mục 2.6) |
+| C7 | Chưa có | Cần mô hình đã huấn luyện và khảo sát người xem | Lưu ý từ C2: mô hình có sẵn đã hơn bicubic về LPIPS, DISTS dù kém về độ trung thực; bảng 8 phải báo cả hai nhóm số đo |
+| C8 | Chưa có | Chưa có Jetson. Trên RTX 3080 mọi mô hình nhẹ chạy dưới 2 ms; đệm lặp viền và phản chiếu chậm hơn đệm số 0 khoảng 13 đến 15% (chỉ để tham khảo) | |
+| C9 | Chưa có | | |
+
+**Việc phải làm trước khi dựng bảng cho bài:** loại `span26` (trùng `span_ch28`) khỏi mọi bảng và mọi phép tính thứ hạng, quyết định `span_ch48_t44` vào bảng như một dòng phụ hay bỏ, rồi chạy lại `summarize_t2.py` để `ranking.json` và `quality.csv` khớp với số ở mục này.
+
+**Kịch bản hiện tại** (theo bảng ở mục 2.2): nhiều khả năng là "Chỉ suy giảm" nếu nửa sau của C5 đạt, và "Phân tích" nếu không. Kịch bản "Đủ" cần C6, mà triển vọng của C6 thấp.
+
 ## 2.1 Câu chuyện
 
-**Một câu.** SR hiệu quả hiện nay không dùng được cho ảnh tai nhỏ thật, và lý do là suy giảm và cỡ ảnh vào chứ không phải kiến trúc; sửa đúng hai chỗ đó thì một mô hình real-time cho ảnh tai rõ hơn mô hình đa dụng đã tinh chỉnh.
+**Một câu (bản 25, theo số thật).** Trên ảnh tai nhỏ đã nén, SR hiệu quả có sẵn kém nội suy bicubic về độ trung thực và thứ hạng của chúng đảo; nguyên nhân là lệch suy giảm chứ không phải kiến trúc; và thứ sửa được chỗ lệch đó là một suy giảm đơn giản đo từ chính ảnh tai, không phải bộ suy giảm tổng quát, vốn không thật hơn bicubic. *(Vế cuối mới có bằng chứng từ bộ phân loại; phần "mô hình học với nó cho ảnh tốt hơn" còn chờ kết quả huấn luyện và khảo sát người xem.)*
+
+*Câu của bản 23, giữ để đối chiếu:* SR hiệu quả hiện nay không dùng được cho ảnh tai nhỏ thật, và lý do là suy giảm và cỡ ảnh vào chứ không phải kiến trúc; sửa đúng hai chỗ đó thì một mô hình real-time cho ảnh tai rõ hơn mô hình đa dụng đã tinh chỉnh. Hai chỗ không còn đứng: "không dùng được" (về LPIPS và DISTS các mô hình vẫn hơn bicubic) và "cỡ ảnh vào" như một chỗ sửa (dư địa của N5b quá nhỏ).
 
 **Năm bước của câu chuyện.**
 
 1. *Bối cảnh.* Ảnh tai chụp ngoài thực tế thì nhỏ (trung vị cạnh ngắn của EarVN1.0 là 77 px) và đã qua nén. Muốn nhìn rõ hơn thì phải phóng lên, và phải nhanh.
 2. *Khoảng trống.* SR hiệu quả được thiết kế và xếp hạng trên ảnh tự nhiên lớn, suy giảm bicubic (giao thức NTIRE). Chưa ai kiểm xem thứ hạng đó có còn đúng ở ảnh vào vài chục pixel đã nén hay không.
-3. *Phát hiện.* Không còn đúng. Trên ảnh tai nhỏ có nén, các mô hình SR hiệu quả thua cả nội suy bicubic và thứ hạng giữa chúng đảo; trong khi ở suy giảm bicubic chúng gần như bằng nhau dù cỡ mô hình chênh hàng chục lần. Nút thắt là dữ liệu và suy giảm, không phải kiến trúc.
-4. *Giải pháp.* Sửa ở đúng nơi lệch: (a) suy giảm ước lượng từ ảnh tai thật; (b) chỉnh thân cho ảnh vào nhỏ hơn vùng nhìn của mạng. Áp trên hai thân mới nhất, khác họ, ở cùng độ trễ.
+3. *Phát hiện.* Không còn đúng. Trên ảnh tai nhỏ có nén JPEG mức 75, cả 16 mô hình (kể cả baseline và năm mô hình đầu bảng NTIRE 2026) kém nội suy bicubic 0,3 đến 0,5 dB và kém trên mọi số đo độ trung thực, ở cả ba cỡ ảnh vào; thứ hạng giữa chúng gần như không liên quan tới thứ hạng ở suy giảm bicubic (τ-b 0,09). Về LPIPS và DISTS thì chúng vẫn hơn bicubic: ảnh sắc hơn nhưng sai hơn. Khi đó mô hình lớn gấp 39 lần cũng không hơn. Nút thắt là suy giảm, không phải kiến trúc.
+4. *Giải pháp.* Sửa ở đúng nơi lệch: huấn luyện với suy giảm đo từ ảnh tai thật (mức nén lấy từ bảng lượng tử của file, nhiễu và độ mờ nhẹ). Bộ suy giảm tổng quát kiểu Real-ESRGAN không dùng được ở đây: ảnh nó tạo ra dễ phân biệt với ảnh nhỏ thật ngang bicubic thường (78% so với 80%), trong khi suy giảm đo từ dữ liệu gần mức ngẫu nhiên (58,5%). Áp trên hai thân mới nhất, khác họ, ở cùng độ trễ. Phần chỉnh thân cho ảnh vào nhỏ (N5b) chỉ vào bài nếu phép thử `pad` đạt.
 5. *Kết quả.* Rõ hơn mốc "mô hình đa dụng đã tinh chỉnh" theo số đo, theo cấu trúc tai, theo mắt người; vẫn real-time trên thiết bị nhúng; đúng trên hai thân và trên ảnh ngoài thực tế.
 
 **Câu hỏi nghiên cứu ghi trong bài.**
@@ -476,10 +530,10 @@ Mỗi luận điểm ứng với một bảng hoặc hình, một file kết qu�
 | # | Luận điểm | Bằng chứng trong bài | Lấy số từ | Bị bác nếu | Nếu bị bác |
 |---|---|---|---|---|---|
 | C1 | Ở ảnh tai nhỏ, SR còn dư địa so với nội suy, và dư địa giảm theo cỡ ảnh vào | Bảng 2; Hình 2 (đường chất lượng theo cỡ ảnh vào) | `results/t2_summary/quality.csv` (cột `gain`); `results/size_sweep/summary.csv` | Mọi mô hình gần bằng bicubic ở cả ba cỡ | Không có bài toán; dừng |
-| C2 | Dưới suy giảm có nén, SR hiệu quả có trọng số công bố thua bicubic và thứ hạng đảo | Bảng 3 (hai cột suy giảm cạnh nhau); số τ-b | `results/t2_summary/quality.csv`, `ranking.json` | Mô hình vẫn hơn bicubic và thứ hạng giữ nguyên | Bỏ chữ "thất bại"; bài còn "thiết kế riêng hơn tinh chỉnh", yếu hơn |
-| C3 | Kiến trúc không phải nút thắt: các mô hình, kể cả đầu bảng 2026 và mô hình lớn gấp hàng chục lần, cách nhau rất ít ở ảnh tai nhỏ | Bảng 3; Hình 3 (PSNR theo số tham số hoặc độ trễ) | `results/t2_summary/quality.csv`; `results/latency_jetson.csv` | Mô hình lớn hơn hẳn mô hình nhỏ (trên 0,5 dB) | Bỏ luận điểm; thêm mốc lớn vào so sánh chính |
+| C2 | Dưới suy giảm có nén, SR hiệu quả có trọng số công bố kém bicubic **về độ trung thực** (PSNR, SSIM, MS-SSIM, GMSD, LR-PSNR) và thứ hạng đảo; về LPIPS, DISTS chúng vẫn hơn bicubic, và bài phải nói rõ điều đó | Bảng 3 (hai cột suy giảm cạnh nhau); số τ-b | `results/t2_summary/quality.csv`, `ranking.json` | Mô hình vẫn hơn bicubic và thứ hạng giữ nguyên | Bỏ chữ "thất bại"; bài còn "thiết kế riêng hơn tinh chỉnh", yếu hơn |
+| C3 | Kiến trúc không phải nút thắt **khi suy giảm lệch**: dưới nén, mô hình lớn gấp 39 lần không hơn. Khi suy giảm khớp (bicubic), dung lượng có giá trị và giá trị đó tăng khi ảnh vào nhỏ đi (0,14, 0,23, 0,49 dB ở 48, 36, 24 px) | Bảng 3; Hình 3 (PSNR theo số tham số hoặc độ trễ) | `results/t2_summary/quality.csv`; `results/latency_jetson.csv` | Mô hình lớn hơn hẳn mô hình nhỏ (trên 0,5 dB) | Bỏ luận điểm; thêm mốc lớn vào so sánh chính |
 | C4 | Tinh chỉnh trên ảnh tai là mốc mạnh và là mốc đúng để so | Bảng 4 (nguyên bản so với tinh chỉnh) | `runs/S2_*/test_*.csv`; `results/t2/` | (cách đặt mốc; không cần bác) | |
-| C5 | Suy giảm ước lượng từ ảnh tai gần ảnh thật hơn suy giảm tổng quát, và mô hình học với nó cho ảnh tốt hơn trên ảnh nhỏ thật (N2) | Bảng 5 (bộ phân loại); Bảng 6 (ảnh ngoài thực tế); Bảng 9 (người xem, phần không đáp án) | `results/n2_realism.json`; `results/s5/*.csv`; `results/viewer/noref/analysis.csv` | Bộ phân loại không gần 50% hơn; hoặc người xem không chọn trên 50% | Bài mất giải pháp chính; còn phát hiện và benchmark; bàn lại với giáo sư |
+| C5 | Với ảnh tai nhỏ, một suy giảm đơn giản đo từ dữ liệu (N2) gần ảnh thật hơn hẳn suy giảm tổng quát, vốn không thật hơn bicubic; và mô hình học với nó cho ảnh tốt hơn trên ảnh nhỏ thật. Bài không tuyên bố phép ước lượng hơn "bicubic rồi JPEG ở một mức cố định": bộ phân loại không thấy khác biệt, và mốc đó có mặt trong mọi bảng của N2 | Bảng 5 (bộ phân loại); Bảng 6 (ảnh ngoài thực tế); Bảng 9 (người xem, phần không đáp án) | `results/n2_realism.json`; `results/s5/*.csv`; `results/viewer/noref/analysis.csv` | Bộ phân loại không gần 50% hơn; hoặc người xem không chọn trên 50% | Bài mất giải pháp chính; còn phát hiện và benchmark; bàn lại với giáo sư |
 | C6 | Chỉnh thân cho ảnh vào nhỏ thêm được phần hơn, và phần hơn đó lớn hơn ở ảnh nhỏ (N5b) | Hình 4 (sai số theo bề rộng ngữ cảnh); Bảng 7 (biến thể, nhánh có kiểm soát); phép thử tương tác | `results/t6_summary/context.csv`; `results/criteria/n5b-gain.json`, `n5b-interaction.json` | Dưới 0,1 dB hoặc khoảng tin cậy chứa 0; thiếu tương tác | N5b thành một mục phân tích (hiệu ứng viền có thật, sửa chưa được); không nằm trong danh sách đóng góp |
 | C7 | Ảnh rõ hơn thật, không do bịa cấu trúc | Bảng 8 (gờ giả, gờ mất, LR-PSNR, GMSD, PSNR của gradient; độ lệch điểm mốc nếu có); Bảng 9 (người xem, phần có đáp án) | cột `ridge_*`, `lr_psnr_y`, `gmsd`, `grad_psnr` trong các file theo ảnh; `results/viewer/ref/analysis.csv` | Gờ giả tăng, LR-PSNR tụt, hoặc người xem không chọn trên 50% | Không dùng chữ "clearer"; chỉ tuyên bố theo số đo |
 | C8 | Real-time trên thiết bị nhúng, và hơn mốc dọc theo đường chất lượng theo độ trễ | Bảng 10; Hình 5 | `results/latency_jetson.csv`; `results/criteria/` | Không đạt 33 ms, hoặc nằm dưới đường của các mốc | Hạ xuống "near real-time" nếu đạt 66 ms; nếu không, bỏ tuyên bố |
@@ -497,7 +551,7 @@ C1, C2, C3 và nửa đầu của C6 có ngay sau giai đoạn 1, không cần h
 
 ## 2.3 Title, Abstract
 
-**Title** (chốt sau điểm kiểm tra 2):
+**Title** (chốt sau điểm kiểm tra 2). *Bản 25:* số liệu hợp với tiêu đề 2 nhất; tiêu đề 1 chỉ dùng được nếu thêm phạm vi cho chữ "Fails" (về độ trung thực), vì trên LPIPS và DISTS các mô hình không thua bicubic:
 
 1. *Why Efficient Super-Resolution Fails on Small Ear Images, and a Real-Time Fix* (kịch bản đủ hoặc chỉ suy giảm)
 2. *Real-Time Super-Resolution for Low-Resolution Ear Images: Degradation Matters More Than Architecture*
@@ -506,9 +560,9 @@ C1, C2, C3 và nửa đầu của C6 có ngay sau giai đoạn 1, không cần h
 **Abstract** (dưới 220 từ; mỗi câu một việc):
 
 1. *Bối cảnh:* Ear images captured in unconstrained settings are small and compressed, whereas efficient super-resolution (SR) networks are designed and ranked on large natural images under bicubic downsampling.
-2. *Phát hiện:* On a benchmark of ear images with clean ground truth at three scales, we find that [n] efficient SR networks, including the top entries of NTIRE 2026, fall below bicubic interpolation by [X] dB once the input is JPEG-compressed, that their ranking changes (Kendall τ-b = [X]), and that under bicubic degradation a [X]× larger network gains only [X] dB.
-3. *Chẩn đoán:* The bottleneck is therefore the degradation and the input size, not the architecture.
-4. *Giải pháp:* We address both: a degradation model whose parameters are estimated from [n] real small ear images, and {C6: a backbone configuration for inputs smaller than the receptive field}.
+2. *Phát hiện:* On a benchmark of ear images with clean ground truth at three scales, we find that all 16 PSNR-oriented SR networks with public weights, including the NTIRE 2026 baseline and five of its top entries, fall below bicubic interpolation by 0.3 to 0.5 dB once the input is JPEG-compressed (quality 75), on every fidelity measure and at every input size, while remaining ahead on LPIPS and DISTS; that their ranking is nearly unrelated to the ranking under bicubic degradation (Kendall τ-b = 0.09); and that a 39× larger network is then no better (−0.04 dB). *[số ở mục 2.0; viết lại nếu bảng cuối khác]*
+3. *Chẩn đoán:* The bottleneck is therefore the degradation, not the architecture; a generic real-world degradation pipeline does not close the gap, since a classifier separates its outputs from real small ear images as easily as plain bicubic downsampling (78% vs 80%).
+4. *Giải pháp:* We instead measure the degradation from 621 real small ear images (compression level from the files' quantisation tables, mild noise and blur), which brings the classifier close to chance (58.5%) {C6, chỉ khi đạt: , and configure the backbone for inputs smaller than the receptive field}.
 5. *Kết quả chính:* Applied to two recent backbones of different families and compared at matched measured latency ([X] ms on a Jetson Nano), the resulting model improves [metric] from [X] to [X] over the same backbones fine-tuned on ear images, on [n] subjects with subject-wise cross-validation.
 6. *Rõ hơn thật:* False ridges do not increase ([X] vs [X]), consistency with the input is preserved, and [n] viewers prefer its outputs in [X]% of pairs.
 7. *Ngoài thực tế và tài nguyên:* The gains hold on two in-the-wild ear datasets; the benchmark, splits and code are released.
@@ -575,10 +629,10 @@ Ba câu: phát hiện; giải pháp và mức hơn; việc tiếp theo.
 | # | Nội dung | Hàng × cột | Nguồn | Trạng thái |
 |---|---|---|---|---|
 | Bảng 1 | So với công trình liên quan | công trình × tính chất | mục 2.5b | điền một phần; còn ô phải đọc bài |
-| Bảng 2 | Dư địa của SR theo cỡ ảnh | mô hình × ba cỡ (PSNR, phần hơn so với bicubic kèm khoảng tin cậy) | `results/t2_summary/quality.csv` | có số sơ bộ trên CPU; chạy lại |
-| Bảng 3 | Mô hình có sẵn, bicubic so với có nén | mô hình (kể cả sáu mô hình 2026) × hai suy giảm × (PSNR, SSIM, LPIPS, GMSD) | như trên; sinh bằng `make_tables.py` | có số sơ bộ cho 16 mô hình cũ; chưa có cho nhóm 2026 |
+| Bảng 2 | Dư địa của SR theo cỡ ảnh | mô hình × ba cỡ (PSNR, phần hơn so với bicubic kèm khoảng tin cậy) | `results/t2_summary/quality.csv` | **có số thật** (06/10/2026); bảng LaTeX: `make_tables.py` |
+| Bảng 3 | Mô hình có sẵn, bicubic so với có nén | mô hình (kể cả sáu mô hình 2026) × hai suy giảm × (PSNR, SSIM, LPIPS, GMSD) | như trên; sinh bằng `make_tables.py` | **có số thật** cho 24 tên trong kho, gồm nhóm 2026 (bỏ `span26` và `span_ch48_t44` khi dựng bảng cho bài). Bảng phải có cả cột độ trung thực lẫn LPIPS, DISTS, vì hai nhóm số đo cho kết luận ngược nhau |
 | Bảng 4 | So sánh chính ở ô chính | mô hình × (PSNR, SSIM, MS-SSIM, LPIPS, DISTS, GMSD, độ trễ, tham số), hai nhánh so sánh | `runs/S2_*` | chưa có |
-| Bảng 5 | Bộ phân loại "mô phỏng hay thật" | kiểu suy giảm × (độ chính xác, khoảng tin cậy) | `results/n2_realism.json` | chưa có |
+| Bảng 5 | Bộ phân loại "mô phỏng hay thật" | kiểu suy giảm × (độ chính xác, khoảng tin cậy) | `results/n2_realism.json` | **có số thật** (bốn kiểu: bicubic, bicubic rồi JPEG 75, tổng quát, ước lượng) |
 | Bảng 6 | Ảnh ngoài thực tế | mô hình × (EarVN1.0, AWEx ở hai biên an toàn) | `results/s5/` | chưa có |
 | Bảng 7 | Biến thể thân, hai thân, nhánh có kiểm soát | biến thể × thân × (PSNR, phần hơn, khoảng tin cậy, độ trễ) | `runs/T6iv_*`, `runs/T6pad_*`, `results/criteria/` | chưa có |
 | Bảng 8 | Cấu trúc và độ trung thực | mô hình × (gờ giả, gờ mất, LR-PSNR, PSNR của gradient, độ lệch điểm mốc) | cột tương ứng trong file theo ảnh | chưa có |
@@ -587,8 +641,8 @@ Ba câu: phát hiện; giải pháp và mức hơn; việc tiếp theo.
 | Bảng 11 | Ablation và kết quả âm tính | cấu hình × số đo chính | `results/runs.csv`, `runs/` | chưa có |
 | Hình 1 | Ví dụ mở bài: ảnh vào, bicubic, mô hình đa dụng, mô hình đề xuất, đáp án | | ảnh từ `evaluate.py --save-sr`; cần xin phép dùng ảnh AMI | chưa có |
 | Hình 2 | Chất lượng theo cỡ ảnh vào, 16 đến 64 px | | `results/size_sweep/summary.csv` | chưa có |
-| Hình 3 | PSNR theo độ trễ hoặc số tham số, hai suy giảm | | `quality.csv` + bảng độ trễ | chưa có |
-| Hình 4 | Sai số theo bề rộng ngữ cảnh | | `results/t6_summary/context.csv` | có số sơ bộ |
+| Hình 3 | PSNR theo độ trễ hoặc số tham số, hai suy giảm | | `quality.csv` + bảng độ trễ | có số chất lượng thật; vẽ theo số tham số được ngay, theo độ trễ thì chờ Jetson |
+| Hình 4 | Sai số theo bề rộng ngữ cảnh | | `results/t6_summary/context.csv` | **có số thật**; hình phải vẽ cả đường của bicubic, vì trên ảnh tai bicubic cũng mất gần bằng mạng |
 | Hình 5 | Đường chất lượng theo độ trễ trên thiết bị | | bảng 4 + bảng 10 | chưa có |
 | Hình 6 | So sánh định tính, kèm ca thất bại | | ảnh SR đã lưu | chưa có |
 
@@ -625,9 +679,9 @@ Mỗi luận điểm có hai phiên bản câu. Khi có số, chọn phiên bả
 
 | Luận điểm | Nếu đạt | Nếu không đạt |
 |---|---|---|
-| C2 | "With JPEG-compressed inputs, all [n] networks fall below bicubic interpolation (by [X] to [X] dB), and their ranking is unrelated to the ranking under bicubic degradation (τ-b = [X], 95% CI [X, X])." | "Compression lowers all networks by [X] dB but they remain above bicubic, and their ranking is preserved (τ-b = [X])." Bỏ chữ "fails" khỏi tiêu đề |
-| C3 | "A network with [X]× more parameters gains only [X] dB; the choice of architecture explains little of the error at this input size." | "Larger networks remain clearly better ([X] dB)." Thêm mốc lớn vào bảng 4 |
-| C5 | "A classifier separates real small ear images from images produced by the estimated degradation with [X]% accuracy, against [X]% for the generic pipeline; viewers prefer the model trained with it in [X]% of pairs (95% CI [X, X])." | "The estimated degradation is not closer to real images than a generic pipeline ([X]% vs [X]%); a generic pipeline is sufficient for this domain." Viết thành kết quả âm tính ở 5.7 |
+| C2 | **Chọn nhánh này, có thêm phạm vi (bản 25).** "With JPEG-compressed inputs (quality 75), all 16 networks fall below bicubic interpolation in PSNR (by 0.40 to 0.53 dB at 36-pixel inputs; 0.29 to 0.49 dB at 24 pixels; 0.40 to 0.50 dB at 48 pixels), and likewise in SSIM, MS-SSIM, GMSD and input consistency, while all 16 remain better than bicubic in LPIPS and DISTS: the outputs are sharper but less faithful. Their ranking is nearly unrelated to the ranking under bicubic degradation (τ-b = 0.08, 0.09 and −0.06 at 24, 36 and 48 pixels; 42 to 48 of 105 pairs reverse significantly)." | "Compression lowers all networks by [X] dB but they remain above bicubic, and their ranking is preserved (τ-b = [X])." Bỏ chữ "fails" khỏi tiêu đề |
+| C3 | **Chọn nhánh này, viết thành hai vế (bản 25).** "Under compression, a network with 39× more parameters is no better (−0.04 dB, 95% CI [−0.05, −0.04]); the architecture explains none of the gap to bicubic. Under matched (bicubic) degradation it gains 0.23 dB [0.22, 0.25] at 36-pixel inputs, and capacity matters more as the input shrinks (0.14, 0.23 and 0.49 dB at 48, 36 and 24 pixels)." | "Larger networks remain clearly better ([X] dB)." Thêm mốc lớn vào bảng 4 |
+| C5 | **Nửa đầu chọn nhánh này (bản 25); nửa sau chờ khảo sát.** "A classifier separates real small ear images from images produced by the measured degradation with 58.5% balanced accuracy (95% CI [56.8, 59.9]), against 78.0% [76.8, 80.0] for the generic pipeline and 80.1% [77.3, 86.6] for plain bicubic downsampling; a fixed bicubic-plus-JPEG-75 degradation is statistically indistinguishable from the measured one (56.7%). Viewers prefer the model trained with it in [X]% of pairs (95% CI [X, X])." Phải nêu giới hạn: bộ phân loại chấm trên ảnh của 4 người | "The estimated degradation is not closer to real images than a generic pipeline ([X]% vs [X]%); a generic pipeline is sufficient for this domain." Viết thành kết quả âm tính ở 5.7 |
 | C6 | "The configured backbone improves PSNR by [X] dB (95% CI [X, X]) at matched latency, and the improvement is larger at 36-pixel inputs than at [X]-pixel inputs (difference [X] dB, CI excludes zero)." | "Inputs smaller than the receptive field lose [X] dB at the border, but neither padding mode nor depth-width trade-off recovers it (at most [X] dB)." Chuyển sang mục 3.6 và 6 |
 | C7 | "The gain is not obtained by inventing structure: false ridges [X] vs [X], input consistency [X] vs [X] dB, and with the ground truth shown, viewers choose our output in [X]% of pairs." | "The gain is in distortion metrics only; structure measures and viewers do not separate the models." Không dùng "clearer" |
 | C8 | "It runs in [X] ms (median; p95 [X] ms) on a Jetson Nano at FP16 for a 48×68 input." | "It runs in [X] ms, which meets the near-real-time threshold of 66 ms but not 33 ms." |

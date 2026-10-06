@@ -158,3 +158,75 @@ def test_onnx_export_matches_pytorch(tmp_path):
         info = export_onnx(m, tmp_path / f"{mode}.onnx", (17, 13))
         assert info["checked"] and info["max_abs_diff"] < 1e-4
         assert ("Pad" in info["ops"]) == (mode != "zeros")
+
+
+# ----------------------------------------------------------------- tăng cường độ sáng và phép thử ảnh sáng
+
+def _dark_images(tmp_path, n=3):
+    """Ảnh tối kiểu AMI: không điểm ảnh nào vượt 160."""
+    rng = np.random.default_rng(0)
+    paths = []
+    for i in range(n):
+        img = cv2.GaussianBlur(rng.integers(0, 256, (220, 160, 3), dtype=np.uint8), (0, 0), 2.0).astype(np.float64)
+        img = np.round((img - img.min()) / (img.max() - img.min()) * 150).astype(np.uint8)   # dải 0..150
+        p = tmp_path / f"im{i}.png"
+        cv2.imwrite(str(p), img)
+        paths.append(p)
+    return paths
+
+
+def test_photometric_augmentation_is_off_by_default_and_deterministic(tmp_path):
+    from earsr.data.datasets import SRTrainDataset, photometric_jitter
+
+    paths = _dark_images(tmp_path)
+    base = SRTrainDataset(paths, protocol="rand", patch_lr=24, seed=3)
+    off = SRTrainDataset(paths, protocol="rand", patch_lr=24, seed=3, photo_prob=0.0)
+    on = SRTrainDataset(paths, protocol="rand", patch_lr=24, seed=3, photo_prob=1.0)
+    on2 = SRTrainDataset(paths, protocol="rand", patch_lr=24, seed=3, photo_prob=1.0)
+    brightest = 0.0
+    for idx in range(40):
+        (l0, h0), (l1, h1), (l2, h2), (l3, h3) = base[idx], off[idx], on[idx], on2[idx]
+        assert torch.equal(l0, l1) and torch.equal(h0, h1)                # tắt: mẫu giống hệt
+        assert torch.equal(l2, l3) and torch.equal(h2, h3)                # bật: vẫn tất định theo (seed, idx)
+        assert l2.shape == l0.shape and h2.shape == h0.shape
+        assert not torch.equal(h2, h0)
+        # ảnh LR được sinh từ ảnh HR đã đổi: độ sáng trung bình của hai ảnh đi cùng nhau
+        assert abs(float(l2.mean()) - float(h2.mean())) < 0.03
+        brightest = max(brightest, float(h2.max()))
+        assert float(h0.max()) <= 160 / 255 + 1e-6
+    assert brightest == 1.0                                               # có mẫu chạm 255 (vùng cháy sáng)
+    half = SRTrainDataset(paths, protocol="rand", patch_lr=24, seed=3, photo_prob=0.5)
+    changed = sum(not torch.equal(half[i][1], base[i][1]) for i in range(200))
+    assert 70 < changed < 130
+    img = cv2.imread(str(paths[0]))
+    a = photometric_jitter(img, np.random.default_rng(1))
+    assert a.dtype == np.uint8 and a.shape == img.shape and np.array_equal(a, photometric_jitter(img, np.random.default_rng(1)))
+    with pytest.raises(ValueError):
+        SRTrainDataset(paths, photo_prob=1.5)
+
+
+def test_brightness_stress_flags_a_model_that_breaks_on_bright_images(tmp_path):
+    from earsr.data.resize import imresize
+    from earsr.eval.stress import brighten, brightness_stress, describe
+
+    hrs = [cv2.imread(str(p))[:216, :160, ::-1].copy() for p in _dark_images(tmp_path, 4)]
+    assert brighten(hrs[0], 1.8).max() == 255 and np.array_equal(brighten(hrs[0], 1.0), hrs[0])
+    good = lambda lr: imresize(lr, 4.0)                                    # chính là bicubic: không bao giờ kém bicubic
+
+    def fragile(lr):                                                       # đúng với ảnh tối, hỏng khi có điểm sáng
+        sr = imresize(lr, 4.0)
+        return sr if lr.max() < 200 else np.random.default_rng(0).integers(0, 256, sr.shape, dtype=np.uint8)
+
+    ok = brightness_stress(good, hrs, 4)
+    bad = brightness_stress(fragile, hrs, 4)
+    assert ok["stable"] and ok["n_broken"] == [0, 0, 0] and ok["model"] == ok["bicubic"] and ok["gap_drop"] == 0.0
+    assert not bad["stable"] and bad["n_broken"][0] == 0 and bad["n_broken"][-1] == 4
+    assert bad["model"][0] == ok["model"][0]                              # ở hệ số 1,0 hai mô hình giống nhau
+    assert "KHÔNG ỔN ĐỊNH" in describe(bad) and describe(ok).startswith("ỔN ĐỊNH")
+    jp = brightness_stress(good, hrs, 4, kind="bicjpeg75")                 # chạy được với kiểu suy giảm khác
+    assert jp["stable"] and jp["model"][0] < ok["model"][0]
+    # kém bicubic đều ở mọi hệ số (như mô hình chưa tinh chỉnh trên ảnh nén) KHÔNG phải mất ổn định
+    worse = lambda lr: cv2.GaussianBlur(imresize(lr, 4.0), (0, 0), 1.0)
+    w = brightness_stress(worse, hrs, 4)
+    assert all(m < b for m, b in zip(w["model"], w["bicubic"])) and w["stable"] and w["gap_drop"] < 1.5
+    assert bad["gap_drop"] > 10

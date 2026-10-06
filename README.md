@@ -107,7 +107,7 @@ configs/criteria.yaml   tiêu chí đạt ghi trước
 splits/ami_5fold.json   chia 5 fold theo người (có mã băm)
 docs/        DATA_AND_OUTPUTS.md, RUNBOOK.md, AMI_PERMISSION.md, STATUS.md, ANDROID.md, THIRD_PARTY.md
 results/     kết quả sơ bộ của giai đoạn 1 (CPU)
-tests/       141 kiểm thử
+tests/       143 kiểm thử
 ```
 
 ## Kiểm thử
@@ -147,6 +147,14 @@ Không có trọng số hoặc Set5 thì các kiểm thử cần chúng tự b�
   Trên GPU RTX 30, PyTorch mặc định dùng TF32 cho tích chập; đo trên RTX 3080 với ảnh AMI thật, đầu ra GPU lệch
   CPU 3,4e-4 khi bật và 1,6e-6 khi tắt. Các bước huấn luyện vẫn dùng mặc định của PyTorch. Bài nên ghi điều này
   ở phần giao thức.
+- **Tinh chỉnh chỉ trên AMI làm mô hình hỏng trên ảnh có vùng sáng** (AMI không có ảnh nào như vậy): SPAN tinh chỉnh
+  với bicubic đạt 22,08 dB trên EarVN1.0, mốc công bố 36,39 dB. Từ 06/10/2026 mọi lần tinh chỉnh có tăng cường độ
+  sáng (`train.py --photo-aug`, mặc định 0,75), khối `n2` thêm ảnh EarVN1.0 nhóm train, và sau mỗi lần huấn luyện có
+  phép thử ảnh sáng (`earsr/eval/stress.py`; dòng `phép thử ảnh sáng: ...` trong log, cột `stress_*` trong `runs.csv`).
+  Tám lần chạy đầu của khối `n2` bị loại; kết quả cũ ở `results/n2_amionly/`. Đây cũng là một dữ kiện cho bài.
+- **`span26` trùng `span_ch28`:** baseline chính thức của NTIRE 2026 là đúng bộ trọng số SPAN 28 kênh thắng NTIRE 2024
+  (hai file trùng từng byte), nên kho có 24 tên nhưng 23 bộ trọng số khác nhau. Trong bài, nhóm tối ưu PSNR đếm 16 mô
+  hình: bỏ `span26`, và `span_ch48_t44` chỉ là bộ trọng số thứ hai của SPAN 48 kênh. `results/t2_summary/` còn tính cả hai tên.
 - **MSRResNet** (KAIR): không nguồn nào nêu dữ liệu tiền huấn luyện, nên cột đó để "không rõ". Mốc "CNN cỡ vừa"
   chính là EDSR-baseline.
 - **ECBSR** chưa có trong kho.
