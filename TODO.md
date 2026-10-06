@@ -7,40 +7,74 @@ trạng thái kiểm của mã nằm ở `docs/STATUS.md`, lệnh đầy đủ �
 Ký hiệu người làm: **[Bạn]** việc chỉ bạn làm được; **[labai217]** lệnh chạy trên máy GPU; **[Claude]** việc sửa mã hoặc
 phân tích trên máy Mac.
 
-## 1. Đang chạy hoặc làm ngay
+## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 06/10/2026, tối)
+
+**Trạng thái (06/10, tối):** hàng đợi `n2b` trên labai217 đã xong cả 10 lần, **cả 10 qua phép thử ảnh sáng, không ảnh nào
+hỏng** (SPAN/bic: 39,31 dB ở ảnh gốc, 34,67 dB ở ảnh sáng ×1,8; lần trước là 8,45 dB). Trên validation AMI, mô hình tinh chỉnh
+hơn bicubic 1,41 dB (JPEG 75) và 1,54 dB (suy giảm ước lượng) với SPAN; 1,15 và 1,25 dB với DISP. Bản chỉ AMI có tăng cường
+(`+pa`) cho 39,35 dB (SPAN) và 39,22 dB (DISP), ngang bản có ảnh EarVN (39,31 và 39,16). **Bước 1 đã xong; đang ở bước 2.**
+
+**Khi người dùng báo "n2 xong" hoặc hỏi "làm gì tiếp", trả lời theo đúng thứ tự dưới đây.**
+
+1. **[labai217] Kiểm 10 lần chạy.** `tail -3 n2b.log` phải có `{'done': 10, 'failed': 0, ...}`. Rồi
+   `grep "phép thử ảnh sáng" jobs/n2b.txt.logs/*.log`: cả 10 dòng phải là ỔN ĐỊNH. Dòng nào CẢNH BÁO thì ghi lại, lần chạy đó
+   không dùng được.
+2. **[labai217] Chấm 10 mô hình mới** (chỉ các lần chạy có dấu `+` trong mã):
+   ```bash
+   python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --kinds bic \
+       --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
+   python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpeg75 generic est \
+       --degrade-params configs/degrade_estimated.json --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
+   ls results/n2 | wc -l        # phải là 66 (13 mô hình × 5 cấu hình, cộng 1 file thông tin)
+   ```
+   Lần trước lệnh thứ hai không có kết quả trong commit; lần này phải kiểm con số 66.
+3. **[labai217] Chấm trên EarVN1.0 và AWEx (kiểm độ tổng quát của phát hiện giai đoạn 1)**, nếu chưa tự chạy:
+   `nohup bash scripts/run_wild_t2.sh > wild_t2.log 2>&1 &` (1 đến 2 giờ; xong thì log in "Xong. Đọc: ...").
+4. **[labai217] Đẩy kết quả về:** `git add results && git commit -m "N2 rerun scored; wild-set T2" && git push`.
+   Trên máy Mac: `git pull`, rồi kiểm `git log` có commit đó chưa trước khi phân tích.
+5. **[Claude] Đọc kết quả N2.** Chỉ tin bảng khi: (a) cả 10 lần chạy ỔN ĐỊNH; (b) SPAN và DISP tinh chỉnh với bicubic không
+   kém mốc công bố trên EarVN (lần trước: −14,3 dB và khoảng −2,6 dB). Đạt thì trả lời ba câu:
+   - Mô hình học với suy giảm ước lượng (`est`) có hơn mô hình học với `generic` không? (điều kiện của N2)
+   - Nó có hơn mô hình học với `bicjpeg75` không? (nếu không thì "phép ước lượng" không phải đóng góp)
+   - Ảnh EarVN thêm vào có giúp không? (so `+xearvn` với `+pa` ở nhánh bicubic)
+   Lưu ý khi đọc: bảng trên AMI thiên vị theo thiết kế (mô hình nào cũng thắng ở đúng kiểu suy giảm của nó); trên EarVN
+   ảnh vào là bicubic nên nhánh `bic` có lợi thế. Không đạt (a) hoặc (b) thì thử: giảm tốc độ học (khối `lr`), dừng sớm.
+6. **[Claude] Đọc kết quả EarVN1.0 và AWEx.** Trả lời: phát hiện "mô hình có sẵn kém bicubic khi ảnh bị nén" có đúng ngoài
+   AMI không, và đúng từ mức nén nào. Lần thử 12 ảnh gợi ý: đúng ở JPEG 75, đảo chiều ở JPEG 93, xấp xỉ hòa với suy giảm
+   ước lượng. Nếu xác nhận thì sửa C2 trong kế hoạch (mục 2.0, 2.2, 2.6) thành "lợi thế so với bicubic biến mất, và thành
+   âm khi nén từ khoảng mức 85 trở xuống".
+7. **[Claude] Cập nhật** mục 2.0 của kế hoạch bài báo, `docs/STATUS.md` và file này theo kết quả.
+8. **[Bạn] Hỏi thầy câu quyết định**, mang theo kết quả ở bước 5, 6 và ba hướng ở mục 2b: bài cần **một kiến trúc mới**,
+   hay **một mô hình real-time cho ảnh tai tốt hơn các mô hình có sẵn** là đủ?
+9. **Rẽ nhánh theo câu trả lời của thầy:**
+   - *Không cần kiến trúc mới:* khảo sát người xem trên ảnh nhỏ thật (nửa sau của tiêu chí N2) → dò tốc độ học (khối `lr`)
+     → ba giao thức huấn luyện (T6 ii) → điểm kiểm tra 2 → chạy chính trên 5 fold (S2) → S4, S5 → đo trên Jetson → dựng
+     bảng, hình và viết. Khối `pad` bỏ hoặc để cuối. Chi tiết ở mục 3.
+   - *Cần kiến trúc mới:* làm phép thử rẻ của hướng B hoặc C (mục 2b) **trước** các khối dài; nếu có tín hiệu thì thiết kế
+     mô hình quanh đó, và S2, S5 chạy với mô hình mới.
+10. **Các quyết định nhỏ còn treo** (mục 2): loại `span26` trùng `span_ch28` rồi chạy lại `summarize_t2.py`; có thêm SPAN 52
+    kênh không; bộ dữ liệu thứ ba (EarVN2.0, Imperial College, UERC).
+
+Việc song song không phụ thuộc gì: rà tài liệu có hệ thống (mục 4), tìm Jetson Nano (mục 3).
+
+## 1. Nhật ký các việc gần đây
 
 > **Phát hiện ngày 06/10:** mô hình tinh chỉnh **chỉ trên AMI** hỏng trên ảnh có vùng sáng (AMI không có ảnh nào như vậy).
 > SPAN tinh chỉnh với bicubic: 22,08 dB trên EarVN1.0 (mốc công bố 36,39); cho ra nhiễu trên 82 trên 158 ảnh. Đã tái hiện
 > trên máy Mac và tìm ra cơ chế (xem `docs/STATUS.md`). Tám lần chạy đầu của khối `n2` bị loại (`results/n2_amionly/`).
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
-> huấn luyện. Lần thử ngắn 800 bước cho thấy cách sửa có tác dụng; **lần chạy đủ chưa kiểm**.
+> huấn luyện.
 
-- [ ] **[Bạn] Commit và push** (mã sửa, `TODO.md`, `CLAUDE.md`, bản 25 của kế hoạch, `results/` đã dọn).
-- [ ] **[labai217] Chạy lại khối `n2`: 10 lần, khoảng 5 đến 6 giờ.**
-      ```bash
-      git pull
-      bash scripts/make_n2b_jobs.sh jobs/n2b.txt          # phải in: đã ghi jobs/n2b.txt (10 lệnh)
-      nohup python scripts/run_queue.py jobs/n2b.txt > n2b.log 2>&1 &
-      grep "phép thử ảnh sáng" jobs/n2b.txt.logs/*.log     # sau mỗi lần chạy: ỔN ĐỊNH hay KHÔNG ỔN ĐỊNH
-      ```
-- [ ] **[labai217] Chấm 10 mô hình mới** (chỉ các lần chạy có dấu `+` trong mã), rồi commit `results/n2` và `results/runs.csv`:
-      ```bash
-      python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --kinds bic \
-          --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
-      python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpeg75 generic est \
-          --degrade-params configs/degrade_estimated.json --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
-      ```
-- [ ] **[Claude] Đọc kết quả.** Chỉ tin bảng N2 khi: (a) cả 10 lần chạy báo ỔN ĐỊNH; (b) SPAN và DISP tinh chỉnh với bicubic
-      không kém mốc công bố trên EarVN. Không đạt thì thử tiếp: giảm tốc độ học (khối `lr` chưa chạy), dừng sớm theo phép thử
-      ảnh sáng. Đạt thì trả lời: mô hình học với suy giảm ước lượng có hơn mô hình học với `generic` và với `bicjpeg75` không.
-      Lưu ý: bảng trên AMI thiên vị theo thiết kế; trên EarVN ảnh vào là bicubic nên nhánh `bic` có lợi thế.
+- [ ] **[labai217]** Hàng đợi `n2b` đang chạy (10 lần; bắt đầu 06/10). Việc tiếp theo: mục 0.
+- [x] 06/10 **[Bạn]** Commit và push bản sửa (`0466f7c`); pull trên labai217; khởi động hàng đợi `n2b`.
+- [x] 06/10 **[Claude]** Script chấm trên EarVN1.0 và AWEx (`scripts/run_wild_t2.sh`), đã chạy thử 12 ảnh mỗi bộ.
 - [x] 06/10 **[Claude]** Tái hiện lỗi từ checkpoint, tìm cơ chế, thêm tăng cường độ sáng và phép thử ảnh sáng, chạy thử
       10 lệnh mới vài bước trên CPU, đánh dấu 8 lần chạy cũ là `excluded`.
 - [x] 06/10 **[labai217]** Khối `n2` lần đầu: 8 lần huấn luyện xong (24 đến 36 phút mỗi lần), kết quả bị loại vì lỗi trên.
 
 ## 2. Quyết định đang chờ bạn
 
-- [ ] **Nói với thầy về định hướng bài, mang theo cả hai hướng ở mục 2b.** Hiện bài không có khối kiến trúc mới; đóng góp là
+- [ ] **Nói với thầy về định hướng bài, mang theo các hướng ở mục 2b.** Hiện bài không có khối kiến trúc mới; đóng góp là
       phát hiện (SR có sẵn kém bicubic về độ trung thực khi ảnh bị nén, thứ hạng đảo) và suy giảm đo từ ảnh tai thật.
       Nên nói trước khi tốn thêm thời gian huấn luyện, và sau khi có kết quả khối `n2`.
 - [ ] **`span26` trùng `span_ch28`** (cùng một file trọng số): có cho Claude loại `span26` rồi chạy lại `summarize_t2.py`
@@ -52,11 +86,11 @@ phân tích trên máy Mac.
 - [ ] **Tiêu đề bài:** số liệu hợp với tiêu đề 2 ("Degradation Matters More Than Architecture"); chốt sau điểm kiểm tra 2.
 - [ ] **Tạp chí:** chốt sau điểm kiểm tra 2 (gợi ý ở `docs/HANDOFF.md` mục 4.5; phải tra lại xếp hạng Q).
 
-## 2b. Hai hướng đi để bàn với thầy
+## 2b. Các hướng đi để bàn với thầy
 
 Mục tiêu của đề bài: ảnh tai to hơn, rõ hơn, real-time, và hơn các mô hình SR khác. SR có giúp ảnh tai (ô chính, ảnh sạch:
 bicubic 36,73 dB lên 39,04 dB; LPIPS 0,244 xuống 0,163). Câu hỏi còn mở là "hơn các mô hình khác" bằng cách nào.
-Hai hướng không loại trừ nhau. Quyết định sau khi có kết quả khối `n2` và ý kiến của thầy.
+Các hướng không loại trừ nhau. Quyết định sau khi có kết quả khối `n2` và ý kiến của thầy.
 
 **Hướng A: suy giảm theo miền (hướng đang làm, N2).**
 
@@ -84,8 +118,30 @@ Hai hướng không loại trừ nhau. Quyết định sau khi có kết quả k
 - Rủi ro: "dùng mạng lớn hơn" dễ bị coi là hiển nhiên. Phải phát biểu thành nguyên tắc chọn cỡ theo ngân sách, kèm đường chất
   lượng theo độ trễ và so ở cùng độ trễ (mục 1.8b của kế hoạch).
 
+**Hướng C: khối cơ bản ổn định hơn SPAN khi tinh chỉnh trên dữ liệu nhỏ (manh mối từ lỗi ngày 06/10; chưa có thí nghiệm nào).**
+
+- Căn cứ: khi tinh chỉnh chỉ trên AMI, SPAN cho ra nhiễu trên ảnh sáng. Đo được: biên độ kích hoạt phình dần qua các khối
+  SPAB (khối 2: 45, khối 6: 2.333; mô hình công bố: dưới 4). DISP (họ khác) bị nhẹ hơn nhiều (−2,6 dB so với −14,3 dB).
+- Ý: thiết kế lại khối để biên độ tự bị chặn, sao cho mô hình bền khi tinh chỉnh trên một bộ ảnh nhỏ và đồng nhất. Đây sẽ là
+  đóng góp kiến trúc xuất phát từ đúng bài toán của bài.
+- Chưa biết: thủ phạm có đúng là phép attention không tham số của SPAN không (mới thấy sự phình to qua các khối, chưa tách
+  nguyên nhân); và tăng cường độ sáng đã chữa được triệu chứng, nên khối mới phải cho thấy lợi ích vượt hơn thế (bền mà
+  không cần tăng cường, hoặc PSNR cao hơn ở cùng độ trễ).
+- Phép thử rẻ đầu tiên (chỉ khi được chọn): tinh chỉnh chỉ trên AMI, không tăng cường, với vài biến thể chặn biên độ, rồi chạy
+  phép thử ảnh sáng. Mỗi lần khoảng 25 phút trên RTX 3080.
+
 ## 3. Thí nghiệm còn lại, theo thứ tự của kế hoạch
 
+- [ ] **[labai217] Kiểm độ tổng quát của phát hiện giai đoạn 1 ngoài AMI** (chỉ chấm, không huấn luyện; khoảng 1 đến 2 giờ):
+      `nohup bash scripts/run_wild_t2.sh > wild_t2.log 2>&1 &`, chạy sau khi hàng đợi `n2b` xong, rồi commit `results/`.
+      Script chấm mọi mô hình có trọng số công bố trên EarVN1.0 (nhóm test: 158 ảnh, cỡ 96) và AWEx (217 ảnh cỡ 96, 60 ảnh
+      cỡ 144) với ảnh vào bicubic, JPEG 75, JPEG 93 và suy giảm ước lượng; và quét mức nén 60, 85, 93 trên AMI.
+      Đã chạy thử 12 ảnh mỗi bộ trên máy Mac (06/10). Tín hiệu sơ bộ, **chưa phải kết luận**: ở JPEG 75 mô hình kém bicubic
+      trên cả ba bộ; ở JPEG 93 mô hình lại hơn bicubic; với suy giảm ước lượng thì xấp xỉ hòa. Nếu lần chạy đủ xác nhận,
+      phát hiện phải viết là "lợi thế so với bicubic biến mất, và thành âm khi nén từ khoảng mức 85 trở xuống".
+- [ ] **[Bạn] Bộ dữ liệu thứ ba ngoài EarVN1.0 và AWEx.** Ứng viên: EarVN2.0 (có sẵn trên máy Mac: 716 người, 134.024 ảnh,
+      1.696 ảnh có cạnh ngắn từ 192 px; phải bỏ những người trùng với EarVN1.0, và bộ này chưa công bố); bộ ảnh tai ngoài
+      thực tế của Imperial College; bộ UERC. Mọi bộ ngoài thực tế đều ít ảnh lớn, nên đáp án chỉ có ở cỡ 96.
 - [ ] Hướng B, phép thử đầu (**chỉ khi được chọn**): xem mục 2b.
 
 - [ ] **N2 (b): khảo sát người xem trên ảnh nhỏ thật** của nhóm `viewer` (17 người EarVN1.0). Đây là nửa sau của tiêu chí N2.
@@ -108,7 +164,7 @@ Hai hướng không loại trừ nhau. Quyết định sau khi có kết quả k
 
 ## 4. Chuẩn bị bài báo
 
-- [ ] **[Bạn] Gửi thư xin phép dùng ảnh AMI** cho hình minh họa (mẫu ở `docs/AMI_PERMISSION.md`). Có thể mất vài tuần, nên gửi sớm.
+- [x] 06/10 **[Bạn] Giấy phép dùng ảnh AMI cho hình minh họa: đã có** (bạn báo ngày 06/10). Lưu thư đồng ý cùng hồ sơ nộp bài.
 - [ ] **T1: rà tài liệu có hệ thống** về SR cho ảnh tai và sinh trắc học vùng nhỏ (IEEE Xplore, Scopus, Google Scholar);
       đọc toàn văn các dòng "chỉ tồn tại" trong Bảng 1 (mục 2.5b). Chưa xong thì không được viết "chưa ai làm".
 - [ ] Sinh lại mọi con số ghép cặp ở mục 2.0 của kế hoạch bằng `compare_table.py` (hiện vài số được tính trực tiếp từ file
