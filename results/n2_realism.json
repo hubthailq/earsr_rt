@@ -1,0 +1,95 @@
+{
+ "n_train_subjects": 8,
+ "n_test_subjects": 4,
+ "patch": 16,
+ "kinds": {
+  "bic": {
+   "balanced_acc": 0.8010610627156074,
+   "lo": 0.7726594788821111,
+   "hi": 0.8662668360924028,
+   "dist_from_chance": 0.3010610627156074,
+   "n_real_test": 218,
+   "n_sim_test": 512
+  },
+  "bicjpeg75": {
+   "balanced_acc": 0.5673133642618541,
+   "lo": 0.5571394627530757,
+   "hi": 0.6051592382912834,
+   "dist_from_chance": 0.06731336426185408,
+   "n_real_test": 218,
+   "n_sim_test": 512
+  },
+  "generic": {
+   "balanced_acc": 0.780269774963145,
+   "lo": 0.7681168351288934,
+   "hi": 0.799552105924499,
+   "dist_from_chance": 0.280269774963145,
+   "n_real_test": 218,
+   "n_sim_test": 512
+  },
+  "est": {
+   "balanced_acc": 0.5850087057803373,
+   "lo": 0.5677469181781165,
+   "hi": 0.5989331511308492,
+   "dist_from_chance": 0.08500870578033726,
+   "n_real_test": 218,
+   "n_sim_test": 512
+  }
+ },
+ "pairs": {
+  "bic - bicjpeg75": {
+   "diff_dist_from_chance": 0.23374769845375332,
+   "lo": 0.21552001612903537,
+   "hi": 0.2611075978011195
+  },
+  "bic - generic": {
+   "diff_dist_from_chance": 0.020791287752462417,
+   "lo": -0.01528952853079213,
+   "hi": 0.07681677428384626
+  },
+  "bic - est": {
+   "diff_dist_from_chance": 0.21605235693527014,
+   "lo": 0.1931648066745628,
+   "hi": 0.29851991791428634
+  },
+  "bicjpeg75 - generic": {
+   "diff_dist_from_chance": -0.2129564107012909,
+   "lo": -0.23531966550921202,
+   "hi": -0.18429082351727322
+  },
+  "bicjpeg75 - est": {
+   "diff_dist_from_chance": -0.017695341518483176,
+   "lo": -0.026469555675908252,
+   "hi": 0.037412320113166864
+  },
+  "generic - est": {
+   "diff_dist_from_chance": 0.19526106918280772,
+   "lo": 0.17114519266114137,
+   "hi": 0.22817533962532066
+  }
+ },
+ "args": {
+  "root": "data/raw/EarVN1.0",
+  "roles": "splits/earvn_roles.json",
+  "role": "clf",
+  "kinds": [
+   "bic",
+   "bicjpeg75",
+   "generic",
+   "est"
+  ],
+  "degrade_params": "configs/degrade_estimated.json",
+  "small": [
+   24,
+   48
+  ],
+  "scale": 4,
+  "sim_per_image": 4,
+  "patch": 16,
+  "steps": 3000,
+  "seeds": 3,
+  "seed": 0,
+  "out": "results/n2_realism.json",
+  "device": "cuda"
+ }
+}
