@@ -9,7 +9,7 @@
 # Dùng (từ gốc repo):  bash scripts/make_n2c_jobs.sh [jobs/n2c.txt]             # SPAN, fold 2 3 4: 6 lệnh
 #                      BACKBONES="span disp26" bash scripts/make_n2c_jobs.sh    # thêm thân thứ hai: 12 lệnh
 #                      nohup python scripts/run_queue.py jobs/n2c.txt > n2c.log 2>&1 &
-# FOLDS chỉ được chứa 2, 3, 4 (fold 1 và 5 giữ kín tới lần chạy cuối). Seed của mỗi lần chạy bằng số fold.
+# FOLDS chỉ được chứa 2, 3, 4. Fold 1 và 5 giữ kín tới lần chạy cuối và chỉ mở qua scripts/make_final_jobs.sh. Seed của mỗi lần chạy bằng số fold.
 set -euo pipefail
 OUT="${1:-jobs/n2c.txt}"
 PY="${PYTHON:-python}"; command -v "$PY" >/dev/null 2>&1 || PY=python3
@@ -29,7 +29,11 @@ done
 : > "$OUT"
 NF=0
 for f in $FOLDS; do
-  case "$f" in 2|3|4) ;; *) echo "LỖI: fold $f không được phép (chỉ 2, 3, 4)" >&2; exit 1;; esac
+  case "$f" in
+    2|3|4) ;;
+    1|5) [ "${FINAL_RUN:-0}" = "1" ] || { echo "LỖI: fold $f đang giữ kín; chỉ scripts/make_final_jobs.sh được mở" >&2; exit 1; } ;;
+    *) echo "LỖI: fold $f không tồn tại" >&2; exit 1;;
+  esac
   sed -e "s/--fold 2 /--fold $f /" -e "s#--degrade generic #--degrade jpegmix --degrade-params $P #" "$SEL" >> "$OUT"
   sed -e "s/--fold 2 /--fold $f /" -e "s/--degrade generic /--degrade jpegu /" "$SEL" >> "$OUT"
   NF=$((NF + 1))

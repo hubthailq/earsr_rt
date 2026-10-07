@@ -48,11 +48,24 @@ chốt cho luận điểm P3: mục 3b của `docs/story-imavis.md`. Bản thả
    git commit -m "Paper draft filled with N2c ablation and recognition results" && git push
    ```
    Rồi đọc `paper/main.pdf` (dựng: `python3 scripts/make_paper.py && cd paper && tectonic main.tex`).
-1. **[Claude viết script, labai217 chạy] Việc 3: chạy cuối trên đủ 5 fold** (thêm fold 1 và 5). Đây là lần đầu và lần duy
-   nhất dùng hai fold giữ kín, nên **danh sách nhánh phải chốt trước**. Đề xuất của Claude, chờ bạn gật: SPAN và DISP × bốn
-   kiểu (`bic`, `generic`, `bicjpeg75`, `est`), SPAN thêm `jpegmix`, `jpegu` và nhánh chỉ AMI: 2 fold × 12 = 24 lần, khoảng
-   12 giờ. Sau đó `score_n2.sh`, `run_recog.sh`, `make_paper.py`: mọi bảng tự chuyển sang 100 người. `make_n2b_jobs.sh` và
-   `make_n2c_jobs.sh` hiện chặn fold 1 và 5; cần một cờ mở khóa có chủ đích.
+1. **[labai217] Việc 3: chạy cuối trên hai fold giữ kín (1 và 5).** Người dùng đồng ý danh sách nhánh ngày 07/10: giống hệt
+   fold 2, 3, 4 (SPAN và DISP × `bic`, `generic`, `bicjpeg75`, `est`; hai nhánh chỉ AMI; SPAN × `jpegmix`, `jpegu`).
+   24 lần, khoảng 12 giờ. **Lần đầu và lần duy nhất dùng hai fold này: không sửa cấu hình, không chạy lại theo kết quả,
+   không bỏ nhánh nào khỏi bài vì kết quả của nó.**
+   ```bash
+   git pull
+   bash scripts/make_final_jobs.sh jobs/final.txt        # phải in: 24 lệnh; fold giữ kín: 1 5
+   nohup python scripts/run_queue.py jobs/final.txt > final.log 2>&1 &
+   ```
+   Khi `tail -3 final.log` có `'done': 24, 'failed': 0`:
+   ```bash
+   grep -c "phép thử ảnh sáng: ỔN ĐỊNH" jobs/final.txt.logs/*.log | grep -c ":1"     # phải ra 24
+   bash scripts/score_n2.sh           # mong đợi: n2 1134, n2_earvn 315, n2_awex 630 file (63 mô hình)
+   bash scripts/run_recog.sh          # chấm thêm 24 mô hình mới với hai mạng nhận dạng, rồi tổng hợp lại
+   git add results && git commit -m "Final run: held-out folds 1 and 5 trained and scored" && git push
+   ```
+   **[Claude] sau khi pull:** `python3 scripts/make_paper.py` (bảng tự chuyển sang 100 người), so kết quả 5 fold với 3 fold
+   và báo thẳng nếu kết luận nào đổi; sửa các câu "development folds" và bỏ ghi chú nháp trong bản thảo.
 2. **Việc 2b: khảo sát người xem** trên ảnh nhỏ thật (nhóm `viewer`; `evaluate.py --save-sr` trên labai217, rồi
    `viewer_study.py make`; cần tìm người xem). Mục 6.6 của bản thảo.
 3. **Việc 4: độ trễ trên một thiết bị** (Jetson; không có thì Android hoặc CPU). Không có thì bỏ chữ "Real-Time" khỏi tiêu đề.
@@ -72,6 +85,8 @@ Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào khôn
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 07/10 **[Claude]** Script lần chạy cuối `scripts/make_final_jobs.sh` (24 lệnh, fold 1 và 5); `make_n2b_jobs.sh` và
+      `make_n2c_jobs.sh` chỉ mở fold giữ kín khi được gọi từ script đó. Đã thử: sinh danh sách, đếm nhánh, chặn gọi trực tiếp.
 - [x] 07/10 **[labai217]** Khối `n2c` (6 lần) xong và đã chấm; đo nhận dạng xong với hai mạng nhận dạng.
 - [x] 07/10 **[Claude]** Đọc kết quả `n2c` và nhận dạng; chốt câu chữ P3 (mục 3b của `docs/story-imavis.md`); thêm 35 macro
       và hình định tính vào `make_paper.py`; viết phần diễn giải ở mục 6.4, 6.5 và sửa abstract, mở bài, thảo luận của bản thảo.

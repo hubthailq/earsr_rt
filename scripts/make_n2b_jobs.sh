@@ -6,7 +6,7 @@
 # Dùng (từ gốc repo):  bash scripts/make_n2b_jobs.sh [jobs/n2b.txt]                      # fold 2
 #                      FOLDS="3 4" bash scripts/make_n2b_jobs.sh jobs/n2b_f34.txt        # hai fold phát triển còn lại
 #                      nohup python scripts/run_queue.py jobs/n2b.txt > n2b.log 2>&1 &
-# FOLDS chỉ được chứa 2, 3, 4 (fold 1 và 5 giữ kín tới lần chạy cuối). Seed của mỗi lần chạy bằng số fold.
+# FOLDS chỉ được chứa 2, 3, 4. Fold 1 và 5 giữ kín tới lần chạy cuối và chỉ mở qua scripts/make_final_jobs.sh. Seed của mỗi lần chạy bằng số fold.
 set -euo pipefail
 OUT="${1:-jobs/n2b.txt}"
 PY="${PYTHON:-python}"; command -v "$PY" >/dev/null 2>&1 || PY=python3
@@ -22,7 +22,11 @@ grep -- "--degrade generic" "$TMP" | sed 's/--degrade generic/--degrade bicjpeg7
 : > "$OUT"
 NF=0
 for f in $FOLDS; do
-  case "$f" in 2|3|4) ;; *) echo "LỖI: fold $f không được phép (chỉ 2, 3, 4)" >&2; exit 1;; esac
+  case "$f" in
+    2|3|4) ;;
+    1|5) [ "${FINAL_RUN:-0}" = "1" ] || { echo "LỖI: fold $f đang giữ kín; chỉ scripts/make_final_jobs.sh được mở" >&2; exit 1; } ;;
+    *) echo "LỖI: fold $f không tồn tại" >&2; exit 1;;
+  esac
   sed "s/--fold 2 /--fold $f /" "$TMP" >> "$OUT"
   NF=$((NF + 1))
 done

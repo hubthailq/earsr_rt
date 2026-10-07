@@ -81,6 +81,8 @@ python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpe
 bash scripts/make_n2c_jobs.sh jobs/n2c.txt && python scripts/run_queue.py jobs/n2c.txt
 #   chấm mọi lần chạy N2 có dấu + trên AMI, EarVN1.0, AWEx (bỏ qua file đã có); ảnh vào gồm cả kiểu jpegmix
 bash scripts/score_n2.sh
+#   LẦN CHẠY CUỐI trên hai fold giữ kín 1 và 5 (24 lần; chỉ chạy một lần, không sửa cấu hình theo kết quả):
+bash scripts/make_final_jobs.sh jobs/final.txt && python scripts/run_queue.py jobs/final.txt
 #   Đo nhận dạng tai trên ảnh nhỏ thật (07/10): huấn luyện mạng nhận dạng (ResNet-18, chỉ ảnh lớn của người có vai
 #   train, fit, clf), rồi chấm mọi phương pháp phóng ảnh trên ảnh nhỏ thật của nhóm test và viewer, với hai mạng nhận dạng.
 #   Cần torchvision và tải được trọng số ImageNet ở lần đầu. Kết quả: results/recog/*_summary/summary.md
