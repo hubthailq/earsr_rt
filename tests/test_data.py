@@ -70,6 +70,9 @@ def test_tampered_fold_file_is_rejected(tmp_path):
         load_folds(p)
 
 
+EST_SHA1 = "cbcb522b176d94e73354fbf09137b1c99789279e"   # tính ngày 07/10/2026, trước khi thêm jpegmix và jpegu
+
+
 def test_degrade_is_deterministic_and_keyed():
     rng = np.random.default_rng(1)
     hr = rng.integers(0, 256, (64, 48, 3), dtype=np.uint8)
@@ -81,6 +84,41 @@ def test_degrade_is_deterministic_and_keyed():
     with pytest.raises(ValueError):
         degrade(hr, 4, "est")  # thiếu tham số ước lượng
     assert degrade(hr, 4, "est", params=DegradeParams()).shape == (16, 12, 3)
+
+
+def test_jpeg_only_kinds_isolate_the_quality_distribution():
+    """jpegmix và jpegu chỉ nén: với cùng mức nén, ảnh ra phải trùng bicjpegQ từng bit (không mờ, không nhiễu)."""
+    from earsr.degrade.pipelines import JPEGU_RANGE, needs_params
+    rng = np.random.default_rng(2)
+    hr = rng.integers(0, 256, (64, 48, 3), dtype=np.uint8)
+    one = DegradeParams(jpeg_q=[[75, 1.0]])
+    assert np.array_equal(degrade(hr, 4, "jpegmix", seed=3, key="a", params=one), degrade(hr, 4, "bicjpeg75"))
+    two = DegradeParams(jpeg_q=[[75, 0.5], [93, 0.5]])
+    refs = [degrade(hr, 4, "bicjpeg75"), degrade(hr, 4, "bicjpeg93")]
+    hit = [next(i for i, r in enumerate(refs) if np.array_equal(degrade(hr, 4, "jpegmix", seed=0, key=str(k), params=two), r))
+           for k in range(40)]
+    assert set(hit) == {0, 1}                                  # cả hai mức đều được rút, và không có ảnh nào khác
+    with pytest.raises(ValueError):
+        degrade(hr, 4, "jpegmix")                              # thiếu phân bố mức nén
+    lo, hi = JPEGU_RANGE
+    pool = {q: degrade(hr, 4, f"bicjpeg{q}") for q in range(lo, hi + 1)}
+    seen = set()
+    for k in range(200):
+        x = degrade(hr, 4, "jpegu", seed=0, key=str(k))
+        seen.add(next(q for q, r in pool.items() if np.array_equal(x, r)))
+    assert min(seen) <= lo + 3 and max(seen) >= hi - 3 and len(seen) > 20
+    assert np.array_equal(degrade(hr, 4, "jpegu", seed=5, key="z"), degrade(hr, 4, "jpegu", seed=5, key="z"))
+    assert needs_params("est") and needs_params("jpegmix") and not needs_params("jpegu") and not needs_params("bicjpeg75")
+
+
+def test_est_output_unchanged_by_refactor():
+    """Mã băm cố định của kiểu est: chặn việc sửa pipelines.py làm đổi ảnh LR của các lần chạy đã có."""
+    import hashlib
+    rng = np.random.default_rng(3)
+    hr = rng.integers(0, 256, (64, 48, 3), dtype=np.uint8)
+    p = DegradeParams(blur_sigma=(0.2, 0.6), noise_sigma=(0.85, 6.27), jpeg_q=[[75, 0.52], [93, 0.44], [81, 0.04]])
+    h = hashlib.sha1(b"".join(degrade(hr, 4, "est", seed=1, key=str(k), params=p).tobytes() for k in range(8))).hexdigest()
+    assert h == EST_SHA1
 
 
 def test_lr_set_is_reproducible(tmp_path):

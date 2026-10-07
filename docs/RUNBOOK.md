@@ -76,6 +76,11 @@ python scripts/evaluate.py --bench data/bench/earvn --folds none --tiers 96 --ki
        --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
 python scripts/evaluate.py --bench data/bench/ami --tiers 144 --kinds bic bicjpeg75 generic est \
        --degrade-params configs/degrade_estimated.json --models bicubic span_ch48 disp26 --runs runs/N2_*+* --out results/n2
+#   Khối n2c (07/10): hai nhánh chỉ nén, để tách phần "có nén" khỏi phần "đo từ dữ liệu". jpegmix = JPEG với đúng phân bố
+#   mức nén đã đo, không mờ, không nhiễu; jpegu = mức nén rút đều 60 đến 95. SPAN × fold 2, 3, 4 = 6 lần.
+bash scripts/make_n2c_jobs.sh jobs/n2c.txt && python scripts/run_queue.py jobs/n2c.txt
+#   chấm mọi lần chạy N2 có dấu + trên AMI, EarVN1.0, AWEx (bỏ qua file đã có); ảnh vào gồm cả kiểu jpegmix
+bash scripts/score_n2.sh
 #   Kiểu đệm trên trọng số công bố (không tiền huấn luyện), ba mốc mặc định: span, disp26, errn26
 python scripts/make_jobs.py pad $A > jobs/pad.txt && python scripts/run_queue.py jobs/pad.txt
 

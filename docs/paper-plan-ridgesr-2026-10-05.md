@@ -1,6 +1,6 @@
 # SR real-time cho ảnh tai độ phân giải thấp: đề xuất và bản phác thảo bài báo
 
-Ngày lập: 05/10/2026. **Bản 25 (06/10/2026; bổ sung tối cùng ngày: kết quả trên EarVN1.0 và AWEx, và khối `n2` chạy lại, ở mục 2.0):** giai đoạn 1 đã chạy đủ trên GPU và phép thử đầu của N2 (bộ phân loại) đã có kết quả. Phần 2 được cập nhật theo số thật: thêm mục 2.0 (dữ kiện đã có và bảng theo dõi luận điểm); viết hẹp lại C2 (chỉ đúng trên số đo độ trung thực), C3 (chỉ đúng khi suy giảm lệch) và C5 (suy giảm đơn giản đo từ dữ liệu là đủ, hơn suy giảm tổng quát); điền các chỗ `[X]` đã có số ở mục 2.3 và 2.6. Phần 1 không đổi; số sơ bộ ở mục 1.2c được thay bằng số ở mục 2.0. **Bản 24:** bổ sung ba chỗ còn thiếu của Phần 2: script dựng bảng so sánh và vẽ hình (mục 2.5), Bảng 1 công trình liên quan điền tới mức đã xác minh (mục 2.5b), và thư mẫu xin phép dùng ảnh AMI; mục 3.14 cập nhật theo. **Bản 23:** viết lại Phần 2 (khung bản thảo): câu chuyện, ba câu hỏi nghiên cứu, chín luận điểm kèm bảng, hình và file kết quả tương ứng, câu viết sẵn cho nhánh đạt và không đạt, và quy trình điền bài sau khi có kết quả. **Bản 22:** thêm mục 1.2c: trọng tâm chuyển sang N2 theo kết quả sơ bộ của giai đoạn 1; thân mô hình chọn trong nhóm NTIRE 2026 (sáu mô hình đã vào kho) thay vì gắn với SPAN gốc; chạy phép thử N2 và phép thử kiểu đệm rẻ trước khi tiền huấn luyện; thêm số đo MS-SSIM, GMSD, PSNR của gradient, LR-PSNR và nhóm số đo qua pyiqa. **Bản 21:** thêm mục 1.8b, giao thức so sánh công bằng: hai nhánh so sánh (có kiểm soát; trọng số công bố), quy tắc "chỉ khác một yếu tố", và việc nhóm tự tiền huấn luyện lại các mốc chủ chốt trở thành bắt buộc. **Bản 20:** thêm mục 3.14 (dữ liệu đặt ở đâu, script nào, file kết quả nào cho từng việc) và một đoạn ở mục 1.6 giải thích vì sao benchmark chính là AMI; các quyết định khoa học không đổi so với bản 19. **Bản 19, sửa theo phản biện vòng 9.** Phản biện không còn ý kiến nào về ý tưởng. Bản này đưa Phần 3 (pipeline) theo kịp Phần 1: nhánh chính của mô hình là thân N5b huấn luyện với suy giảm N2; thêm giai đoạn tiền huấn luyện, công cụ cho hai phép thử lõi, ba trường trong mã lần chạy, một nhóm kiểm thử; và đổi thứ tự: tháng đầu chỉ chạy các phép thử không cần huấn luyện, T4 và T5 dời ra sau điểm kiểm tra 1. Chi tiết ở **Phụ lục 6**. Các bản trước: bản 18 (vòng 8, Phụ lục 5), bản 17 (vòng 7, Phụ lục 4), bản 16 (Phụ lục 3).
+Ngày lập: 05/10/2026. **Bản 25 (06/10/2026; bổ sung tối cùng ngày và ngày 07/10: kết quả trên EarVN1.0 và AWEx, và khối `n2` gộp ba fold, ở mục 2.0):** giai đoạn 1 đã chạy đủ trên GPU và phép thử đầu của N2 (bộ phân loại) đã có kết quả. Phần 2 được cập nhật theo số thật: thêm mục 2.0 (dữ kiện đã có và bảng theo dõi luận điểm); viết hẹp lại C2 (chỉ đúng trên số đo độ trung thực), C3 (chỉ đúng khi suy giảm lệch) và C5 (suy giảm đơn giản đo từ dữ liệu là đủ, hơn suy giảm tổng quát); điền các chỗ `[X]` đã có số ở mục 2.3 và 2.6. Phần 1 không đổi; số sơ bộ ở mục 1.2c được thay bằng số ở mục 2.0. **Bản 24:** bổ sung ba chỗ còn thiếu của Phần 2: script dựng bảng so sánh và vẽ hình (mục 2.5), Bảng 1 công trình liên quan điền tới mức đã xác minh (mục 2.5b), và thư mẫu xin phép dùng ảnh AMI; mục 3.14 cập nhật theo. **Bản 23:** viết lại Phần 2 (khung bản thảo): câu chuyện, ba câu hỏi nghiên cứu, chín luận điểm kèm bảng, hình và file kết quả tương ứng, câu viết sẵn cho nhánh đạt và không đạt, và quy trình điền bài sau khi có kết quả. **Bản 22:** thêm mục 1.2c: trọng tâm chuyển sang N2 theo kết quả sơ bộ của giai đoạn 1; thân mô hình chọn trong nhóm NTIRE 2026 (sáu mô hình đã vào kho) thay vì gắn với SPAN gốc; chạy phép thử N2 và phép thử kiểu đệm rẻ trước khi tiền huấn luyện; thêm số đo MS-SSIM, GMSD, PSNR của gradient, LR-PSNR và nhóm số đo qua pyiqa. **Bản 21:** thêm mục 1.8b, giao thức so sánh công bằng: hai nhánh so sánh (có kiểm soát; trọng số công bố), quy tắc "chỉ khác một yếu tố", và việc nhóm tự tiền huấn luyện lại các mốc chủ chốt trở thành bắt buộc. **Bản 20:** thêm mục 3.14 (dữ liệu đặt ở đâu, script nào, file kết quả nào cho từng việc) và một đoạn ở mục 1.6 giải thích vì sao benchmark chính là AMI; các quyết định khoa học không đổi so với bản 19. **Bản 19, sửa theo phản biện vòng 9.** Phản biện không còn ý kiến nào về ý tưởng. Bản này đưa Phần 3 (pipeline) theo kịp Phần 1: nhánh chính của mô hình là thân N5b huấn luyện với suy giảm N2; thêm giai đoạn tiền huấn luyện, công cụ cho hai phép thử lõi, ba trường trong mã lần chạy, một nhóm kiểm thử; và đổi thứ tự: tháng đầu chỉ chạy các phép thử không cần huấn luyện, T4 và T5 dời ra sau điểm kiểm tra 1. Chi tiết ở **Phụ lục 6**. Các bản trước: bản 18 (vòng 8, Phụ lục 5), bản 17 (vòng 7, Phụ lục 4), bản 16 (Phụ lục 3).
 
 Cấu trúc: Phần 1 đề xuất; Phần 2 khung bản thảo; Phần 3 thiết kế project; Phụ lục 1 và 2 trả lời phản biện vòng 5 và 6; Phụ lục 3 thay đổi của bản 16; Phụ lục 4, 5 và 6 trả lời phản biện vòng 7, 8 và 9.
 
@@ -520,7 +520,42 @@ Chênh lệch ghép cặp (bootstrap theo người; mọi khoảng tin cậy nê
 
 Giới hạn của các số trong khối `n2`: một fold, một seed, và chưa chấm các mô hình này trên EarVN1.0 và AWEx với ảnh vào có nén. Phép thử quyết định theo kế hoạch phải chạy trên fold 2, 3, 4.
 
-**Bảng theo dõi luận điểm** (yêu cầu ở mục 2.7, bước 1; cập nhật tối 06/10).
+**Kết quả gộp ba fold và trên ba bộ ảnh (07/10/2026; thay cho các số một fold ở trên khi hai bên khác nhau).**
+
+Ba mươi lần huấn luyện (fold 2, 3, 4; seed bằng số fold), cả 30 qua phép thử ảnh sáng. Nguồn: `results/n2/` (AMI, 495 file), `results/n2_earvn/` (132 file), `results/n2_awex/` (264 file); chấm bằng `scripts/score_n2.sh`. Trên AMI mỗi mô hình chỉ được chấm trên người test của fold của nó, gộp lại là 420 ảnh của 60 người. Trên EarVN1.0 (nhóm test) và AWEx, mỗi nhánh là trung bình của ba mô hình (ba fold) theo từng ảnh. Mọi khoảng tin cậy dưới đây là 95%, bootstrap theo người; các số ghép cặp tính trực tiếp từ file theo ảnh và phải sinh lại bằng `compare_table.py` khi dựng bảng.
+
+*SPAN 48 kênh học với suy giảm ước lượng (nhánh N2), so với các mốc. Ảnh vào lúc chấm: suy giảm ước lượng. PSNR-Y, dB.*
+
+| So với | AMI, 36 px (420 ảnh) | EarVN1.0, 24 px (158 ảnh) | AWEx, 24 px (217 ảnh) | AWEx, 36 px (60 ảnh) |
+|---|---|---|---|---|
+| Bicubic | +1,45 [1,35; 1,54] | +2,22 [2,07; 2,43] | +1,69 [1,55; 1,83] | +1,23 [1,05; 1,42] |
+| SPAN, trọng số công bố | +1,89 [1,76; 2,00] | +1,62 [1,53; 1,78] | +1,40 [1,27; 1,52] | +1,32 [1,11; 1,54] |
+| SPAN học với suy giảm tổng quát | +1,08 [1,02; 1,13] | +1,49 [1,34; 1,67] | +1,59 [1,47; 1,73] | +2,09 [1,70; 2,50] |
+| SPAN học với JPEG 75 cố định | +0,14 [0,12; 0,16] | +0,26 [0,20; 0,32] | +0,23 [0,19; 0,27] | +0,15 [0,11; 0,20] |
+| (trọng số công bố so với bicubic) | −0,43 [−0,50; −0,37] | +0,59 [0,44; 0,78] | +0,29 [0,19; 0,41] | −0,09 [−0,28; +0,10] |
+
+LPIPS của nhánh N2 thấp hơn bicubic 0,146 / 0,129 / 0,130 / 0,116 và thấp hơn trọng số công bố 0,110 / 0,049 / 0,060 / 0,068 ở bốn cột (khoảng tin cậy không chứa 0). DISP cho cùng kết luận, thấp hơn SPAN khoảng 0,2 đến 0,3 dB (so với bicubic: +1,20; +1,96; +1,47; +1,12).
+
+*So với JPEG 75 cố định, theo ảnh vào lúc chấm (SPAN):*
+
+| Ảnh vào lúc chấm | AMI, 36 px | EarVN1.0 | AWEx, 24 px | AWEx, 36 px |
+|---|---|---|---|---|
+| JPEG 93 | +0,45 [0,42; 0,47] | +0,58 [0,53; 0,65] | +0,57 [0,53; 0,61] | +0,41 [0,36; 0,47] |
+| Suy giảm ước lượng | +0,14 | +0,26 | +0,23 | +0,15 |
+| JPEG 75 | −0,06 [−0,07; −0,05] | −0,14 [−0,17; −0,11] | −0,10 [−0,12; −0,08] | −0,07 [−0,10; −0,04] |
+
+Tức mô hình học với phân bố mức nén đo từ dữ liệu mất dưới 0,15 dB ở mức 75 và được 0,4 đến 0,6 dB ở mức 93: nó bền hơn theo mức nén. Trên ảnh tai nhỏ thật, hai mức này chiếm 52% và 44%.
+
+*Các điểm khác.*
+
+- Kết quả cùng chiều ở từng fold: nhánh N2 hơn nhánh tổng quát 1,09 / 0,96 / 1,17 dB (SPAN) và 1,36 / 1,53 / 1,57 dB (DISP) ở fold 2 / 3 / 4.
+- Theo cỡ ảnh vào trên AMI (SPAN, so với bicubic): +1,81 dB ở 24 px, +1,45 ở 36 px, +1,13 ở 48 px.
+- Suy giảm tổng quát không dùng được: mô hình học với nó kém bicubic trên ảnh sạch ở cả ba bộ, và trên AWEx 36 px còn kém bicubic cả dưới suy giảm ước lượng (31,61 so với 32,47 dB).
+- Ảnh EarVN trong tập huấn luyện: so với chỉ AMI (có tăng cường độ sáng), thêm 0,62 dB trên EarVN, 0,30 và 0,19 dB trên AWEx, không tốn gì trên AMI. Mô hình chỉ AMI vẫn còn vài ảnh hỏng nặng trên EarVN (một ảnh dưới 20 dB).
+- **Cái giá:** trên ảnh vào sạch, nhánh N2 kém trọng số công bố 1,2 dB (AMI), 1,6 dB (EarVN), 1,8 và 1,5 dB (AWEx). Không mô hình nào tốt nhất ở mọi kiểu ảnh vào; bài phải báo cả cột ảnh sạch.
+- **Giới hạn của tuyên bố "hơn mô hình có sẵn":** đúng về độ trung thực với mọi mô hình có sẵn, và đúng về LPIPS, DISTS với các mô hình tối ưu PSNR. Các mô hình cảm nhận lớn có sẵn (BSRGAN: LPIPS 0,173 trên AMI có nén, so với 0,246 của nhánh N2) vẫn tốt hơn về LPIPS, với PSNR kém bicubic 2 dB và không thuộc nhóm real-time.
+
+**Bảng theo dõi luận điểm** (yêu cầu ở mục 2.7, bước 1; cập nhật 07/10).
 
 | # | Trạng thái | Căn cứ | Hệ quả cho bài |
 |---|---|---|---|
@@ -528,7 +563,7 @@ Giới hạn của các số trong khối `n2`: một fold, một seed, và chư
 | C2 | **Đạt trên số đo độ trung thực, từ mức nén 85 trở xuống, trên cả ba bộ ảnh; không đạt trên số đo cảm nhận, và đảo chiều ở mức nén 93** | AMI và AWEx: 16/16 mô hình kém bicubic ở JPEG 75; EarVN1.0: xấp xỉ hòa (6/16 kém có ý nghĩa, không mô hình nào hơn). Ở JPEG 93 cả 16 mô hình hơn bicubic trên cả ba bộ. Với suy giảm ước lượng, lợi thế còn 0,1 đến 0,6 dB. Thứ hạng đảo ở mọi bộ | Phát biểu lại: "lợi thế về độ trung thực của SR so với nội suy gần như biến mất trên ảnh tai nhỏ đã nén, và thành âm khi nén từ khoảng mức 85 trở xuống". Bài phải có hình PSNR theo mức nén. Không dùng chữ "fails" |
 | C3 | **Đạt khi suy giảm lệch; chỉ đạt ở ô chính khi suy giảm khớp** | Dưới JPEG 75, mô hình lớn gấp 39 lần không hơn (−0,04 dB). Dưới bicubic nó hơn 0,23 dB ở ô chính (dưới ngưỡng bác bỏ 0,5 dB) nhưng 0,49 dB ở ảnh vào 24 px, và 0,82 dB so với mô hình 0,13 triệu tham số | Viết lại thành hai vế (mục 2.2). Quan sát "ảnh càng nhỏ, dung lượng càng có giá trị" đưa vào mục 3.5 của bài |
 | C4 | **Có số sơ bộ (fold 2)** | Tinh chỉnh với ảnh sạch hơn trọng số công bố 0,45 dB trên AMI (39,85 so với 39,40) và 0,07 dB trên EarVN, **chỉ khi** tập huấn luyện có ảnh ngoài thực tế và tăng cường độ sáng; chỉ AMI thì kém trọng số công bố trên EarVN 0,57 dB, và không tăng cường thì mô hình hỏng trên ảnh sáng | Mốc "tinh chỉnh" trong bài phải là bản có ảnh ngoài thực tế. Sự hỏng khi tinh chỉnh chỉ trên AMI là một dữ kiện cho mục 5.7 |
-| C5 | **Tiêu chí (a) đạt; bằng chứng huấn luyện ủng hộ (fold 2); khảo sát người xem chưa làm** | Bộ phân loại: ước lượng 58,5%, tổng quát 78,0%. Huấn luyện: mô hình học với suy giảm ước lượng hơn mô hình học với suy giảm tổng quát 1,0 đến 1,4 dB trên ảnh nén, và hơn bicubic 1,1 đến 1,5 dB. So với JPEG 75 cố định: ngang trên ảnh nén, hơn 0,5 đến 1,1 dB trên ảnh sạch | Đóng góp phát biểu là: suy giảm tổng quát không hợp với miền này; phân bố mức nén đo từ dữ liệu cho mô hình bền theo mức nén. Mọi bảng của N2 có mốc JPEG 75 cố định. Còn nợ: fold 3 và 4, chấm trên EarVN1.0 và AWEx với ảnh nén, JPEG 93, khảo sát người xem |
+| C5 | **Tiêu chí (a) đạt; bằng chứng huấn luyện ủng hộ trên ba fold và ba bộ ảnh (xem bảng 07/10); khảo sát người xem chưa làm** | Bộ phân loại: ước lượng 58,5%, tổng quát 78,0%. Huấn luyện: mô hình học với suy giảm ước lượng hơn mô hình học với suy giảm tổng quát 1,0 đến 1,4 dB trên ảnh nén, và hơn bicubic 1,1 đến 1,5 dB. So với JPEG 75 cố định: ngang trên ảnh nén, hơn 0,5 đến 1,1 dB trên ảnh sạch | Đóng góp phát biểu là: suy giảm tổng quát không hợp với miền này; phân bố mức nén đo từ dữ liệu cho mô hình bền theo mức nén. Mọi bảng của N2 có mốc JPEG 75 cố định. Còn nợ: khảo sát người xem (nửa sau của tiêu chí N2); bộ phân loại chấm trên nhiều người hơn |
 | C6 | **Cơ sở (a) đạt về hình thức; triển vọng thấp** | Mọi mô hình mất 0,10 đến 0,41 dB khi thiếu ngữ cảnh, nhưng trên ảnh tai bicubic cũng mất 0,10 đến 0,21 dB; phần riêng của SPAN 48 kênh chỉ 0,03 đến 0,06 dB, dưới ngưỡng 0,10 dB của tiêu chí (b). Trên DIV2K phần riêng của mạng rõ hơn (0,10 đến 0,17 so với 0,03 dB) | Chỉ chạy phép thử `pad` rẻ; không tiền huấn luyện trừ khi `pad` cho thấy phần hơn. Nhiều khả năng thành mục phân tích (nhánh "không đạt" ở mục 2.6) |
 | C7 | Chưa có | Cần mô hình đã huấn luyện và khảo sát người xem | Lưu ý từ C2: mô hình có sẵn đã hơn bicubic về LPIPS, DISTS dù kém về độ trung thực; bảng 8 phải báo cả hai nhóm số đo |
 | C8 | Chưa có | Chưa có Jetson. Trên RTX 3080 mọi mô hình nhẹ chạy dưới 2 ms; đệm lặp viền và phản chiếu chậm hơn đệm số 0 khoảng 13 đến 15% (chỉ để tham khảo) | |
@@ -536,7 +571,7 @@ Giới hạn của các số trong khối `n2`: một fold, một seed, và chư
 
 **Việc phải làm trước khi dựng bảng cho bài:** loại `span26` (trùng `span_ch28`) khỏi mọi bảng và mọi phép tính thứ hạng, quyết định `span_ch48_t44` vào bảng như một dòng phụ hay bỏ, rồi chạy lại `summarize_t2.py` để `ranking.json` và `quality.csv` khớp với số ở mục này.
 
-**Kịch bản hiện tại** (theo bảng ở mục 2.2; cập nhật tối 06/10): "Chỉ suy giảm", với bằng chứng huấn luyện đã ủng hộ trên một fold. Kịch bản "Đủ" cần C6, mà triển vọng của C6 thấp. Bài theo kịch bản này không có đóng góp kiến trúc; xem ba hướng ở `TODO.md` mục 2b.
+**Kịch bản hiện tại** (theo bảng ở mục 2.2; cập nhật 07/10): "Chỉ suy giảm", với bằng chứng huấn luyện đã ủng hộ trên ba fold và ba bộ ảnh. Kịch bản "Đủ" cần C6, mà triển vọng của C6 thấp. Bài theo kịch bản này không có đóng góp kiến trúc; xem ba hướng ở `TODO.md` mục 2b.
 
 ## 2.1 Câu chuyện
 

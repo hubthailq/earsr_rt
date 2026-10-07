@@ -1,4 +1,4 @@
-"""Ba kiểu suy giảm của bài (mục 1.7 của kế hoạch).
+"""Các kiểu suy giảm của bài (mục 1.7 của kế hoạch).
 
 - ``bic``: bicubic, theo NTIRE.
 - ``bicjpeg{q}``: bicubic rồi nén JPEG mức q. Dùng ở T2 để xem thứ hạng có đổi.
@@ -6,6 +6,10 @@
   rộng kiểu Real-ESRGAN (bản một bậc, rút gọn).
 - ``est``: cùng cấu trúc, tham số lấy từ một file do ``fit_estimated`` tạo ra
   từ ảnh EarVN1.0 thật (N2).
+- ``jpegmix``: bicubic rồi JPEG, mức nén rút từ đúng phân bố ``jpeg_q`` của file tham số; không mờ, không
+  nhiễu. Tách phần "phân bố mức nén" khỏi phần còn lại của ``est``.
+- ``jpegu``: bicubic rồi JPEG, mức nén rút đều trong ``JPEGU_RANGE``; không cần file tham số. Mốc "có nén
+  nhưng không đo gì từ dữ liệu".
 
 Mỗi hàm nhận ảnh HR uint8 và trả về ảnh LR uint8. Với cùng ``seed`` và cùng
 khóa ảnh, kết quả giống nhau từng bit.
@@ -52,6 +56,20 @@ class DegradeParams:
             json.dump(self.__dict__, f, indent=1)
 
 
+JPEGU_RANGE = (60, 95)             # dải mức nén của kiểu jpegu, gồm cả hai đầu
+PARAM_KINDS = ("est", "jpegmix")   # các kiểu bắt buộc có file tham số ước lượng
+
+
+def needs_params(kind: str) -> bool:
+    return kind in PARAM_KINDS
+
+
+def _draw_quality(p: DegradeParams, rng: np.random.Generator) -> int:
+    qs = np.array([q for q, _ in p.jpeg_q], dtype=np.float64)
+    pr = np.array([w for _, w in p.jpeg_q], dtype=np.float64)
+    return int(rng.choice(qs, p=pr / pr.sum()))
+
+
 def random_degrade(hr: np.ndarray, scale: int, p: DegradeParams, rng: np.random.Generator) -> np.ndarray:
     """mờ -> thu nhỏ bicubic -> nhiễu -> JPEG, tham số rút từ ``p``."""
     x = hr
@@ -63,9 +81,7 @@ def random_degrade(hr: np.ndarray, scale: int, p: DegradeParams, rng: np.random.
     if rng.random() < p.noise_prob:
         x = ops.gaussian_noise(x, rng.uniform(*p.noise_sigma), rng)
     if rng.random() < p.jpeg_prob:
-        qs = np.array([q for q, _ in p.jpeg_q], dtype=np.float64)
-        pr = np.array([w for _, w in p.jpeg_q], dtype=np.float64)
-        x = ops.jpeg(x, int(rng.choice(qs, p=pr / pr.sum())))
+        x = ops.jpeg(x, _draw_quality(p, rng))
     return x
 
 
@@ -76,8 +92,8 @@ def degrade(hr: np.ndarray, scale: int, kind: str, seed: int = 0, key: str = "",
             params: DegradeParams | None = None) -> np.ndarray:
     """Điểm vào duy nhất để tạo ảnh LR.
 
-    kind: ``bic`` | ``bicjpegQ`` | ``generic`` | ``est``.
-    ``est`` bắt buộc có ``params`` (nạp từ file của ``fit_estimated``).
+    kind: ``bic`` | ``bicjpegQ`` | ``generic`` | ``est`` | ``jpegmix`` | ``jpegu``.
+    ``est`` và ``jpegmix`` bắt buộc có ``params`` (nạp từ file của ``fit_estimated``).
     """
     if kind == "bic":
         return ops.bicubic_down(hr, scale)
@@ -90,4 +106,11 @@ def degrade(hr: np.ndarray, scale: int, kind: str, seed: int = 0, key: str = "",
         if params is None:
             raise ValueError("kiểu 'est' cần params ước lượng từ ảnh thật")
         return random_degrade(hr, scale, params, rng_for(seed, key))
+    if kind == "jpegmix":
+        if params is None:
+            raise ValueError("kiểu 'jpegmix' cần params ước lượng từ ảnh thật")
+        return ops.jpeg(ops.bicubic_down(hr, scale), _draw_quality(params, rng_for(seed, key)))
+    if kind == "jpegu":
+        lo, hi = JPEGU_RANGE
+        return ops.jpeg(ops.bicubic_down(hr, scale), int(rng_for(seed, key).integers(lo, hi + 1)))
     raise ValueError(f"kiểu suy giảm không biết: {kind}")

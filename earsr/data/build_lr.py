@@ -4,7 +4,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from ..degrade.pipelines import DegradeParams, degrade
+from ..degrade.pipelines import DegradeParams, degrade, needs_params
 from ..io import imread_rgb, imwrite_rgb, sha1_array
 from .ami import read_manifest
 
@@ -22,8 +22,8 @@ def build_lr_set(bench_root: str | Path, tier: int, scale: int, kind: str, seed:
         raise RuntimeError(f"manifest không có tầng {tier}")
     out_dir = bench_root / "lr" / f"hr{tier}_x{scale}_{kind}"
     man = out_dir / "manifest.csv"
-    if kind == "est" and params is None:
-        raise ValueError("kiểu 'est' cần params (configs/degrade_estimated.json)")
+    if needs_params(kind) and params is None:
+        raise ValueError(f"kiểu '{kind}' cần params (configs/degrade_estimated.json)")
     if man.exists() and not overwrite:
         return out_dir
     out = []

@@ -35,7 +35,7 @@ from earsr.data.ami import read_manifest  # noqa: E402
 from earsr.data.build_lr import build_lr_set  # noqa: E402
 from earsr.data.datasets import list_images  # noqa: E402
 from earsr.data.splits import load_folds  # noqa: E402
-from earsr.degrade.pipelines import DegradeParams  # noqa: E402
+from earsr.degrade.pipelines import DegradeParams, needs_params  # noqa: E402
 from earsr.eval.infer import evaluate_on_bench  # noqa: E402
 from earsr.io import to_tensor, to_uint8  # noqa: E402
 from earsr.models.optional.heads import TwoHeadGated  # noqa: E402
@@ -62,8 +62,8 @@ def parse_args(argv=None):
     ap.add_argument("--protocol", default="rand", choices=["native", "fixed", "rand"])
     ap.add_argument("--scale", type=int, default=4)
     ap.add_argument("--tier", type=int, default=144, help="cỡ của ô đang xét (cho 'fixed')")
-    ap.add_argument("--degrade", default="bic", help="bic | bicjpegQ | generic | est")
-    ap.add_argument("--degrade-params", default=None, help="file tham số cho 'est' (configs/degrade_estimated.json)")
+    ap.add_argument("--degrade", default="bic", help="bic | bicjpegQ | generic | est | jpegmix | jpegu")
+    ap.add_argument("--degrade-params", default=None, help="file tham số cho 'est' và 'jpegmix' (configs/degrade_estimated.json)")
     ap.add_argument("--fold", type=int, required=True)
     ap.add_argument("--ami-raw", required=True)
     ap.add_argument("--bench", required=True)
@@ -164,9 +164,10 @@ def main(argv=None) -> dict:
         return {"run_id": str(rid), "skipped": True}
     folds = load_folds(a.folds)
     params = DegradeParams.load(a.degrade_params) if a.degrade_params else None
-    if a.degrade == "est" and params is None:
-        raise SystemExit("--degrade est cần --degrade-params")
-    lr_params = params if a.degrade == "est" else None
+    if needs_params(a.degrade) and params is None:
+        raise SystemExit(f"--degrade {a.degrade} cần --degrade-params")
+    lr_params = params if needs_params(a.degrade) else None
+    rand_params = params if needs_params(a.degrade) or a.degrade == "generic" else None
     have = {r["tier"] for r in read_manifest(Path(a.bench) / "manifest.csv")}
     main_tiers = [t for t in (96, 144, 192) if t in have]
     val_tiers = a.val_tiers or (main_tiers if a.protocol == "rand" else [a.tier])
@@ -207,7 +208,7 @@ def main(argv=None) -> dict:
     ds_kw["photo_prob"] = a.photo_aug
     extras = extra_paths(a)
     train_set = make_train_set(a.ami_raw, a.folds, a.fold, a.scale, a.protocol, a.tier, a.patch_lr,
-                               degrade_kind=a.degrade, params=params if a.degrade in ("est", "generic") else None,
+                               degrade_kind=a.degrade, params=rand_params,
                                seed=rid.seed, extra_paths=extras, extra_min_downscale=a.extra_min_downscale,
                                extra_prob=a.extra_prob, **ds_kw)
     perc = None
@@ -239,7 +240,7 @@ def main(argv=None) -> dict:
         print(summary, f"| tỉ lệ tham số được học: {trainable_fraction(model):.3f}")
         out = dict(summary)
         if not a.no_stress:
-            out.update(stress(a, run_dir, model, val_tiers, params if a.degrade in ("est", "generic") else None))
+            out.update(stress(a, run_dir, model, val_tiers, rand_params))
         if not a.no_test:
             out.update(test(a, rid, run_dir, model, folds, eval_tiers, val_tiers, perc))
     except BaseException as e:

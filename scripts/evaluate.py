@@ -32,7 +32,7 @@ import torch  # noqa: E402
 
 from earsr.data.build_lr import build_lr_set  # noqa: E402
 from earsr.data.splits import load_folds  # noqa: E402
-from earsr.degrade.pipelines import DegradeParams  # noqa: E402
+from earsr.degrade.pipelines import DegradeParams, needs_params  # noqa: E402
 from earsr.device import describe_device  # noqa: E402
 from earsr.eval.infer import BASELINES, evaluate_on_bench, load_boxes  # noqa: E402
 from earsr.eval.metrics import PerceptualMetrics  # noqa: E402
@@ -139,7 +139,7 @@ def main(argv=None) -> None:
 
     for tier in a.tiers:
         for kind in a.kinds:
-            build_lr_set(a.bench, tier, a.scale, kind, params=params if kind == "est" else None)
+            build_lr_set(a.bench, tier, a.scale, kind, params=params if needs_params(kind) else None)
             for name, pred, subjects in jobs:
                 out = out_dir / f"{name}__hr{tier}_x{a.scale}_{kind}.csv"
                 if out.exists() and not a.overwrite:
