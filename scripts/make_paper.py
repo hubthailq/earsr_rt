@@ -493,6 +493,86 @@ def recognition(res: Path, out: Path) -> None:
     put("RecValAcc", num(100 * info["val_acc"], 1) if info else None, why)
 
 
+def recognition_extra(res: Path, out: Path) -> None:
+    """Ba phần đào sâu của phép đo nhận dạng: tách theo mức nén của file ảnh dò; bộ ảnh thật thứ hai (AWEx);
+    mạng nhận dạng thứ hai (ResNet-50). Phần nào chưa có kết quả thì ra ô TBD."""
+    why = "recog2"   # chạy lại scripts/run_recog.sh bằng mã mới (07/10/2026)
+
+    def load(tag):
+        d = res / "recog" / f"{tag}_summary"
+        if not (d / "summary.csv").exists():
+            return None
+        return {"s": pd.read_csv(d / "summary.csv").set_index("arm"),
+                "p": pd.read_csv(d / "paired.csv").set_index(["arm", "minus"]),
+                "q": pd.read_csv(d / "by_quality.csv").set_index(["arm", "group"]) if (d / "by_quality.csv").exists() else None,
+                "meta": json.loads((res / "recog" / tag / "meta.json").read_text())}
+
+    def ci(r, col, nd=1):
+        return f"{num(r[col], nd, True)} {{\\scriptsize[{num(r[col + '_lo'], nd)}, {num(r[col + '_hi'], nd)}]}}"
+
+    def txt(r, col, nd=1):
+        return f"{num(r[col], nd, True)} [{num(r[col + '_lo'], nd)}, {num(r[col + '_hi'], nd)}]"
+
+    rows_spec = [(PUB, "SPAN-S, published"), ("span/bic", "SPAN-S, fine-tuned bicubic"), ("span/generic", "SPAN-S, generic"),
+                 ("span/bicjpeg75", "SPAN-S, JPEG 75"), ("span/est", "SPAN-S, measured (ours)"),
+                 ("bsrgan (published)", "BSRGAN")]
+    # --- theo mức nén của file ảnh dò (EarVN1.0, mạng ResNet-18)
+    R = load("resnet18")
+    q = R["q"] if R else None
+    rows = []
+    if q is not None and ("bicubic", "low") in q.index and ("bicubic", "high") in q.index:
+        rows.append(f"Bicubic $\\times$4 & {num(q.loc[('bicubic', 'low'), 'rank1'], 1)} & -- & "
+                    f"{num(q.loc[('bicubic', 'high'), 'rank1'], 1)} & -- \\\\\n\\midrule")
+        for arm_, label in rows_spec:
+            lo, hi = q.loc[(arm_, "low")], q.loc[(arm_, "high")]
+            rows.append(f"{label} & {num(lo['rank1'], 1)} & {ci(lo, 'd_bic')} & {num(hi['rank1'], 1)} & {ci(hi, 'd_bic')} \\\\")
+        for g, tag in (("low", "QLow"), ("high", "QHigh")):
+            b = q.loc[("bicubic", g)]
+            put(f"Rec{tag}N", int(b["n_probe"]))
+            put(f"Rec{tag}Subj", int(b["n_subjects"]))
+            put(f"Rec{tag}RankBic", num(b["rank1"], 1))
+            for arm_, t2 in ((PUB, "Pub"), ("span/est", "Est"), ("bsrgan (published)", "Bsrgan"), ("span/bic", "Bict")):
+                put(f"Rec{tag}{t2}", txt(q.loc[(arm_, g)], "d_bic"))
+    else:
+        rows = ["\\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} \\\\"]
+        for tag in ("QLow", "QHigh"):
+            for k in ("N", "Subj", "RankBic", "Pub", "Est", "Bsrgan", "Bict"):
+                put(f"Rec{tag}{k}", None, why)
+    write(out / "tab_recog_quality.tex", "\n".join(rows) + "\n")
+
+    # --- bộ ảnh thứ hai và mạng nhận dạng thứ hai: chênh lệch rank-1 so với bicubic
+    cols = [("resnet18", "EarvnRe"), ("resnet50", "EarvnRf"), ("awex_resnet18", "AwexRe"), ("awex_resnet50", "AwexRf")]
+    L = {tag: load(tag) for tag, _ in cols}
+
+    def cell(tag, arm_, kind):
+        d = L[tag]
+        if d is None:
+            return "\\todo{--}"
+        if kind == "rank":
+            return num(d["s"].loc[arm_, "rank1"], 1) if arm_ in d["s"].index else "--"
+        return ci(d["p"].loc[(arm_, "bicubic")], "d_rank1") if (arm_, "bicubic") in d["p"].index else "--"
+
+    rows = ["Large probes (rank-1, \\%) & " + " & ".join(cell(t, "ref_large", "rank") for t, _ in cols) + " \\\\",
+            "Bicubic $\\times$4 (rank-1, \\%) & " + " & ".join(cell(t, "bicubic", "rank") for t, _ in cols) + " \\\\", "\\midrule"]
+    for arm_, label in rows_spec:
+        rows.append(f"{label} & " + " & ".join(cell(t, arm_, "gap") for t, _ in cols) + " \\\\")
+    write(out / "tab_recog_robust.tex", "\n".join(rows) + "\n")
+    for tag, name in cols[1:]:
+        d = L[tag]
+        ok = d is not None
+        put(f"Rec{name}RankRef", num(d["s"].loc["ref_large", "rank1"], 1) if ok else None, why)
+        put(f"Rec{name}RankBic", num(d["s"].loc["bicubic", "rank1"], 1) if ok else None, why)
+        put(f"Rec{name}RankEst", num(d["s"].loc["span/est", "rank1"], 1) if ok else None, why)
+        put(f"Rec{name}EstVsBic", txt(d["p"].loc[("span/est", "bicubic")], "d_rank1") if ok else None, why)
+        put(f"Rec{name}PubVsBic", txt(d["p"].loc[(PUB, "bicubic")], "d_rank1") if ok else None, why)
+    a = L["awex_resnet18"]
+    put("RecAwexEnrolled", len(a["meta"]["subjects"]) if a else None, why)
+    put("RecAwexSubj", a["meta"]["n_probe_subjects"] if a else None, why)
+    put("RecAwexProbes", a["meta"]["n_probe"] if a else None, why)
+    f = res / "recog" / "recognizer_resnet50_train_log.json"
+    put("RecRfValAcc", num(100 * json.loads(f.read_text())["info"]["val_acc"], 1) if f.exists() else None, why)
+
+
 # ------------------------------------------------------------------ hình
 def figures(pub: dict, tr: dict, fig: Path) -> None:
     import matplotlib
@@ -552,7 +632,7 @@ QUAL = [("bicubic", "Bicubic"), ("span_ch48", "SPAN-S\npublished"), ("bsrgan", "
         ("N2_span-zero+xearvn_pub_rand_x4_hrall_est_f2", "SPAN-S\nmeasured")]
 
 
-def qualitative(res: Path, fig: Path, picks: tuple[int, ...] = (3, 4, 9, 14)) -> bool:
+def qualitative(res: Path, fig: Path) -> bool:
     """Ảnh nhỏ thật đã phóng ×4 bằng sáu phương pháp. Trả về False nếu chưa có ảnh (results/recog/sr)."""
     import cv2
     import matplotlib
@@ -560,7 +640,8 @@ def qualitative(res: Path, fig: Path, picks: tuple[int, ...] = (3, 4, 9, 14)) ->
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    root = res / "recog" / "sr"
+    # sr2: 12 ảnh rải trên nhiều người (mã từ 07/10); sr: 16 ảnh đầu, đều của một người (mã cũ)
+    root, picks = (res / "recog" / "sr2", (0, 3, 6, 9)) if (res / "recog" / "sr2" / "bicubic").is_dir() else (res / "recog" / "sr", (3, 4, 9, 14))
     if not all((root / m).is_dir() for m, _ in QUAL):
         return False
     names = sorted(p.name for p in (root / QUAL[0][0]).glob("*.png"))
@@ -595,6 +676,7 @@ def main(argv=None) -> None:
     tr = trained(res, out, Path(a.folds))
     realism_and_params(res, out, Path(a.degrade_params))
     recognition(res, out)
+    recognition_extra(res, out)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.pdf}\n" if qualitative(res, fig)
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")

@@ -83,8 +83,9 @@ bash scripts/make_n2c_jobs.sh jobs/n2c.txt && python scripts/run_queue.py jobs/n
 bash scripts/score_n2.sh
 #   LẦN CHẠY CUỐI trên hai fold giữ kín 1 và 5 (24 lần; chỉ chạy một lần, không sửa cấu hình theo kết quả):
 bash scripts/make_final_jobs.sh jobs/final.txt && python scripts/run_queue.py jobs/final.txt
-#   Đo nhận dạng tai trên ảnh nhỏ thật (07/10): huấn luyện mạng nhận dạng (ResNet-18, chỉ ảnh lớn của người có vai
-#   train, fit, clf), rồi chấm mọi phương pháp phóng ảnh trên ảnh nhỏ thật của nhóm test và viewer, với hai mạng nhận dạng.
+#   Đo nhận dạng tai trên ảnh nhỏ thật (07/10): huấn luyện hai mạng nhận dạng (ResNet-18, ResNet-50; chỉ ảnh lớn của người
+#   có vai train, fit, clf), rồi chấm mọi phương pháp phóng ảnh trên ảnh nhỏ thật của EarVN1.0 (nhóm test, viewer) và AWEx,
+#   mỗi bộ với ba mạng nhận dạng; kết quả EarVN1.0 được tách thêm theo mức nén JPEG của file ảnh dò.
 #   Cần torchvision và tải được trọng số ImageNet ở lần đầu. Kết quả: results/recog/*_summary/summary.md
 bash scripts/run_recog.sh
 #   Bản thảo: sinh số, bảng, hình từ results/ rồi biên dịch (xem paper/README.md)

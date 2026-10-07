@@ -76,6 +76,20 @@ nhánh ước lượng, vì nó được chốt trước khi có các phép so n
 **Điểm mạnh mới của bài:** phát hiện P1 nay có bằng chứng trên ảnh thật, không chỉ trên ảnh mô phỏng: mô hình học bằng
 bicubic không giúp gì cho nhận dạng (kể cả sau khi tinh chỉnh trên ảnh tai), mô hình học có nén tăng rank-1 gần gấp đôi.
 
+## 3c. Kết quả rà tài liệu lượt đầu (07/10/2026; tìm kiếm web, chưa phải rà có hệ thống)
+
+- **Về ảnh tai:** chỉ tìm thấy một bài SR cho ảnh tai (Markičević, Peer, Emeršič, IWSSIP 2023: EDSR và SwinIR, ×2 và ×4, trên
+  UERC, đo rank-1 bằng ResNet, mốc là ảnh gốc và ảnh nội suy bicubic). Chưa đọc được toàn văn, nên chưa biết họ có xét nén
+  không. Có hai bài nền cho động cơ: UERC 2019 (độ phân giải là một nguồn dao động chính của nhận dạng tai) và Rathgeb và
+  cộng sự 2016 (ảnh hưởng của nén ảnh tới nhận dạng tai).
+- **Về SR cho ảnh đã nén:** hướng này **đã có** trên ảnh tự nhiên: CISRDCNN (2018), cuộc thi AIM 2022, và một mạng hiệu quả
+  cho ảnh nén (Ma và cộng sự, WACVW 2024). Vì vậy bài **không được** viết "huấn luyện có nén là ý mới".
+- **Về học suy giảm từ ảnh thật của một đặc trưng sinh trắc:** Bulat và cộng sự (ECCV 2018) đã làm cho ảnh mặt, bằng GAN.
+- **Chưa tìm thấy:** bài nào đo ngưỡng mức nén mà từ đó các mô hình SR hiệu quả có sẵn kém nội suy, ở ảnh vào vài chục
+  pixel, có kiểm trên ảnh thật của miền đích. Đây là phần mới mà bài đứng trên đó.
+- **Hệ quả cho định vị:** bài là một nghiên cứu thực nghiệm trên một miền và cỡ ảnh chưa ai đo, không phải một phương pháp
+  mới. Khớp với đánh giá trước đó; không có gì trong lượt rà này làm bài mạnh lên hay yếu đi rõ rệt.
+
 ## 4. Bằng chứng còn thiếu: danh sách đóng
 
 Năm việc. **Việc 1 và nửa đầu việc 2 (nhận dạng) đã xong ngày 07/10**; còn khảo sát người xem, việc 3, 4, 5.
@@ -85,7 +99,7 @@ Năm việc. **Việc 1 và nửa đầu việc 2 (nhận dạng) đã xong ngà
 | 1 | Tách phần "có nén" khỏi phần "đo từ dữ liệu": hai nhánh huấn luyện mới (JPEG với đúng phân bố mức nén đã đo; JPEG rút đều 60 đến 95) | P3 | 6 lần huấn luyện, khoảng 3 giờ | Chỉ đổi câu chữ của P3: "đo từ ảnh tai thật" hay "có nén ở dải mức phù hợp". Bài đứng được ở cả hai nhánh |
 | 2 | Một thước đo trên ảnh tai nhỏ thật: khảo sát người xem. Thêm nhận dạng tai (người dùng đã quyết làm, 07/10): 51 người được đăng ký, 36 người trong đó có ảnh nhỏ thật, 2.015 ảnh dò | P3 | Người xem: vài ngày. Nhận dạng: 1 đến 2 ngày mã, vài giờ GPU | Không có việc này thì P3 chỉ đúng trên ảnh mô phỏng; đây là điểm người phản biện bắt đầu tiên |
 | 3 | Chạy cuối trên đủ 5 fold (thêm fold 1 và 5 đang giữ kín), các nhánh của P2, P3 trên hai thân | P2, P3 | Khoảng 20 lần huấn luyện, 10 giờ | Số chính của bài: 700 ảnh, 100 người, năm lần huấn luyện độc lập cho mỗi nhánh |
-| 4 | Độ trễ trên một thiết bị (Jetson; không có thì điện thoại hoặc CPU) | P4 | Một buổi khi có thiết bị | Không có thì bỏ chữ "Real-Time" khỏi tiêu đề, giữ số GPU |
+| 4 | Độ trễ trên iPhone 12 Pro Max qua Core ML (người dùng chốt 07/10; không dùng Jetson hay Android) | P4 | Một buổi | Không đạt 33 ms thì hạ xuống "near real-time" hoặc bỏ chữ "Real-Time" khỏi tiêu đề |
 | 5 | Rà tài liệu: SR ảnh tai, SR ảnh đã nén, suy giảm ngoài thực tế | P1 | Vài ngày đọc | Xác định P1 mới đến đâu; quyết định câu "first" có được viết không |
 
 Kèm theo, không cần chạy gì mới: một hình cơ chế cho P1 (giả thuyết cần kiểm: sai số của mô hình có sẵn bám theo lưới khối 8×8 của JPEG), dựng

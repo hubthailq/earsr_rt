@@ -72,12 +72,12 @@ def test_embedder_roundtrip_and_arm_names(tmp_path):
     assert arm_of("span_ch48") == ("span_ch48 (published)", 0) and arm_of("bicubic") == ("bicubic", 0)
 
 
-def _fake_set(root, roles_path):
+def _fake_set(root, roles_path, prefix="p"):
     """6 người; mỗi người một màu và một hoa văn riêng, có ảnh lớn và ảnh nhỏ."""
     rng = np.random.default_rng(0)
     roles = {}
     for k in range(6):
-        s = f"p{k}"
+        s = f"{prefix}{k}"
         roles[s] = "test" if k < 3 else "train"
         (root / s).mkdir(parents=True)
         base = rng.integers(0, 256, (12, 8, 3), dtype=np.uint8)
@@ -126,3 +126,28 @@ def test_recognition_pipeline_end_to_end(tmp_path):
     assert set(s.arm) == {"ref_large", "direct", "bicubic"} and s.rank1.between(0, 100).all()
     p = pd.read_csv(tmp_path / "sum" / "paired.csv")
     assert set(p.minus) == {"bicubic", "direct"} and "ref_large" not in set(p.arm)
+    # mức nén của file ảnh dò được ghi lại (cv2 ghi JPEG ở mức 95) và kết quả được tách theo mức nén
+    pr = pd.read_csv(out / "probes.csv")
+    assert pr.jpeg_q.between(90, 100).all()
+    assert len(list((tmp_path / "sr" / "bicubic").glob("*.png"))) == 2
+    assert len({f.name.split("__")[0] for f in (tmp_path / "sr" / "bicubic").glob("*.png")}) == 2   # ảnh lưu thuộc hai người
+    import summarize_recog as sr
+
+    sr.QUALITY_GROUPS = (("high", 90, 100),)
+    sr.main(["--in", str(out), "--out", str(tmp_path / "sum2"), "--n-boot", "50"])
+    assert not (tmp_path / "sum2" / "by_quality.csv").exists()          # 12 ảnh dò: dưới mức tối thiểu 20 của một nhóm
+    # bộ ảnh thứ hai, không có file vai (như AWEx): mọi người đều được chấm; người trùng với tập học của mạng thì bị chặn
+    root2 = tmp_path / "data2"
+    _fake_set(root2, tmp_path / "roles2.json", prefix="q")
+    out2 = tmp_path / "res2"
+    recog_eval.main(["--root", str(root2), "--recognizer", str(tmp_path / "rec" / "ckpt.pt"), "--models", "bicubic",
+                     "--out", str(out2), "--device", "cpu"])
+    m2 = json.loads((out2 / "meta.json").read_text())
+    assert m2["role"] == ["all"] and len(m2["subjects"]) == 6 and m2["n_probe"] == 24
+    sr.QUALITY_GROUPS = (("high", 90, 100),)
+    sr.main(["--in", str(out2), "--out", str(tmp_path / "sum3"), "--n-boot", "50"])
+    bq = pd.read_csv(tmp_path / "sum3" / "by_quality.csv")
+    assert set(bq.arm) == {"direct", "bicubic"} and (bq.n_probe == 24).all() and (bq[bq.arm == "bicubic"].d_bic == 0).all()
+    with pytest.raises(SystemExit):
+        recog_eval.main(["--root", str(root), "--recognizer", str(tmp_path / "rec" / "ckpt.pt"), "--models", "bicubic",
+                         "--out", str(tmp_path / "res3"), "--device", "cpu"])

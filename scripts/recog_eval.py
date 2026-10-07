@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
+from earsr.degrade.fit_estimated import jpeg_quality_from_file  # noqa: E402
 from earsr.eval.infer import make_predictor  # noqa: E402
 from earsr.io import imread_rgb, imwrite_rgb  # noqa: E402
 from earsr.recog.data import INPUT_HW, list_images, split_gallery_probe, to_input  # noqa: E402
@@ -37,6 +38,8 @@ from earsr.recog.model import load_recognizer  # noqa: E402
 def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_dir: Path | None = None,
           save_n: int = 0, batch: int = 128) -> np.ndarray:
     out, buf = [], []
+    # ảnh lưu làm minh họa được rải đều trên danh sách ảnh dò (tức trên nhiều người), không lấy các ảnh đầu
+    keep = set(np.linspace(0, len(rows) - 1, min(save_n, len(rows))).round().astype(int).tolist()) if save_n else set()
 
     def flush():
         if buf:
@@ -47,7 +50,7 @@ def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_d
         img = imread_rgb(root / r["path"])
         if upscale is not None:
             img = upscale(img)
-            if save_dir is not None and i < save_n:
+            if save_dir is not None and i in keep:
                 imwrite_rgb(save_dir / (Path(r["path"]).as_posix().replace("/", "__").rsplit(".", 1)[0] + ".png"), img)
         buf.append(to_input(img, INPUT_HW))
         if len(buf) == batch:
@@ -59,7 +62,8 @@ def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_d
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", required=True)
-    ap.add_argument("--roles", required=True)
+    ap.add_argument("--roles", default=None, help="file vai theo người; bỏ trống thì chấm mọi người của bộ ảnh "
+                    "(chỉ dùng cho bộ chưa từng tham gia huấn luyện, như AWEx)")
     ap.add_argument("--role", nargs="+", default=["test", "viewer"],
                     help="nhóm được chấm: những người không dùng để huấn luyện SR hay mạng nhận dạng")
     ap.add_argument("--recognizer", required=True, help="ckpt của train_recognizer.py, hoặc imagenet-resnet50")
@@ -83,7 +87,7 @@ def main(argv=None) -> None:
 
     model, ck = load_recognizer(a.recognizer, a.device, init=a.recognizer_init)
     seen = set(ck.get("extra", {}).get("subjects", []))
-    rows = list_images(root, a.roles, tuple(a.role), cache=out / "scan.csv")
+    rows = list_images(root, a.roles, tuple(a.role) if a.roles else None, cache=out / "scan.csv")
     leak = seen & {r["subject"] for r in rows}
     if leak:
         raise SystemExit(f"DỪNG: mạng nhận dạng đã học trên {len(leak)} người của nhóm chấm (ví dụ {sorted(leak)[:3]})")
@@ -99,7 +103,9 @@ def main(argv=None) -> None:
         raise SystemExit("không có ảnh dò nào")
     g_subj = np.array([r["subject"] for r in sp["gallery"]])
     uniq, temp = templates(embed(model, root, sp["gallery"], a.device), g_subj)
-    meta = {"role": a.role, "recognizer": a.recognizer, "recognizer_cfg": ck["cfg"], "subjects": uniq.tolist(),
+    for r in sp["probe"]:   # mức nén JPEG của chính file ảnh dò (None nếu không phải JPEG), để tách kết quả theo mức nén
+        r["jpeg_q"] = jpeg_quality_from_file(root / r["path"])
+    meta = {"root": str(a.root), "role": a.role if a.roles else ["all"], "recognizer": a.recognizer, "recognizer_cfg": ck["cfg"], "subjects": uniq.tolist(),
             "n_gallery": len(sp["gallery"]), "n_ref": len(sp["ref"]), "n_probe": len(sp["probe"]),
             "dropped_subjects": sp["dropped"], "gallery_only_subjects": sp["gallery_only"],
             "n_probe_subjects": len({r["subject"] for r in sp["probe"]}), "probe_short": a.probe_short, "gallery_min_short": a.gallery_min_short,
@@ -108,9 +114,9 @@ def main(argv=None) -> None:
     for nm in ("probe", "ref", "gallery"):
         with open(out / f"{nm}s.csv" if nm != "gallery" else out / "gallery.csv", "w", newline="") as fh:
             wr = csv.writer(fh)
-            wr.writerow(["path", "subject", "short"])
-            wr.writerows([r["path"], r["subject"], r["short"]] for r in sp[nm])
-    print(f"nhóm chấm {a.role}: {len(uniq)} người được đăng ký ({len(sp['gallery'])} ảnh), trong đó "
+            wr.writerow(["path", "subject", "short", "jpeg_q"])
+            wr.writerows([r["path"], r["subject"], r["short"], "" if r.get("jpeg_q") is None else r["jpeg_q"]] for r in sp[nm])
+    print(f"nhóm chấm {meta['role']} của {a.root}: {len(uniq)} người được đăng ký ({len(sp['gallery'])} ảnh), trong đó "
           f"{meta['n_probe_subjects']} người có ảnh dò nhỏ thật ({len(sp['probe'])} ảnh); {len(sp['ref'])} ảnh dò lớn; "
           f"bỏ {len(sp['dropped'])} người thiếu ảnh lớn", flush=True)
 

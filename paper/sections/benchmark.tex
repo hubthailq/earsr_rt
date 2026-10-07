@@ -7,7 +7,7 @@
 
 \paragraph{EarVN1.0 (in the wild)} EarVN1.0~\cite{hoang2019earvn} contains ear crops of \RoleAll{} subjects collected from the web, with widely varying size, pose and illumination. We assign each subject one role, fixed before any experiment: \RoleTrain{} subjects supply additional training images, \RoleTest{} are used for testing, \RoleFit{} for measuring the degradation, \RoleClf{} for the realism classifier and \RoleViewer{} are reserved for evaluation on real small images. No subject has two roles. Ground truth exists only where the original is large enough: we keep images whose short side is at least twice the target size and downsize them, which suppresses the compression artefacts of the source. This yields \NEarvnImg{} test images of \NEarvnSubj{} subjects at 24-pixel inputs.
 
-\paragraph{AWEx (in the wild, never used for training)} From the extended Annotated Web Ears collection~\cite{emersic2017ear} we obtain, by the same rule, \NAwexSImg{} images of \NAwexSSubj{} subjects at 24-pixel inputs and \NAwexMImg{} images of \NAwexMSubj{} subjects at 36-pixel inputs. No AWEx image is used for training, fitting or model selection.
+\paragraph{AWEx (in the wild, never used for training)} From the extended Annotated Web Ears collection~\cite{emersic2017ear,emersic2017uerc} we obtain, by the same rule, \NAwexSImg{} images of \NAwexSSubj{} subjects at 24-pixel inputs and \NAwexMImg{} images of \NAwexMSubj{} subjects at 36-pixel inputs. No AWEx image is used for training, fitting or model selection.
 
 \subsection{Input degradations}
 \label{sec:degradations}

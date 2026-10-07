@@ -57,20 +57,54 @@ chốt cho luận điểm P3: mục 3b của `docs/story-imavis.md`. Bản thả
    bash scripts/make_final_jobs.sh jobs/final.txt        # phải in: 24 lệnh; fold giữ kín: 1 5
    nohup python scripts/run_queue.py jobs/final.txt > final.log 2>&1 &
    ```
-   Khi `tail -3 final.log` có `'done': 24, 'failed': 0`:
+   Khi hàng đợi xong, làm đúng thứ tự (người dùng yêu cầu commit sau từng bước):
    ```bash
+   # A. kiểm và commit sổ ghi huấn luyện
+   tail -3 final.log                                 # phải có 'done': 24, 'failed': 0
    grep -c "phép thử ảnh sáng: ỔN ĐỊNH" jobs/final.txt.logs/*.log | grep -c ":1"     # phải ra 24
-   bash scripts/score_n2.sh           # mong đợi: n2 1134, n2_earvn 315, n2_awex 630 file (63 mô hình)
-   bash scripts/run_recog.sh          # chấm thêm 24 mô hình mới với hai mạng nhận dạng, rồi tổng hợp lại
-   git add results && git commit -m "Final run: held-out folds 1 and 5 trained and scored" && git push
+   git pull && git add results && git commit -m "Final run: 24 trainings on held-out folds 1 and 5 done" && git push
+   # B. chấm trên ba bộ ảnh (khoảng 1 đến 1,5 giờ), rồi commit
+   bash scripts/score_n2.sh                          # cuối cùng in: n2 1134, n2_earvn 315, n2_awex 630 file
+   git add results && git commit -m "Final run: folds 1 and 5 scored on AMI, EarVN, AWEx" && git push
+   # C. nhận dạng trên ảnh nhỏ thật, bản mở rộng (07/10): hai bộ ảnh (EarVN1.0, AWEx) × ba mạng nhận dạng, tách theo mức
+   #    nén của file, ảnh minh họa của nhiều người. Khoảng 30 đến 60 phút (ước lượng). Cần mã mới: phải `git pull` trước.
+   git pull && ls scripts/run_recog.sh && grep -c awex scripts/run_recog.sh      # số cuối phải lớn hơn 0
+   bash scripts/run_recog.sh                         # cuối cùng in "Xong. Đọc: ... resnet18_summary ... awex_resnet18_summary ..."
+   ls results/recog/*_summary/summary.md | wc -l     # phải ra 6
+   ls results/recog/resnet18/N2_*.csv | wc -l        # phải ra 60
+   ls results/recog/sr2/bicubic | wc -l              # phải ra 12
+   head -12 results/recog/awex_resnet18_summary/summary.md
+   git add results && git commit -m "Final run: recognition on EarVN and AWEx, two recognizers, split by JPEG quality" && git push
    ```
+   **Nhắc người dùng (đã hứa ngày 07/10):** trước bước A phải commit và push mã mới từ máy Mac; nếu chạy `run_recog.sh` bằng
+   mã cũ thì thiếu AWEx, ResNet-50 và bảng theo mức nén.
+   Rồi `git pull` trên máy Mac và báo Claude.
    **[Claude] sau khi pull:** `python3 scripts/make_paper.py` (bảng tự chuyển sang 100 người), so kết quả 5 fold với 3 fold
    và báo thẳng nếu kết luận nào đổi; sửa các câu "development folds" và bỏ ghi chú nháp trong bản thảo.
 2. **Việc 2b: khảo sát người xem** trên ảnh nhỏ thật (nhóm `viewer`; `evaluate.py --save-sr` trên labai217, rồi
    `viewer_study.py make`; cần tìm người xem). Mục 6.6 của bản thảo.
-3. **Việc 4: độ trễ trên một thiết bị** (Jetson; không có thì Android hoặc CPU). Không có thì bỏ chữ "Real-Time" khỏi tiêu đề.
-4. **[Bạn, song song] Việc 5: rà tài liệu** (SR ảnh tai: đọc toàn văn bài IWSSIP 2023; SR ảnh đã nén; suy giảm ngoài thực
-   tế), rồi **kiểm từng mục của `paper/refs.bib`** (ghi theo trí nhớ). Mục 2 của bản thảo.
+3. **Việc 4: độ trễ trên iPhone 12 Pro Max (iOS, Core ML).** Người dùng chốt ngày 07/10: làm iOS, không dùng Jetson hay
+   Android. **Chưa được viết mã: người dùng dặn đợi lần chạy cuối xong và kết quả đã commit rồi mới bắt đầu phần này.**
+   Khi bắt đầu, việc của Claude: script xuất Core ML cho mô hình của bài và các mốc (thử `coremltools` trên máy Mac; không
+   chạy được trên Python 3.14 thì chuyển trên labai217), hướng dẫn đo từng bước trong Xcode, sửa mục 1.5 của kế hoạch và mục
+   6.7 của bản thảo. Chưa biết: Xcode có in phân vị 95 không; các mốc khác (DISP, BSRGAN, SwinIR) có chuyển được hết không.
+   Ngưỡng real-time giữ nguyên: trung vị không quá 33 ms ở ảnh vào 48×68, mỗi lần một ảnh. `docs/ANDROID.md` giữ làm tham khảo.
+4. **Việc 5: rà tài liệu.** Lượt đầu xong ngày 07/10 (Claude, bằng tìm kiếm web): 21 mục của `paper/refs.bib` đã tra,
+   11 bài mới được thêm, mục Related Work viết lại. **Còn lại, việc của bạn:**
+   (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250; Claude không mở được) để biết họ dùng suy giảm nào và có xét nén
+   không, rồi sửa hai ô TBD ở mục 1 và mục 2 của bản thảo;
+   (b) tìm có hệ thống trên IEEE Xplore và Scopus với các cụm "ear super-resolution", "low-resolution ear recognition",
+   "compressed image super-resolution" (lượt của Claude chỉ khoảng 25 truy vấn, không thay được việc này);
+   (c) đối chiếu 24 mục "chưa tra" liệt kê ở đầu `paper/refs.bib` (các bài kinh điển, ghi theo trí nhớ);
+   (d) đọc toàn văn Li và cộng sự (TIFS 2019) và Bulat và cộng sự (ECCV 2018) trước khi giữ các câu mô tả hai bài này.
+4b. **Đào sâu phần nhận dạng (người dùng duyệt ngày 07/10; mã đã viết và thử trên máy Mac, chờ chạy ở bước C của việc 3):**
+   (i) tách ảnh dò thật theo mức nén JPEG của chính file (`recog_eval.py` ghi cột `jpeg_q`, `summarize_recog.py` ghi
+   `by_quality.csv`). Số tính thử từ kết quả ba fold: ở mức quanh 75 (1.431 ảnh, 33 người) SPAN công bố −0,1 [−1,3; +1,0]
+   điểm rank-1 so với bicubic, mô hình của bài +9,2; ở mức 93 (574 ảnh, 12 người) SPAN công bố +3,0 [1,6; 4,6], mô hình của
+   bài +18,4, BSRGAN +35,2. Ngưỡng của ảnh mô phỏng lặp lại trên ảnh thật. Giới hạn: hai nhóm là những người khác nhau.
+   (ii) AWEx làm bộ ảnh thật thứ hai (112 người đăng ký, 81 người có ảnh nhỏ thật, 428 ảnh dò; chưa từng dùng để huấn
+   luyện gì). (iii) mạng nhận dạng thứ hai, ResNet-50. Bản thảo đã có bảng 10, 11 và đoạn văn chờ số (mục 6.5).
+   **[Claude] sau khi có kết quả:** viết phần diễn giải cho AWEx và ResNet-50, sửa câu "một bộ dữ liệu" ở mục Thảo luận.
 5. **Việc nhỏ của bản thảo** (Claude làm được ngay khi bạn bảo): hình định tính lấy ảnh của nhiều người (hiện 16 ảnh đã lưu
    đều của một người; sửa `recog_eval.py` để rải ảnh lưu theo người rồi chạy lại phần lưu ảnh); hình phổ sai số cho mục 4.1;
    rút abstract xuống giới hạn của tạp chí; tên đồng tác giả và đơn vị; quyền dùng ảnh EarVN1.0 trong hình.
@@ -85,6 +119,12 @@ Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào khôn
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 07/10 **[Claude]** Mã đào sâu phần nhận dạng: tách theo mức nén của file ảnh dò, AWEx làm bộ thứ hai, ResNet-50 làm
+      mạng thứ hai, ảnh minh họa rải trên nhiều người; `make_paper.py` và bản thảo có thêm hai bảng. Kiểm thử bắt được một
+      lỗi (dòng `ref_large` lọt vào bảng theo mức nén) và đã sửa. 150 kiểm thử qua; chạy thử trên ảnh AWEx và EarVN1.0 thật.
+- [x] 07/10 **[Claude]** Rà tài liệu lượt đầu: tra 21 mục của `refs.bib`, thêm 11 bài (UERC 2017 và 2019, Rathgeb 2016 về nén và
+      nhận dạng tai, Bulat 2018, CISRDCNN, AIM 2022, Ma 2024, Ohtani 2024, Li 2019, Menezes 2021, Ignatov 2021), viết lại mục
+      Related Work. Thêm đồng tác giả Vinh Truong Hoang (tác giả liên hệ, HCMC Open University) vào `paper/main.tex`.
 - [x] 07/10 **[Claude]** Script lần chạy cuối `scripts/make_final_jobs.sh` (24 lệnh, fold 1 và 5); `make_n2b_jobs.sh` và
       `make_n2c_jobs.sh` chỉ mở fold giữ kín khi được gọi từ script đó. Đã thử: sinh danh sách, đếm nhánh, chặn gọi trực tiếp.
 - [x] 07/10 **[labai217]** Khối `n2c` (6 lần) xong và đã chấm; đo nhận dạng xong với hai mạng nhận dạng.

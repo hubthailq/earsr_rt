@@ -60,6 +60,35 @@ def arm_stats(models: list[dict], subjects: list[str], n_boot: int) -> dict:
                                                               for i in range(k)])), n_boot)}
 
 
+QUALITY_GROUPS = (("low", 70, 80), ("high", 90, 100))   # hai đỉnh của ảnh tai nhỏ thật: quanh mức 75, và mức 93
+
+
+def by_quality(inp: Path, st: dict, n_boot: int) -> list[dict]:
+    """Rank-1 theo mức nén JPEG của chính file ảnh dò, và chênh lệch ghép cặp so với bicubic trong từng nhóm.
+    Trả về danh sách rỗng nếu probes.csv không có cột jpeg_q (bộ ảnh PNG, hoặc kết quả sinh bằng mã cũ)."""
+    f = inp / "probes.csv"
+    if not f.exists():
+        return []
+    pr = pd.read_csv(f, dtype={"subject": str})
+    if "jpeg_q" not in pr.columns or pr.jpeg_q.notna().sum() == 0 or "bicubic" not in st:
+        return []
+    rows = []
+    for name, lo, hi in QUALITY_GROUPS:
+        m = pr.jpeg_q.between(lo, hi).to_numpy()
+        if m.sum() < 20:
+            continue
+        cl = pr.subject.to_numpy()[m]
+        for arm, s in st.items():
+            if arm == "ref_large" or s["n_probe"] != len(pr):
+                continue                      # ref_large dùng danh sách ảnh dò khác (refs.csv)
+            e = mean_ci(s["hit1"][m], cl, n_boot)
+            d = paired_diff(s["hit1"][m], st["bicubic"]["hit1"][m], cl, n_boot=n_boot)
+            rows.append({"arm": arm, "group": name, "q_lo": lo, "q_hi": hi, "n_probe": int(m.sum()),
+                         "n_subjects": e.n_clusters, "rank1": 100 * e.point, "rank1_lo": 100 * e.lo,
+                         "rank1_hi": 100 * e.hi, "d_bic": 100 * d.point, "d_bic_lo": 100 * d.lo, "d_bic_hi": 100 * d.hi})
+    return rows
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--in", dest="inp", required=True)
@@ -102,7 +131,7 @@ def main(argv=None) -> None:
                           "d_rank1_hi": 100 * d1.hi, "d_rank1_p": d1.p, "d_eer": 100 * de["point"],
                           "d_eer_lo": 100 * de["lo"], "d_eer_hi": 100 * de["hi"]})
     pd.DataFrame(pairs).to_csv(out / "paired.csv", index=False)
-    lines = [f"# Nhận dạng tai trên ảnh nhỏ thật ({', '.join(meta['role'])}): {len(meta['subjects'])} người, "
+    lines = [f"# Nhận dạng tai trên ảnh nhỏ thật ({meta.get('root', '')}; {', '.join(meta['role'])}): {len(meta['subjects'])} người, "
              f"{meta['n_probe']} ảnh dò, {meta['n_gallery']} ảnh đăng ký", "",
              f"Mạng nhận dạng: `{meta['recognizer']}`. Khoảng tin cậy 95%, bootstrap theo người. Đơn vị: %.", "",
              "| Nhánh | Số mô hình | Rank-1 | Rank-5 | EER | TAR ở FAR 1% |", "|---|---|---|---|---|---|"]
@@ -120,6 +149,18 @@ def main(argv=None) -> None:
             s2 = "*" if p["d_eer_lo"] * p["d_eer_hi"] > 0 else ""
             lines.append(f"| {p['arm']} | {p['d_rank1']:+.2f} [{p['d_rank1_lo']:+.2f}; {p['d_rank1_hi']:+.2f}]{s1} | "
                          f"{p['d_eer']:+.2f} [{p['d_eer_lo']:+.2f}; {p['d_eer_hi']:+.2f}]{s2} |")
+    bq = by_quality(inp, st, a.n_boot)
+    if bq:
+        pd.DataFrame(bq).to_csv(out / "by_quality.csv", index=False)
+        for name, lo, hi in QUALITY_GROUPS:
+            sub = sorted((r for r in bq if r["group"] == name), key=lambda r: -r["rank1"])
+            if not sub:
+                continue
+            lines += ["", f"## Ảnh dò có mức nén JPEG của file từ {lo} đến {hi}: {sub[0]['n_probe']} ảnh, "
+                      f"{sub[0]['n_subjects']} người", "", "| Nhánh | Rank-1 | So với bicubic |", "|---|---|---|"]
+            for r in sub:
+                star = "*" if r["d_bic_lo"] * r["d_bic_hi"] > 0 else ""
+                lines.append(f"| {r['arm']} | {r['rank1']:.2f} | {r['d_bic']:+.2f} [{r['d_bic_lo']:+.2f}; {r['d_bic_hi']:+.2f}]{star} |")
     (out / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 

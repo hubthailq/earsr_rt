@@ -99,6 +99,42 @@ Table~\ref{tab:recog} reports rank-1 identification and equal error rate (EER). 
 
 The control recogniser, which has never seen an ear, gives much lower rates and the same ordering: \RecCtlRankBic{}\% with bicubic upscaling, \RecCtlRankPub{}\% with the published weights and \RecCtlRankEst{}\% with our model (\RecCtlEstVsBic{} over bicubic).
 
+\paragraph{By compression level of the probe} The quality setting of each real probe can be read from its file, which allows a direct test of the threshold found on synthesised inputs in Section~\ref{sec:analysis}. Table~\ref{tab:recogquality} splits the probes into those stored at JPEG quality 70 to 80 (\RecQLowN{} probes of \RecQLowSubj{} subjects) and those stored at quality 90 or above (\RecQHighN{} probes of \RecQHighSubj{} subjects). For the heavily compressed probes the published SPAN weights change the rank-1 rate by \RecQLowPub{} points relative to bicubic upscaling; for the lightly compressed ones by \RecQHighPub{}. The compression-aware model gains \RecQLowEst{} and \RecQHighEst{} points. The pattern predicted from synthesised inputs, a bicubic-trained model that is useful at quality 93 and not at quality 75, is thus observed on real images through an independent measure. The table also locates the advantage of the GAN-trained models: BSRGAN gains \RecQHighBsrgan{} points on the lightly compressed probes and \RecQLowBsrgan{} on the heavily compressed ones. The two groups contain largely different subjects, so the comparison is between methods within a group, not between groups.
+
+\begin{table}[t]
+\centering
+\caption{Rank-1 identification (\%) of real small ear images by the JPEG quality stored in the probe file, and paired difference from bicubic upscaling in percentage points with 95\% confidence interval (EarVN1.0, ear recogniser).}
+\label{tab:recogquality}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Quality 70--80} & \multicolumn{2}{c}{Quality $\geq$ 90} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
+\midrule
+\tabinput{generated/tab_recog_quality}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\paragraph{A second dataset and a second recogniser} To test whether these results depend on the dataset or on the recogniser, we repeat the experiment on AWEx, which was used for no training of any kind (\RecAwexEnrolled{} subjects enrolled, \RecAwexProbes{} real small probes of \RecAwexSubj{} subjects, same protocol), and with a second ear recogniser, a ResNet-50 trained on the same data (\RecRfValAcc{}\% accuracy on held-out images of its training subjects). Table~\ref{tab:recogrobust} gives the paired differences from bicubic upscaling. On AWEx the compression-aware model changes the rank-1 rate by \RecAwexReEstVsBic{} points and the published weights by \RecAwexRePubVsBic{}; with the ResNet-50 recogniser on EarVN1.0 the corresponding figures are \RecEarvnRfEstVsBic{} and \RecEarvnRfPubVsBic{}. \todo{interpret once the numbers exist; AWEx images are stored as PNG, so their compression history is unknown and no split by quality is possible. Report the result whatever its sign.}
+
+\begin{table}[t]
+\centering
+\caption{Robustness of the identification result: paired difference in rank-1 rate from bicubic upscaling (percentage points, 95\% confidence interval), on two datasets and with two ear recognisers. The first two rows give absolute rank-1 rates.}
+\label{tab:recogrobust}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{EarVN1.0} & \multicolumn{2}{c}{AWEx} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Upscaling & ResNet-18 & ResNet-50 & ResNet-18 & ResNet-50 \\
+\midrule
+\tabinput{generated/tab_recog_robust}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 Two conclusions follow. First, the finding of Section~\ref{sec:analysis} carries over to real images: SR trained with bicubic downsampling gives no identification benefit on real small ear images, with or without fine-tuning on ear data, and compression-aware training does. Second, on real images the choice among compression-aware degradations makes no measurable difference to identification. This settles the question left open in Section~\ref{sec:ablation}, and it qualifies our statement about the generic pipeline: its disadvantage is in fidelity (Table~\ref{tab:main}), not in identification. Figure~\ref{fig:qualitative} shows examples.
 
 \begin{table}[t]
@@ -128,4 +164,4 @@ Upscaling & Rank-1 & EER & Rank-1 & EER \\
 \todo{viewer study on real small images of the reserved subjects: pairs (ours vs.\ bicubic, ours vs.\ published weights, ours vs.\ generic), number of viewers, preference rate with confidence interval. Tools: \texttt{evaluate.py --save-sr}, \texttt{viewer\_study.py}.}
 
 \subsection{Efficiency}
-The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. On an RTX~3080, SPAN with 48 channels (\ParamsSpan{}M parameters) enlarges a $48\times68$ input in \LatSpan{}~ms and DISP in \LatDisp{}~ms (median, 32-bit precision), against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}). \todo{latency on an embedded device (Jetson Nano, FP16, $48\times68$ input): median and 95th percentile for SPAN, DISP and the reference models. If no device measurement is obtained, remove ``Real-Time'' from the title and report GPU latency only.}
+The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. On an RTX~3080, SPAN with 48 channels (\ParamsSpan{}M parameters) enlarges a $48\times68$ input in \LatSpan{}~ms and DISP in \LatDisp{}~ms (median, 32-bit precision), against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}). \todo{latency on a smartphone (iPhone 12 Pro Max, A14, Core ML; $48\times68$ input, batch 1): compute units used, median and 95th percentile for SPAN, DISP and the reference models, against the 33~ms threshold. If the threshold is not met, change ``Real-Time'' in the title.}

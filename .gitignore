@@ -16,3 +16,4 @@ __pycache__/
 # ma trận điểm của phép đo nhận dạng: lớn, sinh lại được bằng scripts/recog_eval.py
 /results/recog/**/*.npy
 /results/recog/**/scan.csv
+/results/recog/_qual/
