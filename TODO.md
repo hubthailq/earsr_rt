@@ -37,51 +37,32 @@ huấn luyện, không có kiến trúc mới; kiến trúc để bài sau (tự
 việc bổ sung không có điểm cuối: bài cần đúng **năm việc** dưới đây, xong thì viết. Việc khác nằm ở mục "để dành" của
 file đó và chỉ làm khi người phản biện yêu cầu. **Không đề xuất thêm thí nghiệm ngoài danh sách này nếu không có lý do mới.**
 
+**Trạng thái năm việc (07/10, chiều):** việc 1 xong; việc 2a (nhận dạng) xong; còn việc 2b, 3, 4, 5. Kết quả và câu chữ đã
+chốt cho luận điểm P3: mục 3b của `docs/story-imavis.md`. Bản thảo `paper/` đã tự điền số mới; không còn macro số nào trống.
+
 **Khi người dùng hỏi "làm gì tiếp", trả lời theo đúng thứ tự dưới đây.**
 
-0. **[Bạn] Commit và push** mã đo nhận dạng và bản thảo (lệnh ở cuối mục này). Mã của việc 1 (`jpegmix`, `jpegu`) đã được
-   commit trước đó nếu hàng đợi `n2c` đang chạy.
-1. **[labai217] Việc 1 (đang chạy): hàng đợi `n2c`**, 6 lần huấn luyện, khoảng 3 đến 3,5 giờ. Khi `tail -3 n2c.log` có
-   `'done': 6, 'failed': 0`:
+0. **[Bạn] Commit và push** trên máy Mac:
    ```bash
-   git pull                                             # lấy mã đo nhận dạng
-   grep -c "phép thử ảnh sáng: ỔN ĐỊNH" jobs/n2c.txt.logs/*.log | grep -c ":1"    # phải ra 6
-   bash scripts/score_n2.sh                             # khoảng 30 phút; mong đợi: n2 702, n2_earvn 195, n2_awex 390 file
+   git add TODO.md docs paper scripts/make_paper.py
+   git commit -m "Paper draft filled with N2c ablation and recognition results" && git push
    ```
-2. **[labai217] Việc 2a: đo nhận dạng trên ảnh nhỏ thật** (ngay sau bước 1; khoảng 30 đến 60 phút, ước lượng):
-   ```bash
-   python -c "import torchvision; print(torchvision.__version__)"     # phải in được số phiên bản
-   bash scripts/run_recog.sh                            # cuối cùng in "Xong. Đọc: results/recog/..."
-   cat results/recog/resnet18_summary/summary.md | head -25
-   git add results && git commit -m "N2c scored; ear recognition on real small images" && git push
-   ```
-   **Kiểm trước khi tin kết quả:** `val_acc` ở cuối log huấn luyện mạng nhận dạng phải cao (trên 0,8), và dòng `ref_large`
-   (ảnh dò lớn) phải có rank-1 cao hơn hẳn mức ngẫu nhiên (1/51, tức 2%). Nếu `ref_large` dưới khoảng 50% thì mạng nhận
-   dạng quá yếu, báo Claude trước khi đọc bảng.
-   Giao thức: 51 người của nhóm test và viewer được đăng ký bằng ảnh lớn; 36 người trong đó có ảnh nhỏ thật, 2.015 ảnh dò.
-   (Con số "41 người, 2.060 ảnh" Claude nêu trước đó là sai: trong EarVN1.0 ảnh của một người thường cùng cỡ, nên chỉ một
-   phần số người có cả ảnh lớn lẫn ảnh nhỏ.)
-   **[Claude] sau khi pull:** `python3 scripts/make_paper.py` (bảng và số trong bản thảo tự điền), đọc kết quả, viết phần
-   diễn giải ở mục 6.4 và 6.5 của bản thảo, chốt câu chữ luận điểm P3.
-   **Việc 2b: khảo sát người xem** (nhóm `viewer`; `evaluate.py --save-sr` trên labai217, rồi `viewer_study.py make`): làm sau.
-3. **Chạy cuối trên đủ 5 fold** (thêm fold 1 và 5, các nhánh của P2 và P3 trên hai thân; khoảng 20 lần, 10 giờ). **Chỉ
-   chạy sau khi việc 1 xong và danh sách nhánh đã chốt**, vì đây là lần đầu và lần duy nhất dùng fold giữ kín.
-4. **Độ trễ trên một thiết bị** (Jetson; không có thì Android hoặc CPU). Không có thì bỏ chữ "Real-Time" khỏi tiêu đề.
-5. **[Bạn, song song] Rà tài liệu:** SR ảnh tai (đọc toàn văn bài IWSSIP 2023), SR ảnh đã nén, suy giảm ngoài thực tế.
+   Rồi đọc `paper/main.pdf` (dựng: `python3 scripts/make_paper.py && cd paper && tectonic main.tex`).
+1. **[Claude viết script, labai217 chạy] Việc 3: chạy cuối trên đủ 5 fold** (thêm fold 1 và 5). Đây là lần đầu và lần duy
+   nhất dùng hai fold giữ kín, nên **danh sách nhánh phải chốt trước**. Đề xuất của Claude, chờ bạn gật: SPAN và DISP × bốn
+   kiểu (`bic`, `generic`, `bicjpeg75`, `est`), SPAN thêm `jpegmix`, `jpegu` và nhánh chỉ AMI: 2 fold × 12 = 24 lần, khoảng
+   12 giờ. Sau đó `score_n2.sh`, `run_recog.sh`, `make_paper.py`: mọi bảng tự chuyển sang 100 người. `make_n2b_jobs.sh` và
+   `make_n2c_jobs.sh` hiện chặn fold 1 và 5; cần một cờ mở khóa có chủ đích.
+2. **Việc 2b: khảo sát người xem** trên ảnh nhỏ thật (nhóm `viewer`; `evaluate.py --save-sr` trên labai217, rồi
+   `viewer_study.py make`; cần tìm người xem). Mục 6.6 của bản thảo.
+3. **Việc 4: độ trễ trên một thiết bị** (Jetson; không có thì Android hoặc CPU). Không có thì bỏ chữ "Real-Time" khỏi tiêu đề.
+4. **[Bạn, song song] Việc 5: rà tài liệu** (SR ảnh tai: đọc toàn văn bài IWSSIP 2023; SR ảnh đã nén; suy giảm ngoài thực
+   tế), rồi **kiểm từng mục của `paper/refs.bib`** (ghi theo trí nhớ). Mục 2 của bản thảo.
+5. **Việc nhỏ của bản thảo** (Claude làm được ngay khi bạn bảo): hình định tính lấy ảnh của nhiều người (hiện 16 ảnh đã lưu
+   đều của một người; sửa `recog_eval.py` để rải ảnh lưu theo người rồi chạy lại phần lưu ảnh); hình phổ sai số cho mục 4.1;
+   rút abstract xuống giới hạn của tạp chí; tên đồng tác giả và đơn vị; quyền dùng ảnh EarVN1.0 trong hình.
 
-**Bản thảo đã có: `paper/` (LaTeX, 21 trang; dựng theo `paper/README.md`).** Mọi con số là macro do
-`scripts/make_paper.py` sinh từ `results/`; ô đỏ `[TBD]` là chỗ chờ kết quả. Việc còn lại của bản thảo, ngoài năm việc trên:
-hình định tính (từ ảnh `run_recog.sh` lưu), hình phổ sai số cho mục 4.1, mục Related Work sau khi rà tài liệu, kiểm từng mục
-của `paper/refs.bib` (ghi theo trí nhớ), tên đồng tác giả và đơn vị.
-
-Lệnh commit trên máy Mac (07/10, sau khi thêm mã nhận dạng và bản thảo):
-```bash
-git add .gitignore README.md TODO.md docs earsr/recog earsr/report/arms.py paper tests/test_recog.py \
-        scripts/train_recognizer.py scripts/recog_eval.py scripts/summarize_recog.py scripts/run_recog.sh scripts/make_paper.py
-git commit -m "Ear recognition on real small images; LaTeX draft generated from results" && git push
-```
-
-Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào không thuộc năm việc trên thì **không làm cho bài này**.
+Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào không thuộc danh sách trên thì **không làm cho bài này**.
 
 ## 1. Nhật ký các việc gần đây
 
@@ -91,6 +72,9 @@ Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào khôn
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 07/10 **[labai217]** Khối `n2c` (6 lần) xong và đã chấm; đo nhận dạng xong với hai mạng nhận dạng.
+- [x] 07/10 **[Claude]** Đọc kết quả `n2c` và nhận dạng; chốt câu chữ P3 (mục 3b của `docs/story-imavis.md`); thêm 35 macro
+      và hình định tính vào `make_paper.py`; viết phần diễn giải ở mục 6.4, 6.5 và sửa abstract, mở bài, thảo luận của bản thảo.
 - [x] 07/10 **[Claude]** Bản thảo LaTeX ở `paper/` và `scripts/make_paper.py` (157 macro số, 10 bảng, 2 hình sinh từ
       `results/`; 22 macro còn TBD). Biên dịch được bằng tectonic.
 - [x] 07/10 **[Claude]** Mã đo nhận dạng tai trên ảnh nhỏ thật (`earsr/recog/`, bốn script). Người dùng quyết định làm (07/10).

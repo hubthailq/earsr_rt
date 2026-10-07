@@ -42,9 +42,43 @@ trung thực trên ảnh tai có nén.
 LPIPS tốt hơn các mô hình GAN lớn (BSRGAN 0,173 so với 0,246, nhưng PSNR kém bicubic 2 dB và chậm hơn 27 lần); cải thiện
 nhận dạng.
 
+## 3b. Kết quả của việc 1 và việc 2a (07/10/2026) và câu chữ đã chốt cho P3
+
+**Việc 1 (khối `n2c`, SPAN × ba fold):** tách "có nén" khỏi "đo từ dữ liệu".
+
+- Trên ảnh vào theo suy giảm ước lượng, nhánh ước lượng hơn nhánh chỉ có mức nén đã đo 0,04 đến 0,17 dB. Trên ảnh vào cùng
+  mức nén nhưng không mờ, không nhiễu thì ngược lại (kém 0,09 đến 0,22 dB); trên ảnh sạch kém 0,43 đến 0,61 dB. Nhánh nào
+  cũng thắng trên đúng kiểu ảnh nó học, nên ảnh mô phỏng không phân xử được.
+- Mức nén đã đo so với mức nén rút đều 60 đến 95: chênh 0,00 đến 0,06 dB. Không cần đo phân bố, chỉ cần phủ đúng dải.
+
+**Việc 2a (nhận dạng trên ảnh nhỏ thật; 51 người đăng ký, 36 người có ảnh nhỏ, 2.015 ảnh dò):** rank-1.
+
+| Nhóm | Rank-1 | So với bicubic |
+|---|---|---|
+| Ảnh dò lớn (mức tham chiếu của mạng nhận dạng) | 60,2% | |
+| Bicubic ×4 | 13,2% | |
+| Mô hình học bằng bicubic: SPAN công bố; SPAN tinh chỉnh trên ảnh tai | 14,0%; 13,2% | +0,8 [−0,1; 1,9]; +0,0 [−1,2; 1,3] |
+| Mô hình học có nén: ước lượng; JPEG 75; mức nén rút đều; chỉ mức nén đã đo; tổng quát | 25,0%; 25,4%; 24,4%; 23,9%; 23,9% | ước lượng: +11,8 [7,3; 16,8] |
+| Mô hình GAN lớn: BSRGAN, Real-ESRGAN | 27,7% | so với ước lượng: +2,7 [−1,7; 7,6], không có ý nghĩa |
+
+Mạng đối chứng (ImageNet, chưa từng thấy tai) cho cùng thứ tự ở mức thấp hơn nhiều: 2,9% → 7,2% (+4,3 [1,9; 7,1]).
+
+**Câu chữ đã chốt cho P3:** "phải huấn luyện với nén JPEG phủ đúng dải mức nén của ảnh thật". Việc đo từ ảnh tai thật dùng
+để **xác định dải đó** (hai đỉnh ở mức 75 và 93); ước lượng nhiễu và độ mờ **không cần**. Mô hình tham chiếu của bài vẫn là
+nhánh ước lượng, vì nó được chốt trước khi có các phép so này (không chọn mô hình theo kết quả test).
+
+**Hai điều phải viết hẹp lại so với bản phác đầu:**
+
+- Suy giảm tổng quát: kém 1,1 đến 2,1 dB về độ trung thực và kém bicubic trên ảnh sạch, nhưng **không kém về nhận dạng** trên
+  ảnh thật (−1,0 [−2,4; 0,2]). Không viết "suy giảm tổng quát không giải quyết được".
+- Mô hình GAN lớn có rank-1 cao hơn 2,7 điểm (không có ý nghĩa thống kê), chậm hơn 27 lần. Không viết "tốt nhất về nhận dạng".
+
+**Điểm mạnh mới của bài:** phát hiện P1 nay có bằng chứng trên ảnh thật, không chỉ trên ảnh mô phỏng: mô hình học bằng
+bicubic không giúp gì cho nhận dạng (kể cả sau khi tinh chỉnh trên ảnh tai), mô hình học có nén tăng rank-1 gần gấp đôi.
+
 ## 4. Bằng chứng còn thiếu: danh sách đóng
 
-Năm việc. Xong năm việc này thì viết.
+Năm việc. **Việc 1 và nửa đầu việc 2 (nhận dạng) đã xong ngày 07/10**; còn khảo sát người xem, việc 3, 4, 5.
 
 | # | Việc | Phục vụ | Chi phí | Kết quả đổi gì trong bài |
 |---|---|---|---|---|

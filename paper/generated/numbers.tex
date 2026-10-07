@@ -56,16 +56,14 @@
 \newcommand{\EstVsJpgLowMin}{0.06}
 \newcommand{\EstVsJpgMax}{0.26}
 \newcommand{\EstVsJpgMin}{0.14}
-\newcommand{\EstVsMixMax}{\todo{n2c}}
-\newcommand{\EstVsMixMin}{\todo{n2c}}
-\newcommand{\EstVsMixOnMixMax}{\todo{n2c}}
-\newcommand{\EstVsMixOnMixMin}{\todo{n2c}}
+\newcommand{\EstVsMixMax}{0.17}
+\newcommand{\EstVsMixMin}{0.04}
 \newcommand{\EstVsPubCleanMax}{1.77}
 \newcommand{\EstVsPubCleanMin}{1.21}
 \newcommand{\EstVsPubMax}{1.89}
 \newcommand{\EstVsPubMin}{1.32}
-\newcommand{\EstVsUniMax}{\todo{n2c}}
-\newcommand{\EstVsUniMin}{\todo{n2c}}
+\newcommand{\EstVsUniMax}{0.17}
+\newcommand{\EstVsUniMin}{0.08}
 \newcommand{\ExtraAmi}{$-$0.02}
 \newcommand{\ExtraAwexM}{$+$0.19}
 \newcommand{\ExtraAwexS}{$+$0.30}
@@ -83,8 +81,14 @@
 \newcommand{\LatRatio}{27}
 \newcommand{\LatSpan}{0.50}
 \newcommand{\LpipsQLowBetter}{16}
-\newcommand{\MixVsUniMax}{\todo{n2c}}
-\newcommand{\MixVsUniMin}{\todo{n2c}}
+\newcommand{\MixVsEstCleanMax}{0.61}
+\newcommand{\MixVsEstCleanMin}{0.43}
+\newcommand{\MixVsEstHighMax}{0.39}
+\newcommand{\MixVsEstHighMin}{0.25}
+\newcommand{\MixVsEstOnMixMax}{0.22}
+\newcommand{\MixVsEstOnMixMin}{0.09}
+\newcommand{\MixVsUniMax}{$+$0.06}
+\newcommand{\MixVsUniMin}{$+$0.00}
 \newcommand{\NAmiAllImg}{700}
 \newcommand{\NAmiImg}{420}
 \newcommand{\NAmiSubj}{60}
@@ -96,8 +100,8 @@
 \newcommand{\NEarvnSubj}{24}
 \newcommand{\NFolds}{3}
 \newcommand{\NPub}{16}
-\newcommand{\NRuns}{30}
-\newcommand{\NRunsStable}{30}
+\newcommand{\NRuns}{36}
+\newcommand{\NRunsStable}{36}
 \newcommand{\NoiseHi}{6.27}
 \newcommand{\NoiseLo}{0.85}
 \newcommand{\ParamsRatio}{39}
@@ -113,20 +117,49 @@
 \newcommand{\RealJpg}{56.7}
 \newcommand{\RealTestSubj}{4}
 \newcommand{\RealTrainSubj}{8}
-\newcommand{\RecEnrolled}{\todo{recog}}
-\newcommand{\RecEstVsBic}{\todo{recog}}
-\newcommand{\RecEstVsPub}{\todo{recog}}
-\newcommand{\RecGallery}{\todo{recog}}
-\newcommand{\RecProbes}{\todo{recog}}
-\newcommand{\RecRankBic}{\todo{recog}}
-\newcommand{\RecRankBsrgan}{\todo{recog}}
-\newcommand{\RecRankEst}{\todo{recog}}
-\newcommand{\RecRankGen}{\todo{recog}}
-\newcommand{\RecRankPub}{\todo{recog}}
-\newcommand{\RecRankRef}{\todo{recog}}
-\newcommand{\RecSubj}{\todo{recog}}
-\newcommand{\RecTrainImg}{\todo{recog}}
-\newcommand{\RecTrainSubj}{\todo{recog}}
+\newcommand{\RecBictVsBic}{$+$0.0 [$-$1.2, 1.3]}
+\newcommand{\RecBsrganVsEst}{$+$2.7 [$-$1.7, 7.6]}
+\newcommand{\RecCtlEstVsBic}{$+$4.3 [1.9, 7.1]}
+\newcommand{\RecCtlGenVsEst}{$-$0.1 [$-$1.5, 1.1]}
+\newcommand{\RecCtlPubVsBic}{$+$1.0 [0.2, 2.1]}
+\newcommand{\RecCtlRankBic}{2.9}
+\newcommand{\RecCtlRankBsrgan}{8.0}
+\newcommand{\RecCtlRankEst}{7.2}
+\newcommand{\RecCtlRankPub}{3.9}
+\newcommand{\RecCtlRankRef}{24.6}
+\newcommand{\RecDispEstVsBic}{$+$10.2 [6.0, 14.7]}
+\newcommand{\RecEerBic}{31.2}
+\newcommand{\RecEerEst}{26.8}
+\newcommand{\RecEerEstVsBic}{$-$4.5 [$-$7.7, $-$1.6]}
+\newcommand{\RecEerRef}{11.8}
+\newcommand{\RecEnrolled}{51}
+\newcommand{\RecEstVsBic}{$+$11.8 [7.3, 16.8]}
+\newcommand{\RecEstVsPub}{$+$11.0 [6.7, 15.7]}
+\newcommand{\RecGallery}{1862}
+\newcommand{\RecGenVsEst}{$-$1.0 [$-$2.4, 0.2]}
+\newcommand{\RecJpgVsEst}{$+$0.4 [$-$0.6, 1.4]}
+\newcommand{\RecMixVsEst}{$-$1.1 [$-$2.3, 0.0]}
+\newcommand{\RecProbes}{2015}
+\newcommand{\RecPubVsBic}{$+$0.8 [$-$0.1, 1.9]}
+\newcommand{\RecRankBic}{13.2}
+\newcommand{\RecRankBict}{13.2}
+\newcommand{\RecRankBsrgan}{27.7}
+\newcommand{\RecRankDirect}{13.1}
+\newcommand{\RecRankDispEst}{23.4}
+\newcommand{\RecRankDispPub}{14.5}
+\newcommand{\RecRankEst}{25.0}
+\newcommand{\RecRankGen}{23.9}
+\newcommand{\RecRankJpg}{25.4}
+\newcommand{\RecRankMix}{23.9}
+\newcommand{\RecRankPub}{14.0}
+\newcommand{\RecRankRealesrgan}{27.7}
+\newcommand{\RecRankRef}{60.2}
+\newcommand{\RecRankUni}{24.4}
+\newcommand{\RecSubj}{36}
+\newcommand{\RecTrainImg}{6586}
+\newcommand{\RecTrainSubj}{95}
+\newcommand{\RecUniVsEst}{$-$0.6 [$-$1.7, 0.5]}
+\newcommand{\RecValAcc}{86.8}
 \newcommand{\RoleAll}{164}
 \newcommand{\RoleClf}{16}
 \newcommand{\RoleFit}{16}
@@ -152,6 +185,8 @@
 \newcommand{\SpreadQLow}{0.12}
 \newcommand{\StressMaxDrop}{0.85}
 \newcommand{\TauRank}{0.03}
+\newcommand{\UniVsEstCleanMax}{0.26}
+\newcommand{\UniVsEstCleanMin}{0.14}
 \newcommand{\WildCleanGainMax}{4.45}
 \newcommand{\WildCleanGainMin}{2.18}
 \newcommand{\WildEstGainMax}{$+$0.61}

@@ -67,7 +67,9 @@ Backbone & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px
 \end{tabular}}
 \end{table}
 
-To separate the contribution of the compression levels from that of the measured noise and blur, we train two further models: one with bicubic downsampling followed by JPEG at the measured distribution of levels, without noise or blur, and one with JPEG quality drawn uniformly from 60 to 95, which uses nothing measured from the data (Table~\ref{tab:ablation}). On inputs degraded with the full measured pipeline, the measured model differs from the levels-only model by \EstVsMixMin{} to \EstVsMixMax{}~dB; on inputs without noise and blur the difference is \EstVsMixOnMixMin{} to \EstVsMixOnMixMax{}~dB. The levels-only model differs from the uniform-level model by \MixVsUniMin{} to \MixVsUniMax{}~dB. \todo{interpret once the runs are scored: if the three models are equivalent, the claim becomes ``training must include compression over the relevant range of levels'' and the measurement serves to identify that range.}
+To separate the contribution of the compression levels from that of the measured noise and blur, we train two further models: one with bicubic downsampling followed by JPEG at the measured distribution of levels, without noise or blur, and one with JPEG quality drawn uniformly from 60 to 95, which uses nothing measured from the data (Table~\ref{tab:ablation} and the corresponding rows of Table~\ref{tab:matrix}). On inputs degraded with the full measured pipeline, the measured model is ahead of the levels-only model by \EstVsMixMin{} to \EstVsMixMax{}~dB. On inputs with the same compression levels but without noise and blur the order reverses, the levels-only model being ahead by \MixVsEstOnMixMin{} to \MixVsEstOnMixMax{}~dB; it is also ahead at quality 93 (\MixVsEstHighMin{} to \MixVsEstHighMax{}~dB) and on clean inputs (\MixVsEstCleanMin{} to \MixVsEstCleanMax{}~dB). Each model is best on the inputs that match its own training, so synthesised inputs cannot decide whether the measured noise and blur are worth having. Real images can, and Section~\ref{sec:recog} finds no difference. The levels-only and the uniform-level models differ by \MixVsUniMin{} to \MixVsUniMax{}~dB on measured inputs: once the range of levels is covered, their exact distribution does not matter.
+
+We conclude that the essential ingredient is JPEG compression over the range of quality levels found in the target images, here roughly 70 to 95. Measuring the degradation serves to identify that range; estimating noise and blur is not required. We keep the measured degradation as the reference model in all tables because it was fixed before these comparisons were run.
 
 \begin{table}[t]
 \centering
@@ -87,7 +89,17 @@ Comparison & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 
 \label{sec:recog}
 All results above use inputs synthesised from larger images, because real small images have no ground truth. Identity labels offer an objective measure that needs none. We take the subjects of EarVN1.0 that were used neither for SR training nor for any fitting (the test and reserved groups). For each subject, half of the large images (short side at least 96 pixels) are enrolled and their embeddings averaged into a template; \RecEnrolled{} subjects are enrolled with \RecGallery{} images. The probes are the \RecProbes{} \emph{real} small images (short side 24 to 48 pixels) of the \RecSubj{} enrolled subjects that have any. Each probe is enlarged $\times4$ by the method under test and resized to the input size of the recogniser by one fixed operation. The recogniser is a ResNet-18~\cite{he2016resnet} with a cosine-margin loss~\cite{wang2018cosface}, trained only on large images of \RecTrainSubj{} other subjects (\RecTrainImg{} images); it never sees a small or an upscaled image, so it does not favour the look of any upscaling method. As a control we repeat the experiment with frozen ImageNet features that have never seen an ear.
 
-Table~\ref{tab:recog} reports rank-1 identification and equal error rate. With large probes the recogniser reaches a rank-1 rate of \RecRankRef{}\%. With real small probes it reaches \RecRankBic{}\% after bicubic upscaling, \RecRankPub{}\% with the published SPAN weights, \RecRankGen{}\% with the generic pipeline and \RecRankEst{}\% with the measured degradation; the paired difference between the latter and bicubic upscaling is \RecEstVsBic{} percentage points, and \RecEstVsPub{} against the published weights. BSRGAN reaches \RecRankBsrgan{}\%. \todo{interpretation, once the numbers exist. Report the result whatever its sign: ``sharper but not better recognised'' is as informative as an improvement.}
+Table~\ref{tab:recog} reports rank-1 identification and equal error rate (EER). With large probes the recogniser reaches a rank-1 rate of \RecRankRef{}\% (EER \RecEerRef{}\%), which bounds what can be expected of small ones; on held-out images of its training subjects its accuracy is \RecValAcc{}\%. With real small probes and bicubic upscaling the rate is \RecRankBic{}\%. The methods fall into three groups.
+
+\emph{Bicubic-trained models do not help.} The published SPAN weights reach \RecRankPub{}\% (\RecPubVsBic{} percentage points relative to bicubic upscaling), and SPAN fine-tuned on ear images with bicubic downsampling \RecRankBict{}\% (\RecBictVsBic{}).
+
+\emph{Every compression-aware model nearly doubles the rate.} SPAN with the measured degradation reaches \RecRankEst{}\%, a paired gain of \RecEstVsBic{} points over bicubic upscaling and \RecEstVsPub{} over the published weights, and lowers the EER from \RecEerBic{}\% to \RecEerEst{}\% (\RecEerEstVsBic{}). The second backbone behaves alike (DISP: \RecRankDispEst{}\%, \RecDispEstVsBic{} over bicubic). Within the group the differences from our model are about one point and not significant: \RecJpgVsEst{} for fixed JPEG~75, \RecMixVsEst{} for the measured levels alone, \RecUniVsEst{} for uniform levels and \RecGenVsEst{} for the generic pipeline.
+
+\emph{Large GAN-trained models are not significantly better.} BSRGAN and Real-ESRGAN reach \RecRankBsrgan{}\% and \RecRankRealesrgan{}\% (\RecBsrganVsEst{} points for BSRGAN relative to our model), at \LatRatio{} times the latency.
+
+The control recogniser, which has never seen an ear, gives much lower rates and the same ordering: \RecCtlRankBic{}\% with bicubic upscaling, \RecCtlRankPub{}\% with the published weights and \RecCtlRankEst{}\% with our model (\RecCtlEstVsBic{} over bicubic).
+
+Two conclusions follow. First, the finding of Section~\ref{sec:analysis} carries over to real images: SR trained with bicubic downsampling gives no identification benefit on real small ear images, with or without fine-tuning on ear data, and compression-aware training does. Second, on real images the choice among compression-aware degradations makes no measurable difference to identification. This settles the question left open in Section~\ref{sec:ablation}, and it qualifies our statement about the generic pipeline: its disadvantage is in fidelity (Table~\ref{tab:main}), not in identification. Figure~\ref{fig:qualitative} shows examples.
 
 \begin{table}[t]
 \centering
@@ -105,15 +117,15 @@ Upscaling & Rank-1 & EER & Rank-1 & EER \\
 \end{tabular}}
 \end{table}
 
-\subsection{Real small ear images: viewer preference}
-\todo{viewer study on real small images of the reserved subjects: pairs (ours vs.\ bicubic, ours vs.\ published weights, ours vs.\ generic), number of viewers, preference rate with confidence interval. Tools: \texttt{evaluate.py --save-sr}, \texttt{viewer\_study.py}.}
-
 \begin{figure}[t]
 \centering
-\fbox{\parbox[c][3.2cm][c]{0.85\linewidth}{\sloppy\centering\todo{qualitative figure: real small ear images enlarged by bicubic interpolation, published SPAN, BSRGAN, SPAN with generic degradation and SPAN with measured degradation (images saved by \texttt{run\_recog.sh} in \texttt{results/recog/sr})}}}
-\caption{Real small ear images from EarVN1.0 enlarged $\times4$.}
+\tabinput{generated/fig_qualitative}
+\caption{Real small ear images from EarVN1.0 (short side 24 to 48 pixels) enlarged $\times4$. The published weights sharpen the compression blocks; the compression-aware models remove them. \todo{select examples from several subjects; check the image rights for publication.}}
 \label{fig:qualitative}
 \end{figure}
+
+\subsection{Real small ear images: viewer preference}
+\todo{viewer study on real small images of the reserved subjects: pairs (ours vs.\ bicubic, ours vs.\ published weights, ours vs.\ generic), number of viewers, preference rate with confidence interval. Tools: \texttt{evaluate.py --save-sr}, \texttt{viewer\_study.py}.}
 
 \subsection{Efficiency}
 The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. On an RTX~3080, SPAN with 48 channels (\ParamsSpan{}M parameters) enlarges a $48\times68$ input in \LatSpan{}~ms and DISP in \LatDisp{}~ms (median, 32-bit precision), against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}). \todo{latency on an embedded device (Jetson Nano, FP16, $48\times68$ input): median and 95th percentile for SPAN, DISP and the reference models. If no device measurement is obtained, remove ``Real-Time'' from the title and report GPU latency only.}

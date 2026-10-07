@@ -359,9 +359,12 @@ def trained(res: Path, out: Path, folds_path: Path) -> dict:
     write(out / "tab_ablation.tex", "\n".join(rows[:-1]) + "\n")
     why = "n2c"   # khối n2c (scripts/make_n2c_jobs.sh) chưa có kết quả
     rng_put("EstVsMix", across("span/est", "span/jpegmix", "est"), why=why)
-    rng_put("EstVsMixOnMix", across("span/est", "span/jpegmix", "jpegmix"), why=why)
     rng_put("EstVsUni", across("span/est", "span/jpegu", "est"), why=why)
-    rng_put("MixVsUni", across("span/jpegmix", "span/jpegu", "est"), why=why)
+    rng_put("MixVsUni", across("span/jpegmix", "span/jpegu", "est"), why=why, sign=True)
+    rng_put("MixVsEstClean", across("span/jpegmix", "span/est", "bic"), why=why)
+    rng_put("MixVsEstHigh", across("span/jpegmix", "span/est", "bicjpeg93"), why=why)
+    rng_put("UniVsEstClean", across("span/jpegu", "span/est", "bic"), why=why)
+    rng_put("MixVsEstOnMix", across("span/jpegmix", "span/est", "jpegmix"), why=why)
 
     # bảng: công thức tinh chỉnh ổn định (ảnh vào sạch; các nhánh học với bicubic)
     amo = res / "n2_amionly"
@@ -450,24 +453,44 @@ def recognition(res: Path, out: Path) -> None:
     put("RecEnrolled", len(meta["subjects"]) if meta else None, why)
     put("RecProbes", meta["n_probe"] if meta else None, why)
     put("RecGallery", meta["n_gallery"] if meta else None, why)
-    s = S.get("resnet18")
+    def r1(tag_, arm_, col="rank1"):
+        t = S.get(tag_)
+        return num(t.loc[arm_, col], 1) if t is not None and arm_ in t.index else None
 
-    def r1(arm_):
-        return num(s.loc[arm_, "rank1"], 1) if s is not None and arm_ in s.index else None
+    def gap(tag_, arm_, base, col="d_rank1"):
+        t = Pd.get(tag_)
+        if t is None or (arm_, base) not in t.index:
+            return None
+        r = t.loc[(arm_, base)]
+        return f"{num(r[col], 1, True)} [{num(r[col + '_lo'], 1)}, {num(r[col + '_hi'], 1)}]"
 
+    names = (("ref_large", "Ref"), ("direct", "Direct"), ("bicubic", "Bic"), (PUB, "Pub"), ("span/bic", "Bict"),
+             ("span/est", "Est"), ("span/generic", "Gen"), ("span/bicjpeg75", "Jpg"), ("span/jpegmix", "Mix"),
+             ("span/jpegu", "Uni"), ("bsrgan (published)", "Bsrgan"), ("realesrgan (published)", "Realesrgan"),
+             ("disp26/est", "DispEst"), ("disp26 (published)", "DispPub"))
+    for arm_, tag in names:
+        put("RecRank" + tag, r1("resnet18", arm_), why)
     for arm_, tag in (("ref_large", "Ref"), ("bicubic", "Bic"), (PUB, "Pub"), ("span/est", "Est"),
-                      ("span/generic", "Gen"), ("bsrgan (published)", "Bsrgan")):
-        put("RecRank" + tag, r1(arm_), why)
-    pd_ = Pd.get("resnet18")
-    for base, tag in (("bicubic", "Bic"), (PUB, "Pub")):
-        ok = pd_ is not None and ("span/est", base) in pd_.index
-        r = pd_.loc[("span/est", base)] if ok else None
-        put("RecEstVs" + tag, f"{num(r['d_rank1'], 1, True)} [{num(r['d_rank1_lo'], 1)}, {num(r['d_rank1_hi'], 1)}]"
-            if ok else None, why)
+                      ("bsrgan (published)", "Bsrgan")):
+        put("RecCtlRank" + tag, r1("imagenet50", arm_), why)
+    put("RecEerBic", r1("resnet18", "bicubic", "eer"), why)
+    put("RecEerEst", r1("resnet18", "span/est", "eer"), why)
+    put("RecEerRef", r1("resnet18", "ref_large", "eer"), why)
+    for arm_, base, tag in (("span/est", "bicubic", "EstVsBic"), ("span/est", PUB, "EstVsPub"), (PUB, "bicubic", "PubVsBic"),
+                            ("span/bic", "bicubic", "BictVsBic"), ("span/generic", "span/est", "GenVsEst"),
+                            ("span/bicjpeg75", "span/est", "JpgVsEst"), ("span/jpegmix", "span/est", "MixVsEst"),
+                            ("span/jpegu", "span/est", "UniVsEst"), ("bsrgan (published)", "span/est", "BsrganVsEst"),
+                            ("disp26/est", "bicubic", "DispEstVsBic")):
+        put("Rec" + tag, gap("resnet18", arm_, base), why)
+    put("RecEerEstVsBic", gap("resnet18", "span/est", "bicubic", "d_eer"), why)
+    put("RecCtlEstVsBic", gap("imagenet50", "span/est", "bicubic"), why)
+    put("RecCtlPubVsBic", gap("imagenet50", PUB, "bicubic"), why)
+    put("RecCtlGenVsEst", gap("imagenet50", "span/generic", "span/est"), why)
     f = res / "recog" / "recognizer_train_log.json"
     info = json.loads(f.read_text())["info"] if f.exists() else None
     put("RecTrainSubj", len(info["subjects"]) if info else None, why)
     put("RecTrainImg", info["n_train"] if info else None, why)
+    put("RecValAcc", num(100 * info["val_acc"], 1) if info else None, why)
 
 
 # ------------------------------------------------------------------ hình
@@ -523,6 +546,43 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
     plt.close(f)
 
 
+QUAL = [("bicubic", "Bicubic"), ("span_ch48", "SPAN-S\npublished"), ("bsrgan", "BSRGAN"),
+        ("N2_span-zero+xearvn_pub_rand_x4_hrall_generic_f2", "SPAN-S\ngeneric"),
+        ("N2_span-zero+xearvn_pub_rand_x4_hrall_bicjpeg75_f2", "SPAN-S\nJPEG 75"),
+        ("N2_span-zero+xearvn_pub_rand_x4_hrall_est_f2", "SPAN-S\nmeasured")]
+
+
+def qualitative(res: Path, fig: Path, picks: tuple[int, ...] = (3, 4, 9, 14)) -> bool:
+    """Ảnh nhỏ thật đã phóng ×4 bằng sáu phương pháp. Trả về False nếu chưa có ảnh (results/recog/sr)."""
+    import cv2
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    root = res / "recog" / "sr"
+    if not all((root / m).is_dir() for m, _ in QUAL):
+        return False
+    names = sorted(p.name for p in (root / QUAL[0][0]).glob("*.png"))
+    names = [names[i] for i in picks if i < len(names)]
+    if not names:
+        return False
+    f, axes = plt.subplots(len(names), len(QUAL), figsize=(6.6, 2.1 * len(names)), squeeze=False)
+    for i, n in enumerate(names):
+        for j, (m, label) in enumerate(QUAL):
+            img = cv2.imread(str(root / m / n))
+            h, w = img.shape[:2]
+            c = img[h // 2 - min(h, int(1.4 * w)) // 2: h // 2 + min(h, int(1.4 * w)) // 2]   # cắt giữa, bỏ bớt nền
+            axes[i, j].imshow(c[:, :, ::-1], interpolation="nearest")
+            axes[i, j].axis("off")
+            if i == 0:
+                axes[i, j].set_title(label, fontsize=7)
+    f.tight_layout(pad=0.2)
+    f.savefig(fig / "fig_qualitative.pdf", dpi=200)
+    plt.close(f)
+    return True
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", default="results")
@@ -536,6 +596,8 @@ def main(argv=None) -> None:
     realism_and_params(res, out, Path(a.degrade_params))
     recognition(res, out)
     figures(pub, tr, fig)
+    write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.pdf}\n" if qualitative(res, fig)
+          else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")
     lines = ["% Sinh bởi scripts/make_paper.py. KHÔNG sửa tay: chạy lại script khi có kết quả mới."]
     lines += [f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in sorted(M.items())]
     write(out / "numbers.tex", "\n".join(lines) + "\n")
