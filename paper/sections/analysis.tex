@@ -1,0 +1,52 @@
+\section{Published efficient SR models on small ear images}
+\label{sec:analysis}
+
+\subsection{The advantage over interpolation disappears under compression}
+Table~\ref{tab:published} reports the \NPub{} fidelity-oriented models at the main cell of AMI. On clean inputs they behave as their design intends: every model exceeds bicubic interpolation, by \AmiCleanGainMin{} to \AmiCleanGainMax{}~dB. The picture changes with compression (Figure~\ref{fig:sweep}). At JPEG quality 93 the gain shrinks to \AmiQHighGainMin{} to \AmiQHighGainMax{}~dB. At quality 85 every model is below bicubic, by \AmiQMidGapMin{} to \AmiQMidGapMax{}~dB, and at quality 75 by \AmiQLowGapMin{} to \AmiQLowGapMax{}~dB. SPAN, for example, drops from \SpanCleanPsnr{} to \SpanQLowPsnr{}~dB, while bicubic interpolation drops only from \BicCleanPsnr{} to \BicQLowPsnr{}~dB. We attribute this to a network trained to sharpen clean bicubic inputs also sharpening the blocking artefacts that interpolation smooths \todo{support with the error-spectrum figure}.
+
+\begin{table}[t]
+\centering
+\caption{Models with public weights on AMI at $\times4$ with 36-pixel inputs (\NAmiAllImg{} images). PSNR-Y in dB; values above bicubic interpolation are in bold. Latency is the median over single $48\times68$ inputs on an RTX~3080 in 32-bit precision. The lower block lists GAN-trained models.}
+\label{tab:published}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrcccrr@{}}
+\toprule
+ & Params & Latency & \multicolumn{3}{c}{PSNR-Y, by input} & \multicolumn{2}{c}{LPIPS, by input} \\
+\cmidrule(lr){4-6}\cmidrule(l){7-8}
+Model & (K) & (ms) & Clean & JPEG 93 & JPEG 75 & Clean & JPEG 75 \\
+\midrule
+\tabinput{generated/tab_published}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_jpeg_sweep.pdf}
+\caption{PSNR gain over bicubic interpolation as a function of the JPEG quality of the input, on AMI. Grey: each of the \NPub{} published fidelity-oriented models (\NAmiAllImg{} images); black: their median. Red: SPAN fine-tuned with the measured degradation (Section~\ref{sec:method}; test subjects of the development folds).}
+\label{fig:sweep}
+\end{figure}
+
+\subsection{The effect is not specific to one dataset or one input size}
+Table~\ref{tab:generality} repeats the comparison at the three input sizes of AMI and on the two in-the-wild datasets. At quality 75, all \NPub{} models are significantly below bicubic at every input size of AMI and on AWEx at both sizes. On EarVN1.0 the mean gain is negative for \EarvnQLowBelow{} of the \NPub{} models and significantly so for \EarvnQLowSig{}; the remaining models are statistically tied with interpolation. At quality 93 no model is below bicubic on any dataset. Under the measured degradation, which mixes the two levels, the published models are within \WildEstGainMin{} to \WildEstGainMax{}~dB of bicubic on the in-the-wild sets, compared with a gain of \WildCleanGainMin{} to \WildCleanGainMax{}~dB on clean inputs. We therefore state the finding as follows: \emph{on small ear images, bicubic-trained SR models lose their fidelity advantage over interpolation under realistic compression, and fall below it from a JPEG quality of about 85 downwards}. The deficit does not grow as the input shrinks (SPAN: \SpanQLowGapS{}, \SpanQLowGapM{} and \SpanQLowGapL{}~dB at 24, 36 and 48 pixels); it is a property of the compression, present at every size we test.
+
+\begin{table}[t]
+\centering
+\caption{Median PSNR gain over bicubic interpolation of the \NPub{} published fidelity-oriented models (dB), by dataset, input size and input degradation. In parentheses: number of models whose mean gain is negative / number whose 95\% confidence interval lies entirely below zero. ``--'': not evaluated.}
+\label{tab:generality}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrccccc@{}}
+\toprule
+Dataset & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & Measured \\
+\midrule
+\tabinput{generated/tab_generality}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Fidelity and perceptual metrics disagree}
+At quality 75, \LpipsQLowBetter{} of the \NPub{} models still have a lower LPIPS than bicubic interpolation (for SPAN, \SpanQLowLpips{} against \BicQLowLpips{}). The outputs look sharper while being further from the ground truth. This matters for how the finding is worded, and for applications: where the enlarged image is evidence, or the input of a recognition system, sharper but less faithful is not obviously an improvement. The perceptual models make the trade explicit. BSRGAN reaches an LPIPS of \BsrganQLowLpips{} at quality 75, the best of all models, at a PSNR \BsrganQLowGap{}~dB below bicubic interpolation and at \LatRatio{} times the latency of SPAN.
+
+\subsection{Architecture is not the bottleneck}
+\label{sec:capacity}
+On clean inputs the \NPub{} models span \SpreadClean{}~dB and capacity pays: the \ParamsRrdb{}M-parameter RRDB exceeds the \ParamsSpan{}M-parameter SPAN by \RrdbVsSpanCleanL{}, \RrdbVsSpanCleanM{} and \RrdbVsSpanCleanS{}~dB at 48, 36 and 24-pixel inputs, more as the input shrinks. Under JPEG 75 the same models span only \SpreadQLow{}~dB, RRDB is \RrdbVsSpanQLowM{}~dB from SPAN, and the ranking of the models is unrelated to their ranking on clean inputs (Kendall's $\tau=\TauRank$ between the two orderings by mean PSNR). No choice among the published architectures recovers the lost fidelity. Section~\ref{sec:experiments} shows that a change of training degradation on a single architecture does.

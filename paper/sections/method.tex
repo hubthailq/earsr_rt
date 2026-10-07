@@ -1,0 +1,55 @@
+\section{Repairing the degradation}
+\label{sec:method}
+We keep an off-the-shelf real-time backbone and change only how it is fine-tuned. Two things have to be right: the degradation applied to the training images (Section~\ref{sec:measured}) and the photometric coverage of the training data (Section~\ref{sec:stable}).
+
+\subsection{Measuring the degradation of real small ear images}
+\label{sec:measured}
+We use the images of the \RoleFit{} EarVN1.0 subjects reserved for this purpose: \FitSmall{} real small images (short side 24 to 48 pixels) and \FitLarge{} large ones. Three quantities are measured.
+
+\paragraph{Compression level} A JPEG file stores its quantisation tables, from which the quality setting of a standard encoder can be recovered. The distribution over the real small images is strongly bimodal: \QLowShare{}\% of the images are at quality 75 and \QHighShare{}\% at quality 93, with the remainder at neighbouring values. We use this empirical distribution directly.
+
+\paragraph{Noise} We apply the estimator of Immerk{\ae}r~\cite{immerkaer1996noise} to each real small image and take the 5th to 95th percentile range, \NoiseLo{} to \NoiseHi{} on the 8-bit scale. Since the images are already compressed, this is a lower bound on the noise before compression.
+
+\paragraph{Blur} A blur kernel cannot be identified from a compressed image of a few dozen pixels. We instead select, from a grid of candidate ranges for the width of an isotropic Gaussian, the one for which the sharpness statistics (Laplacian energy normalised by variance) of large images degraded with the full pipeline best match those of the real small images in Kolmogorov--Smirnov distance. The selected range is $\sigma\in[\BlurLo,\BlurHi]$ input pixels, i.e.\ very little blur.
+
+The resulting pipeline is: Gaussian blur, bicubic downsampling, Gaussian noise, JPEG compression, with parameters drawn independently for every training sample. It is deliberately simple. Its wide-range counterpart, the \emph{generic} pipeline of Section~\ref{sec:degradations}, has the same structure.
+
+\paragraph{Is it closer to real images?} Following a common test for simulated data, we train a small convolutional classifier to separate $16\times16$ patches of real small ear images from patches of simulated ones, generated from large images of the same subjects and brought to the same size distribution. Subjects are split between training and testing (\RealTrainSubj{} and \RealTestSubj{} subjects of the classifier group), and the experiment is repeated with three seeds. Table~\ref{tab:realism} gives the balanced accuracy; 50\% means the classifier cannot tell simulated from real. Bicubic downsampling is easily detected (\RealBic{}\%), and so is the generic pipeline (\RealGen{}\%): on this domain it is no closer to real data than the degradation it was designed to replace. The measured pipeline reaches \RealEst{}\%. Bicubic downsampling followed by JPEG at the single quality 75 reaches \RealJpg{}\%, statistically indistinguishable from the measured pipeline: by this test, compression is what makes simulated small ear images realistic. We return to this point in Section~\ref{sec:ablation}.
+
+\begin{table}[t]
+\centering
+\caption{Balanced accuracy (\%) of a classifier trained to separate real small ear images from simulated ones, on held-out subjects. Closer to 50\% means more realistic. Intervals are 95\% bootstrap intervals.}
+\label{tab:realism}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Simulated with & Accuracy & 95\% CI \\
+\midrule
+\tabinput{generated/tab_realism}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{A stable fine-tuning recipe}
+\label{sec:stable}
+\paragraph{The failure} Our first models were fine-tuned on AMI alone. Their validation PSNR on AMI improved as expected, yet on EarVN1.0 the SPAN model fine-tuned with bicubic downsampling scored \CollapsePsnr{}~dB on \emph{clean} inputs, against \CollapsePub{}~dB for the published weights it started from and \CollapseBic{}~dB for bicubic interpolation; \CollapseBroken{} of the \NEarvnImg{} outputs were below 20~dB and consisted of high-amplitude noise. The failures concentrate on images with bright regions. AMI, photographed under uniform indoor lighting, contains no such image, and during fine-tuning the activations of the attention blocks drift so that inputs brighter than any training image are amplified from block to block. Validation on held-out AMI subjects cannot reveal this.
+
+\paragraph{The remedy} Two changes remove the failure. (i) \emph{Photometric augmentation}: with probability 0.75 the ground-truth patch is multiplied by a random gain (log-uniform in $[0.7, 2.2]$), raised to a random gamma ($[0.7,1.4]$) and scaled per channel ($[0.9,1.1]$) before the degradation is applied. (ii) \emph{In-the-wild training images}: 30\% of the training samples are drawn from the large images of the EarVN1.0 training subjects. We also add a \emph{stress test} to every training run: the validation images are brightened by factors of 1.4 and 1.8, and a run is flagged unstable if any output falls more than 10~dB below bicubic interpolation or if the model's margin over bicubic shrinks by more than 1.5~dB. All \NRuns{} runs reported in this paper pass (largest shrinkage \StressMaxDrop{}~dB). Table~\ref{tab:stability} separates the two ingredients.
+
+\begin{table}[t]
+\centering
+\caption{Effect of the fine-tuning recipe on clean inputs (PSNR-Y, dB): SPAN fine-tuned with bicubic downsampling. $^\dagger$One run, excluded from all other results.}
+\label{tab:stability}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & AMI & EarVN1.0 & AWEx & AWEx \\
+ & 36 px & 24 px & 24 px & 36 px \\
+\midrule
+\tabinput{generated/tab_stability}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Training details}
+We fine-tune from the published weights for 20{,}000 iterations with the $L_1$ loss, Adam~\cite{kingma2015adam} with an initial learning rate of $2\times10^{-4}$ and cosine decay, batches of 64 input patches of $24\times24$ pixels, and an exponential moving average of the weights (decay 0.999). Each AMI training image is first resized so that its short side is drawn at random between 96 and 192 pixels, which covers the three benchmark sizes with a single model. The checkpoint with the best PSNR on the validation subjects of the fold is kept. The random seed of a run equals its fold index. One run takes about half an hour on an RTX~3080. We apply the recipe to two backbones of different families: SPAN with 48 channels~\cite{wan2024span} and DISP, an entry of the NTIRE 2026 challenge~\cite{ren2026ntire}.

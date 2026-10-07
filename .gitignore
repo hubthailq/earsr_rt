@@ -13,3 +13,6 @@
 __pycache__/
 .pytest_cache/
 .DS_Store
+# ma trận điểm của phép đo nhận dạng: lớn, sinh lại được bằng scripts/recog_eval.py
+/results/recog/**/*.npy
+/results/recog/**/scan.csv

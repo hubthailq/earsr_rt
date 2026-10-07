@@ -1,0 +1,24 @@
+\section{Benchmark}
+\label{sec:benchmark}
+
+\subsection{Datasets}
+\paragraph{AMI (controlled, clean ground truth)} The AMI ear database~\cite{gonzalez2008ami} contains \NAmiAllImg{} images of 100 subjects, seven per subject, taken indoors at $492\times702$ pixels. Because the originals are large and lightly compressed, downsizing them yields clean ground truth at any small size. We build ground truth at three sizes, with a short side of 96, 144 and 192 pixels; at $\times4$ the inputs then have a short side of 24, 36 and 48 pixels, which is the range in which real small ear images fall. The 36-pixel input is our main cell. Subjects are divided into five folds; in each fold 70 subjects are used for training, 10 for validation and model selection, and 20 for testing, so that every subject is tested exactly once.
+\draftnote{the numbers in this draft pool the \NFolds{} development folds (\NAmiSubj{} test subjects, \NAmiImg{} images). The two remaining folds have been held out since the start of the project and are used once, in the final run, after which all tables are regenerated on 100 subjects.}
+
+\paragraph{EarVN1.0 (in the wild)} EarVN1.0~\cite{hoang2019earvn} contains ear crops of \RoleAll{} subjects collected from the web, with widely varying size, pose and illumination. We assign each subject one role, fixed before any experiment: \RoleTrain{} subjects supply additional training images, \RoleTest{} are used for testing, \RoleFit{} for measuring the degradation, \RoleClf{} for the realism classifier and \RoleViewer{} are reserved for evaluation on real small images. No subject has two roles. Ground truth exists only where the original is large enough: we keep images whose short side is at least twice the target size and downsize them, which suppresses the compression artefacts of the source. This yields \NEarvnImg{} test images of \NEarvnSubj{} subjects at 24-pixel inputs.
+
+\paragraph{AWEx (in the wild, never used for training)} From the extended Annotated Web Ears collection~\cite{emersic2017ear} we obtain, by the same rule, \NAwexSImg{} images of \NAwexSSubj{} subjects at 24-pixel inputs and \NAwexMImg{} images of \NAwexMSubj{} subjects at 36-pixel inputs. No AWEx image is used for training, fitting or model selection.
+
+\subsection{Input degradations}
+\label{sec:degradations}
+All low-resolution inputs are generated from the ground truth at scale $\times4$ with a fixed seed per image, so that every model sees the same pixels. We use four kinds of input.
+\emph{Clean}: bicubic downsampling, the NTIRE protocol.
+\emph{JPEG $q$}: bicubic downsampling followed by JPEG compression at quality $q\in\{60,75,85,93\}$.
+\emph{Generic}: a single-stage pipeline in the style of~\cite{wang2021realesrgan,zhang2021bsrgan}, with Gaussian blur ($\sigma$ from 0.2 to 3.0 input pixels), additive Gaussian noise ($\sigma$ from 1 to 30 on the 8-bit scale) and JPEG compression (quality 30 to 90).
+\emph{Measured}: the same structure with parameters measured from real small ear images (Section~\ref{sec:measured}).
+
+\subsection{Models}
+We evaluate every $\times4$ model for which public weights were available to us and which we could run without modification: \NPub{} fidelity-oriented models with distinct weights and four perceptual (GAN-trained) models, listed in Table~\ref{tab:published}. The fidelity-oriented set covers the NTIRE Efficient SR baseline SPAN~\cite{wan2024span} in three widths, entries of the 2023 to 2026 challenges~\cite{ren2024ntire,ren2025ntire,ren2026ntire}, RLFN~\cite{kong2022rlfn}, SAFMN++~\cite{sun2023safmn}, SMFANet~\cite{zheng2024smfanet}, and four larger references: MSRResNet~\cite{ledig2017srgan}, EDSR-baseline~\cite{lim2017edsr}, SwinIR-light~\cite{liang2021swinir} and the \ParamsRrdb{}M-parameter RRDB network~\cite{wang2018esrgan}. All were trained by their authors with bicubic downsampling. The perceptual set is ESRGAN~\cite{wang2018esrgan}, BSRGAN~\cite{zhang2021bsrgan} and two Real-ESRGAN models~\cite{wang2021realesrgan}.
+
+\subsection{Metrics and statistics}
+Fidelity is measured by PSNR and SSIM~\cite{wang2004ssim} on the luminance channel, perceptual quality by LPIPS~\cite{zhang2018lpips} and DISTS~\cite{ding2020dists}. All inference is run in full 32-bit precision. Every comparison between two methods is paired by image. Confidence intervals are 95\% percentile intervals from a bootstrap that resamples subjects, not images, since images of one subject are not independent~\cite{efron1993bootstrap}. For fine-tuned models on AMI, each model is evaluated only on the test subjects of its own fold and the folds are pooled; on EarVN1.0 and AWEx, where no subject was seen by any model, the per-image scores of the models from the different folds are averaged before pairing.

@@ -1,0 +1,119 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+For each backbone and each fold we fine-tune one model per training degradation: \emph{bicubic}, \emph{generic}, \emph{bicubic + JPEG 75} and \emph{measured}. All use the recipe of Section~\ref{sec:stable} and differ in nothing else, so differences between them are attributable to the degradation. Together with the two ablation runs per fold of Table~\ref{tab:stability} this gives \NRuns{} runs. Models are compared with bicubic interpolation and with the published weights of the same backbone on four cells: AMI with 36-pixel inputs (\NAmiImg{} images of \NAmiSubj{} subjects), EarVN1.0 with 24-pixel inputs (\NEarvnImg{} images, \NEarvnSubj{} subjects) and AWEx with 24 and 36-pixel inputs (\NAwexSImg{} and \NAwexMImg{} images).
+
+\subsection{The training degradation decides}
+Table~\ref{tab:matrix} crosses the training degradation with the degradation of the test input, for SPAN on AMI. Three observations follow. First, fine-tuning on ear images with bicubic downsampling improves the clean column and nothing else: under compression the fine-tuned model is as far below bicubic interpolation as the published weights. Domain data without the right degradation does not help. Second, the generic pipeline yields a model that is below bicubic interpolation on clean inputs on all four cells (by \GenVsBicCleanMin{} to \GenVsBicCleanMax{}~dB) and between \GenVsBicEstMin{} and \GenVsBicEstMax{}~dB of it on inputs degraded with the measured pipeline; it is the best choice only on inputs produced by the generic pipeline itself, which the classifier of Section~\ref{sec:measured} shows to be unlike real small ear images. Third, on JPEG~75 inputs the measured degradation recovers \DegEffMin{} to \DegEffMax{}~dB over bicubic training across the four cells, and the fixed JPEG~75 degradation \JpgEffMin{} to \JpgEffMax{}~dB. This is an order of magnitude more than the \SpreadQLow{}~dB that separates the \NPub{} published architectures under the same inputs (Section~\ref{sec:capacity}).
+
+\begin{table}[t]
+\centering
+\caption{PSNR-Y (dB) of SPAN on AMI (36-pixel inputs) by training degradation (rows) and test input (columns). Best fine-tuned or published model per column in bold.}
+\label{tab:matrix}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & \multicolumn{5}{c}{Test input} \\
+\cmidrule(l){2-6}
+Training degradation & Clean & JPEG 93 & JPEG 75 & Measured & Generic \\
+\midrule
+\tabinput{generated/tab_matrix}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Main result}
+Table~\ref{tab:main} gives the paired differences between SPAN fine-tuned with the measured degradation and each reference, on inputs degraded with the measured pipeline. The model exceeds bicubic interpolation by \EstVsBicMin{} to \EstVsBicMax{}~dB, the published weights by \EstVsPubMin{} to \EstVsPubMax{}~dB and the generic pipeline by \EstVsGenMin{} to \EstVsGenMax{}~dB; no confidence interval contains zero. LPIPS improves as well, by \EstLpipsVsBicMin{} to \EstLpipsVsBicMax{} over bicubic interpolation and by \EstLpipsVsGenMin{} to \EstLpipsVsGenMax{} over the generic pipeline. The result holds in each fold separately (measured minus generic on AMI: \EstVsGenFoldMin{} to \EstVsGenFoldMax{}~dB across folds), on inputs compressed at a single quality (\EstVsBicQLowMin{} to \EstVsBicQLowMax{}~dB over bicubic at quality 75 and \EstVsBicQHighMin{} to \EstVsBicQHighMax{}~dB at quality 93), and for the second backbone: DISP fine-tuned with the measured degradation exceeds bicubic interpolation by \DispEstVsBicMin{} to \DispEstVsBicMax{}~dB and its generic counterpart by \DispEstVsGenMin{} to \DispEstVsGenMax{}~dB. The gain is larger for smaller inputs (Figure~\ref{fig:size}): \EstVsBicAmiS{}, \EstVsBicAmiM{} and \EstVsBicAmiL{}~dB over bicubic at 24, 36 and 48 pixels on AMI.
+
+\begin{table}[t]
+\centering
+\caption{SPAN fine-tuned with the measured degradation \emph{minus} each reference, on inputs degraded with the measured pipeline. Paired differences with 95\% confidence intervals (bootstrap over subjects).}
+\label{tab:main}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Ours minus & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+\midrule
+\tabinput{generated/tab_main}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/fig_size.pdf}
+\caption{PSNR gain over bicubic interpolation by input size on AMI, for the published SPAN weights and for SPAN fine-tuned with the measured degradation. Bars: 95\% confidence intervals.}
+\label{fig:size}
+\end{figure}
+
+\paragraph{The price} The model is specialised to compressed inputs. On clean inputs it is \EstVsPubCleanMin{} to \EstVsPubCleanMax{}~dB below the published weights, while remaining above bicubic interpolation (Table~\ref{tab:matrix}). No single model is best for every input. Since real small ear images are compressed, we regard the trade as the right one for this domain, and report the clean column so that the reader can judge.
+
+\subsection{What part of the measured degradation matters?}
+\label{sec:ablation}
+The realism classifier could not distinguish the measured degradation from bicubic downsampling followed by JPEG at quality 75. Table~\ref{tab:levels} asks the same question of the trained models. Against a model trained with the fixed quality 75, the measured degradation is better by \EstVsJpgHighMin{} to \EstVsJpgHighMax{}~dB on quality-93 inputs and by \EstVsJpgMin{} to \EstVsJpgMax{}~dB on the measured mixture, and worse by \EstVsJpgLowMin{} to \EstVsJpgLowMax{}~dB on quality-75 inputs, on which the fixed model is trained exactly. Training on the measured distribution of compression levels thus buys robustness across the levels that occur in practice for a negligible loss at any one of them.
+
+\begin{table}[t]
+\centering
+\caption{Measured degradation \emph{minus} fixed JPEG~75, same backbone, by test input (PSNR-Y, dB; 95\% confidence intervals).}
+\label{tab:levels}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Backbone & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+\midrule
+\tabinput{generated/tab_levels}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+To separate the contribution of the compression levels from that of the measured noise and blur, we train two further models: one with bicubic downsampling followed by JPEG at the measured distribution of levels, without noise or blur, and one with JPEG quality drawn uniformly from 60 to 95, which uses nothing measured from the data (Table~\ref{tab:ablation}). On inputs degraded with the full measured pipeline, the measured model differs from the levels-only model by \EstVsMixMin{} to \EstVsMixMax{}~dB; on inputs without noise and blur the difference is \EstVsMixOnMixMin{} to \EstVsMixOnMixMax{}~dB. The levels-only model differs from the uniform-level model by \MixVsUniMin{} to \MixVsUniMax{}~dB. \todo{interpret once the runs are scored: if the three models are equivalent, the claim becomes ``training must include compression over the relevant range of levels'' and the measurement serves to identify that range.}
+
+\begin{table}[t]
+\centering
+\caption{Separating compression levels from noise and blur: SPAN fine-tuned with the measured degradation \emph{minus} two JPEG-only variants (PSNR-Y, dB; 95\% confidence intervals).}
+\label{tab:ablation}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Comparison & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+\midrule
+\tabinput{generated/tab_ablation}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Real small ear images: identification}
+\label{sec:recog}
+All results above use inputs synthesised from larger images, because real small images have no ground truth. Identity labels offer an objective measure that needs none. We take the subjects of EarVN1.0 that were used neither for SR training nor for any fitting (the test and reserved groups). For each subject, half of the large images (short side at least 96 pixels) are enrolled and their embeddings averaged into a template; \RecEnrolled{} subjects are enrolled with \RecGallery{} images. The probes are the \RecProbes{} \emph{real} small images (short side 24 to 48 pixels) of the \RecSubj{} enrolled subjects that have any. Each probe is enlarged $\times4$ by the method under test and resized to the input size of the recogniser by one fixed operation. The recogniser is a ResNet-18~\cite{he2016resnet} with a cosine-margin loss~\cite{wang2018cosface}, trained only on large images of \RecTrainSubj{} other subjects (\RecTrainImg{} images); it never sees a small or an upscaled image, so it does not favour the look of any upscaling method. As a control we repeat the experiment with frozen ImageNet features that have never seen an ear.
+
+Table~\ref{tab:recog} reports rank-1 identification and equal error rate. With large probes the recogniser reaches a rank-1 rate of \RecRankRef{}\%. With real small probes it reaches \RecRankBic{}\% after bicubic upscaling, \RecRankPub{}\% with the published SPAN weights, \RecRankGen{}\% with the generic pipeline and \RecRankEst{}\% with the measured degradation; the paired difference between the latter and bicubic upscaling is \RecEstVsBic{} percentage points, and \RecEstVsPub{} against the published weights. BSRGAN reaches \RecRankBsrgan{}\%. \todo{interpretation, once the numbers exist. Report the result whatever its sign: ``sharper but not better recognised'' is as informative as an improvement.}
+
+\begin{table}[t]
+\centering
+\caption{Identification of real small ear images (short side 24 to 48 pixels) after $\times4$ upscaling. Rank-1 rate with 95\% confidence interval and equal error rate, in \%, for an ear recogniser and for frozen ImageNet features. Fine-tuned rows average the models of the folds.}
+\label{tab:recog}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Ear recogniser (ResNet-18)} & \multicolumn{2}{c}{ImageNet features (ResNet-50)} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Upscaling & Rank-1 & EER & Rank-1 & EER \\
+\midrule
+\tabinput{generated/tab_recog}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Real small ear images: viewer preference}
+\todo{viewer study on real small images of the reserved subjects: pairs (ours vs.\ bicubic, ours vs.\ published weights, ours vs.\ generic), number of viewers, preference rate with confidence interval. Tools: \texttt{evaluate.py --save-sr}, \texttt{viewer\_study.py}.}
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox[c][3.2cm][c]{0.85\linewidth}{\sloppy\centering\todo{qualitative figure: real small ear images enlarged by bicubic interpolation, published SPAN, BSRGAN, SPAN with generic degradation and SPAN with measured degradation (images saved by \texttt{run\_recog.sh} in \texttt{results/recog/sr})}}}
+\caption{Real small ear images from EarVN1.0 enlarged $\times4$.}
+\label{fig:qualitative}
+\end{figure}
+
+\subsection{Efficiency}
+The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. On an RTX~3080, SPAN with 48 channels (\ParamsSpan{}M parameters) enlarges a $48\times68$ input in \LatSpan{}~ms and DISP in \LatDisp{}~ms (median, 32-bit precision), against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}). \todo{latency on an embedded device (Jetson Nano, FP16, $48\times68$ input): median and 95th percentile for SPAN, DISP and the reference models. If no device measurement is obtained, remove ``Real-Time'' from the title and report GPU latency only.}

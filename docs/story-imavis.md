@@ -49,7 +49,7 @@ Năm việc. Xong năm việc này thì viết.
 | # | Việc | Phục vụ | Chi phí | Kết quả đổi gì trong bài |
 |---|---|---|---|---|
 | 1 | Tách phần "có nén" khỏi phần "đo từ dữ liệu": hai nhánh huấn luyện mới (JPEG với đúng phân bố mức nén đã đo; JPEG rút đều 60 đến 95) | P3 | 6 lần huấn luyện, khoảng 3 giờ | Chỉ đổi câu chữ của P3: "đo từ ảnh tai thật" hay "có nén ở dải mức phù hợp". Bài đứng được ở cả hai nhánh |
-| 2 | Một thước đo trên ảnh tai nhỏ thật: khảo sát người xem. Thêm nhận dạng tai nếu người dùng quyết định làm (41 người, 2.060 ảnh nhỏ thật) | P3 | Người xem: vài ngày. Nhận dạng: 1 đến 2 ngày mã, vài giờ GPU | Không có việc này thì P3 chỉ đúng trên ảnh mô phỏng; đây là điểm người phản biện bắt đầu tiên |
+| 2 | Một thước đo trên ảnh tai nhỏ thật: khảo sát người xem. Thêm nhận dạng tai (người dùng đã quyết làm, 07/10): 51 người được đăng ký, 36 người trong đó có ảnh nhỏ thật, 2.015 ảnh dò | P3 | Người xem: vài ngày. Nhận dạng: 1 đến 2 ngày mã, vài giờ GPU | Không có việc này thì P3 chỉ đúng trên ảnh mô phỏng; đây là điểm người phản biện bắt đầu tiên |
 | 3 | Chạy cuối trên đủ 5 fold (thêm fold 1 và 5 đang giữ kín), các nhánh của P2, P3 trên hai thân | P2, P3 | Khoảng 20 lần huấn luyện, 10 giờ | Số chính của bài: 700 ảnh, 100 người, năm lần huấn luyện độc lập cho mỗi nhánh |
 | 4 | Độ trễ trên một thiết bị (Jetson; không có thì điện thoại hoặc CPU) | P4 | Một buổi khi có thiết bị | Không có thì bỏ chữ "Real-Time" khỏi tiêu đề, giữ số GPU |
 | 5 | Rà tài liệu: SR ảnh tai, SR ảnh đã nén, suy giảm ngoài thực tế | P1 | Vài ngày đọc | Xác định P1 mới đến đâu; quyết định câu "first" có được viết không |
