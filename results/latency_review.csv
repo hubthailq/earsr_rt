@@ -1,0 +1,7 @@
+median_ms,p95_ms,mean_ms,min_ms,warmup,runs,input_h,input_w,device,half,name,kind,scale,host,group,params,flops_g_256
+0.03471598029136658,0.03562122583389282,0.03478716313838959,0.03369525074958801,50,500,68,48,cuda,False,bicubic,baseline,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,,,
+0.5691386759281158,0.5712740123271942,0.5650680586695671,0.49602240324020386,50,500,68,48,cuda,False,span_ch48,zoo,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,light,426288,27.868004352
+13.400863856077194,13.48833478987217,13.43419037759304,13.38212564587593,50,500,68,48,cuda,False,rrdb_psnr,zoo,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,upper,16697987,1174.853910528
+13.446807861328125,13.464587740600109,13.450666107237339,13.431534171104431,50,500,68,48,cuda,False,bsrnet,zoo,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,upper,16697987,1174.853910528
+3.418872132897377,3.423512540757656,3.4185248613357544,3.39716300368309,50,500,68,48,cuda,False,fbcnn_bicubic,chain,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,chain,71921796,
+3.8654468953609467,3.8707416504621506,3.86576746404171,3.8584284484386444,50,500,68,48,cuda,False,fbcnn_span_ch48,chain,4,x86_64 | torch 2.11.0+cu130 | threads 16 | NVIDIA GeForce RTX 3080 | cudnn.allow_tf32=True,chain,72348084,
