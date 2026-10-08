@@ -1,0 +1,116 @@
+[
+ {
+  "path": "deploy_ios/models/span_ch48.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 426288,
+  "checked": true,
+  "max_abs_diff": 0.005759510211646557,
+  "psnr_vs_torch_db": 63.08710321389759,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "span_ch48",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/disp26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 163792,
+  "checked": true,
+  "max_abs_diff": 0.00848400592803955,
+  "psnr_vs_torch_db": 57.01565066209514,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "disp26",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/edsr_baseline.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 1517571,
+  "checked": true,
+  "max_abs_diff": 0.0063135623931884766,
+  "psnr_vs_torch_db": 63.64032522936881,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "edsr_baseline",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/swinir_light.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 929628,
+  "checked": true,
+  "max_abs_diff": 0.007953941822052002,
+  "psnr_vs_torch_db": 61.241680586871674,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "swinir_light",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/rrdb_psnr.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 16697987,
+  "checked": true,
+  "max_abs_diff": 0.01445675129070878,
+  "psnr_vs_torch_db": 52.855501004384436,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "rrdb_psnr",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/bsrgan.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 16697987,
+  "checked": true,
+  "max_abs_diff": 0.18923944234848022,
+  "psnr_vs_torch_db": 39.15134117397174,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "bsrgan",
+  "kind": "zoo"
+ }
+]

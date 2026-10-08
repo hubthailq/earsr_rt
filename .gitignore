@@ -17,3 +17,6 @@ __pycache__/
 /results/recog/**/*.npy
 /results/recog/**/scan.csv
 /results/recog/_qual/
+# mô hình Core ML (sinh lại bằng scripts/export_coreml.py) và môi trường riêng của coremltools
+/deploy_ios/models/
+/.venv-coreml/

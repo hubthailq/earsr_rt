@@ -102,6 +102,25 @@ có ý nghĩa: mô hình của bài −3,8 [−7,9; 0,5] (ResNet-18) và +1,9 [�
 **Câu chữ trong bài đã sửa theo:** phần tăng nhận dạng "gắn với việc ảnh vào bị nén"; bài viết rõ "không tuyên bố SR cải thiện
 nhận dạng tai nói chung". Kết quả AWEx được báo nguyên trong bảng 10 và trong abstract.
 
+## 3b3. Câu đóng góp về nhận dạng, viết lại theo góp ý ngày 08/10
+
+**Câu:** phóng ảnh chỉ giúp nhận dạng tai khi hai điều cùng đúng: ảnh dò đã bị nén, và mạng nhận dạng nhận ảnh lớn tốt hơn
+ảnh nhỏ của cùng những người đó ("có dư địa"). EarVN1.0 thỏa cả hai (ảnh lớn 60,2%, ảnh nhỏ 13,2%; mô hình của bài thêm
+11,8 điểm). AWEx thì ảnh lớn 32,2%, ảnh nhỏ 31,8%, và không phương pháp nào đổi rank-1.
+
+**Chỗ góp ý chưa nói, và bài đã ghi rõ:** AWEx không thỏa **cả hai** điều kiện (ảnh nhỏ của nó cũng không có lưới khối
+JPEG), nên hai bộ ảnh không tách được điều kiện nào là điều kiện cần. Bằng chứng trong từng bộ ảnh, tính từ kết quả có sẵn:
+- điều kiện nén: phép tách theo mức nén của file trên EarVN1.0 (mục 3b2);
+- điều kiện dư địa: trên EarVN1.0 (30 người có từ 5 ảnh dò), nửa số người có ít dư địa (+25,4 điểm) tăng +7,5 điểm, nửa có
+  nhiều dư địa (+55,9) tăng +16,4; với ResNet-50 là +5,3 và +14,6. Tương quan hạng dương nhưng **chưa đạt ý nghĩa thống kê**
+  (ρ = 0,28, p = 0,14; ρ = 0,35, p = 0,06);
+- trên AWEx, những người có dư địa (+26,8) vẫn không tăng (−1,1 và +3,4): dư địa không đủ nếu ảnh không nén. Số theo người
+  ở AWEx dựa trên trung vị 2 ảnh dò, rất nhiễu.
+
+Bài viết hai điều kiện này là "điều kiện do số liệu gợi ý", nêu rõ là hình thành sau khi thấy kết quả AWEx.
+
+**Đối chứng trên ảnh tự nhiên** (`scripts/run_div2k_control.sh`; chờ chạy): xem mục 0 của `TODO.md`.
+
 ## 3c. Kết quả rà tài liệu lượt đầu (07/10/2026; tìm kiếm web, chưa phải rà có hệ thống)
 
 - **Về ảnh tai:** chỉ tìm thấy một bài SR cho ảnh tai (Markičević, Peer, Emeršič, IWSSIP 2023: EDSR và SwinIR, ×2 và ×4, trên
@@ -118,7 +137,7 @@ nhận dạng tai nói chung". Kết quả AWEx được báo nguyên trong bả
 
 ## 4. Bằng chứng còn thiếu: danh sách đóng
 
-Năm việc. **Việc 1 và nửa đầu việc 2 (nhận dạng) đã xong ngày 07/10**; còn khảo sát người xem, việc 3, 4, 5.
+Năm việc. **Việc 1, nửa đầu việc 2 (nhận dạng) và việc 3 đã xong (08/10)**; việc 4 chờ người dùng đo trên iPhone; việc 5 xong lượt đầu; khảo sát người xem để dành.
 
 | # | Việc | Phục vụ | Chi phí | Kết quả đổi gì trong bài |
 |---|---|---|---|---|

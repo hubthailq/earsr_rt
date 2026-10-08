@@ -583,6 +583,125 @@ def recognition_extra(res: Path, out: Path) -> None:
     put("RecRfValAcc", num(100 * json.loads(f.read_text())["info"]["val_acc"], 1) if f.exists() else None, why)
 
 
+def natural_control(res: Path, out: Path, q_ami: pd.DataFrame) -> None:
+    """Đối chứng trên ảnh tự nhiên (scripts/run_div2k_control.sh): cùng 16 mô hình, cùng các mức nén, ảnh vào từ 24 đến
+    192 px. Chưa có kết quả thì bảng và macro ra ô TBD."""
+    why = "div2k"
+    f = res / "t2_div2k_summary" / "quality.csv"
+    kinds = ("bic", "bicjpeg93", "bicjpeg85", "bicjpeg75", "bicjpeg60")
+
+    def cells(df, tier):
+        outc, st = [], {}
+        for k in kinds:
+            c = df[(df.tier == tier) & (df.degrade == k) & df.model.isin(PSNR16)]
+            if len(c) != 16:
+                outc.append("--")
+                continue
+            nb, ns = int((c.gain < 0).sum()), int((c.gain_hi < 0).sum())
+            st[k] = (float(c.gain.median()), nb, ns, float(c.gain.min()), float(c.gain.max()))
+            outc.append(f"{num(c.gain.median(), 2, True)} ({nb}/{ns})")
+        return outc, st
+
+    rows, stats = [], {}
+    if f.exists():
+        d = pd.read_csv(f)
+        d = d[d.scale == 4] if "scale" in d.columns else d
+        for tier in sorted(d.tier.unique()):
+            c, st = cells(d, tier)
+            stats[int(tier)] = st
+            n = int(d[(d.tier == tier) & (d.model == "bicubic")].n.iloc[0])
+            rows.append(f"Natural (DIV2K) & {int(tier) // 4} & {n} & " + " & ".join(c) + " \\\\")
+        rows.append("\\midrule")
+    else:
+        rows.append("Natural (DIV2K) & \\todo{--} & \\todo{--} & " + " & ".join(["\\todo{--}"] * 5) + " \\\\\n\\midrule")
+    for tier in (96, 144, 192):
+        c, _ = cells(q_ami, tier)
+        n = int(q_ami[(q_ami.tier == tier) & (q_ami.model == "bicubic")].n.iloc[0])
+        rows.append(f"Ear (AMI) & {tier // 4} & {n} & " + " & ".join(c) + " \\\\")
+    write(out / "tab_natural.tex", "\n".join(rows) + "\n")
+    small, large = stats.get(144), stats.get(max(stats)) if stats else None
+    put("NatLargePx", max(stats) // 4 if stats else None, why)
+    for tag, st in (("S", small), ("L", large)):
+        for k, kt in (("bicjpeg75", "QLow"), ("bicjpeg60", "QVLow"), ("bicjpeg85", "QMid"), ("bic", "Clean")):
+            ok = st is not None and k in st
+            put(f"Nat{tag}{kt}Med", num(st[k][0], 2, True) if ok else None, why)
+            put(f"Nat{tag}{kt}Below", st[k][1] if ok else None, why)
+            put(f"Nat{tag}{kt}Sig", st[k][2] if ok else None, why)
+    put("NatN", int(pd.read_csv(f).n.max()) if f.exists() else None, why)
+
+
+def headroom(res: Path) -> None:
+    """Phần tăng nhận dạng theo "dư địa" của từng người: rank-1 trên ảnh dò lớn trừ rank-1 trên ảnh dò nhỏ (bicubic).
+    Tính từ các file theo ảnh dò của recog_eval.py; chỉ lấy người có ít nhất 5 ảnh dò nhỏ trên EarVN1.0."""
+    from scipy.stats import spearmanr
+
+    why = "recog2"
+    for tag, name, min_n in (("resnet18", "EarvnRe", 5), ("resnet50", "EarvnRf", 5), ("awex_resnet18", "AwexRe", 1),
+                             ("awex_resnet50", "AwexRf", 1)):
+        d = res / "recog" / tag
+        keys = ("Subj", "LowRoom", "LowGain", "HighRoom", "HighGain", "Rho", "P")
+        if not (d / "probes.csv").exists():
+            for k in keys:
+                put(f"Head{name}{k}", None, why)
+            continue
+        hits = {}
+        for fcsv in sorted(d.glob("*.csv")):
+            if fcsv.stem in ("probes", "refs", "gallery", "scan"):
+                continue
+            x = pd.read_csv(fcsv, dtype={"subject": str})
+            hits.setdefault(arm_of(fcsv.stem)[0], []).append((x["rank"] == 1).astype(float).groupby(x["subject"]).mean())
+        S = pd.DataFrame({a_: pd.concat(v, axis=1).mean(1) for a_, v in hits.items() if a_ in ("ref_large", "bicubic", "span/est")})
+        S["n"] = pd.read_csv(d / "probes.csv", dtype={"subject": str}).groupby("subject").size()
+        S = S.dropna()
+        S = S[S.n >= min_n]
+        S["room"], S["gain"] = S["ref_large"] - S["bicubic"], S["span/est"] - S["bicubic"]
+        med = S.room.median()
+        lo, hi = S[S.room <= med], S[S.room > med]
+
+        def w(x, c):
+            return float((x[c] * x.n).sum() / x.n.sum())
+
+        r = spearmanr(S.room, S.gain)
+        put(f"Head{name}Subj", len(S))
+        put(f"Head{name}LowRoom", num(100 * w(lo, "room"), 1, True))
+        put(f"Head{name}LowGain", num(100 * w(lo, "gain"), 1, True))
+        put(f"Head{name}HighRoom", num(100 * w(hi, "room"), 1, True))
+        put(f"Head{name}HighGain", num(100 * w(hi, "gain"), 1, True))
+        put(f"Head{name}Rho", num(r.statistic, 2))
+        put(f"Head{name}P", num(r.pvalue, 3))
+
+
+def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
+    """Độ trễ đo trên iPhone bằng Xcode (deploy_ios/README.md). File chưa có số thì bảng và macro ra ô TBD."""
+    why = "ios"   # results/latency_ios.csv chưa được điền
+    f = res / "latency_ios.csv"
+    d = pd.read_csv(f) if f.exists() else pd.DataFrame(columns=["name", "compute_units", "median_ms"])
+    d = d[pd.to_numeric(d.median_ms, errors="coerce").notna()] if len(d) else d
+    v = {(r["name"], r["compute_units"]): float(r["median_ms"]) for r in d.to_dict("records")}
+
+    def cell(name, cu):
+        return num(v[(name, cu)], 1) if (name, cu) in v else "\\todo{--}"
+
+    rows = []
+    for name in ("disp26", "span_ch48", "edsr_baseline", "swinir_light", "rrdb_psnr", "bsrgan"):
+        if name in ("edsr_baseline", "swinir_light", "rrdb_psnr") and (name, "cpu") not in v and (name, "all") not in v:
+            continue   # mốc tùy chọn: không đo thì không có dòng
+        rows.append(f"{DISPLAY[name]} & {num(lat.params[name] / 1e3, 0)} & {num(lat.median_ms[name], 2)} & "
+                    f"{cell(name, 'cpu')} & {cell(name, 'all')} \\\\")
+    write(out / "tab_latency_ios.tex", "\n".join(rows) + "\n")
+    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp"), ("bsrgan", "Bsrgan")):
+        for cu, t2 in (("cpu", "Cpu"), ("all", "All")):
+            put(f"LatPhone{tag}{t2}", num(v[(name, cu)], 1) if (name, cu) in v else None, why)
+    ex = res / "coreml_export.json"   # scripts/export_coreml.py: phép so đầu ra Core ML với PyTorch
+    ce = {x["name"]: x for x in json.loads(ex.read_text())} if ex.exists() else {}
+    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp")):
+        put("CoremlPsnr" + tag, num(ce[name]["psnr_vs_torch_db"], 1) if name in ce and "psnr_vs_torch_db" in ce[name] else None, why)
+    first = d.iloc[0] if len(d) else None
+    put("PhoneName", first["device"] if first is not None else "iPhone 12 Pro Max")
+    put("PhoneChip", first["chip"] if first is not None else "A14 Bionic")
+    put("PhoneOs", first["ios"] if first is not None else "18.7.8")
+
+
 # ------------------------------------------------------------------ hình
 def figures(pub: dict, tr: dict, fig: Path) -> None:
     import matplotlib
@@ -687,6 +806,9 @@ def main(argv=None) -> None:
     realism_and_params(res, out, Path(a.degrade_params))
     recognition(res, out)
     recognition_extra(res, out)
+    latency_ios(res, out, pub["lat"])
+    natural_control(res, out, pub["q"])
+    headroom(res)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.pdf}\n" if qualitative(res, fig)
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")

@@ -51,12 +51,31 @@ chạy lại để lấy số đẹp hơn.
    git add TODO.md docs paper scripts results/recog/blockiness.json
    git commit -m "Five-fold results in draft; recognition on two datasets interpreted" && git push
    ```
-1. **Việc 4: độ trễ trên iPhone 12 Pro Max (iOS, Core ML).** Người dùng dặn: bắt đầu sau khi lần chạy cuối xong và kết quả
-   đã commit; điều kiện này đã đạt ngày 08/10. Cần từ bạn: Xcode đã cài chưa, phiên bản iOS của máy. Việc của Claude: script
-   xuất Core ML cho mô hình của bài và các mốc (thử `coremltools` trên máy Mac; không chạy được trên Python 3.14 thì chuyển
-   trên labai217), hướng dẫn đo từng bước trong Xcode, sửa mục 1.5 của kế hoạch và mục 6.7 của bản thảo. Chưa biết: Xcode
-   có in phân vị 95 không; các mốc (DISP, BSRGAN, SwinIR) có chuyển được hết không. Ngưỡng: trung vị không quá 33 ms ở ảnh
-   vào 48×68, mỗi lần một ảnh. Trọng số của mô hình cuối chỉ nằm trên labai217: cần chép một checkpoint về máy Mac.
+0b. **[labai217] Đối chứng trên ảnh tự nhiên (góp ý nhận ngày 08/10; chỉ chấm, không huấn luyện, không thêm mô hình).**
+   Cùng 16 mô hình có sẵn, cùng các mức JPEG, trên 100 ảnh DIV2K valid thu về ảnh vào 24, 36, 48, 96, 192 px. Câu hỏi: ngưỡng
+   "kém bicubic khi nén" là của ảnh tai, của cỡ ảnh nhỏ, hay của nén nói chung. Khoảng 30 đến 60 phút (ước lượng):
+   ```bash
+   git pull
+   bash scripts/run_div2k_control.sh                 # dòng cuối: "results/t2_div2k: 425 file" rồi "Xong."
+   git add results && git commit -m "Natural-image control: published models on DIV2K, five input sizes" && git push
+   ```
+   **[Claude] sau khi pull:** `make_paper.py` (bảng ở mục 4.3 của bản thảo tự điền), viết phần diễn giải, kết quả ra sao báo
+   nguyên như vậy. Tín hiệu từ lần thử 6 ảnh, 3 mô hình trên máy Mac (**chưa phải kết luận**): trên ảnh tự nhiên, ở JPEG 75
+   mô hình xấp xỉ hòa bicubic (+0,05 đến +0,10 dB) ở cả ảnh vào 36 px lẫn 192 px, và chỉ kém bicubic ở JPEG 60; tức có thể
+   không có hiệu ứng theo cỡ ảnh, nhưng ngưỡng của ảnh tai (quanh mức 85) cao hơn của ảnh tự nhiên.
+   **Không làm:** chạy mạng mới, hay thêm bước khử nén để tìm số đẹp.
+1. **[Bạn] Việc 4: đo độ trễ trên iPhone 12 Pro Max bằng Xcode.** Phần của Claude xong ngày 08/10: sáu mô hình đã chuyển
+   sang Core ML (`deploy_ios/models/*.mlpackage`, không đưa vào git) và khớp PyTorch trên máy Mac. **Phần của bạn:** làm theo
+   `deploy_ios/README.md` mục 2, 3, 4: mở từng `.mlpackage` trong Xcode, thẻ Performance, chạy trên iPhone hai lần (CPU
+   Only, All), ghi trung vị vào `results/latency_ios.csv`. Bắt buộc: `span_ch48`, `disp26`, `bsrgan`. Rồi:
+   ```bash
+   git add results/latency_ios.csv && git commit -m "iPhone latency measured" && git push
+   ```
+   và báo Claude. **Các bước trong Xcode chưa được Claude chạy thử** (viết theo hiểu biết về Xcode); vướng thì báo.
+   Số tham khảo đo trên chính máy Mac này (không dùng cho bài): SPAN 2,5 ms chỉ CPU, 0,4 ms mọi đơn vị; BSRGAN 56 ms và 14 ms.
+   Môi trường chuyển mô hình: `.venv-coreml` (Python 3.9 của Xcode, torch 2.7; coremltools không chạy đủ trên Python 3.14).
+   Tùy chọn: chép một lần chạy `est` từ labai217 về để đo bằng chính trọng số của bài (lệnh ở README mục 1).
+   **[Claude] sau khi có số:** `make_paper.py`, viết câu kết luận ở mục 6.7, sửa mục 1.5 của kế hoạch (thiết bị là iPhone).
 2. **[Bạn] Phần còn lại của việc 5 (rà tài liệu):** (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250) rồi sửa hai ô TBD
    ở mục 1 và 2 của bản thảo; (b) tìm có hệ thống trên IEEE Xplore và Scopus; (c) đối chiếu 24 mục "chưa tra" ở đầu
    `paper/refs.bib`; (d) đọc Li và cộng sự (TIFS 2019), Bulat và cộng sự (ECCV 2018).
@@ -77,6 +96,12 @@ Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào khôn
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 08/10 **[Claude]** Xét góp ý "hai điều kiện" cho phần nhận dạng. Viết lại câu đóng góp (abstract, mở bài, mục 6.5, thảo
+      luận) theo đó, kèm một phép kiểm trong từng bộ ảnh tính từ kết quả có sẵn: phần tăng theo "dư địa" của từng người.
+      Ghi rõ hai điều kiện bị lẫn nhau giữa hai bộ ảnh (EarVN1.0 thỏa cả hai, AWEx không thỏa cái nào). Thêm
+      `scripts/run_div2k_control.sh` và mục 4.3 chờ số.
+- [x] 08/10 **[Claude]** Việc 4, phần chuẩn bị: `scripts/export_coreml.py`, `deploy_ios/README.md`, `results/latency_ios.csv`
+      (chờ điền), bảng độ trễ và mục 6.7 trong bản thảo. Sáu mô hình chuyển được hết; lệch so với PyTorch do làm tròn 16 bit.
 - [x] 08/10 **[labai217]** Lần chạy cuối: 24 lần huấn luyện trên fold 1 và 5, chấm trên ba bộ ảnh, nhận dạng trên hai bộ
       ảnh với ba mạng nhận dạng. Ba commit "Final run: ...".
 - [x] 08/10 **[Claude]** Đọc kết quả 5 fold (kết luận về độ trung thực không đổi, mức đổi lớn nhất 0,07 dB) và nhận dạng

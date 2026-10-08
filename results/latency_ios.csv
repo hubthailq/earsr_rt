@@ -1,0 +1,13 @@
+name,compute_units,median_ms,load_ms,device,chip,ios,xcode,date,note
+span_ch48,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch48,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+disp26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+disp26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+bsrgan,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+bsrgan,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+edsr_baseline,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+edsr_baseline,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+swinir_light,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+swinir_light,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+rrdb_psnr,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+rrdb_psnr,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,

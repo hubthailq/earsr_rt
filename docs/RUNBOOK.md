@@ -83,6 +83,8 @@ bash scripts/make_n2c_jobs.sh jobs/n2c.txt && python scripts/run_queue.py jobs/n
 bash scripts/score_n2.sh
 #   LẦN CHẠY CUỐI trên hai fold giữ kín 1 và 5 (24 lần; chỉ chạy một lần, không sửa cấu hình theo kết quả):
 bash scripts/make_final_jobs.sh jobs/final.txt && python scripts/run_queue.py jobs/final.txt
+#   Đối chứng trên ảnh tự nhiên (08/10): 16 mô hình có sẵn trên DIV2K valid, ảnh vào 24 đến 192 px, năm kiểu ảnh vào
+bash scripts/run_div2k_control.sh
 #   Đo nhận dạng tai trên ảnh nhỏ thật (07/10): huấn luyện hai mạng nhận dạng (ResNet-18, ResNet-50; chỉ ảnh lớn của người
 #   có vai train, fit, clf), rồi chấm mọi phương pháp phóng ảnh trên ảnh nhỏ thật của EarVN1.0 (nhóm test, viewer) và AWEx,
 #   mỗi bộ với ba mạng nhận dạng; kết quả EarVN1.0 được tách thêm theo mức nén JPEG của file ảnh dò.

@@ -137,7 +137,15 @@ Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
 
 The second recogniser confirms the result on EarVN1.0: the rank-1 rate rises from \RecEarvnRfRankBic{}\% with bicubic upscaling to \RecEarvnRfRankEst{}\% with our model (\RecEarvnRfEstVsBic{} points), against \RecEarvnRfPubVsBic{} for the published weights. With this recogniser the generic pipeline is significantly below our model (\RecEarvnRfGenVsEst{} points).
 
-AWEx behaves differently. No upscaling method changes the rank-1 rate significantly there, with either recogniser: our model by \RecAwexReEstVsBic{} and \RecAwexRfEstVsBic{} points, the published weights by \RecAwexRePubVsBic{} and \RecAwexRfPubVsBic{}, BSRGAN by \RecAwexReBsrganVsBic{} and \RecAwexRfBsrganVsBic{}. \emph{The gain observed on EarVN1.0 is not replicated on AWEx.} Two properties of AWEx bear on this; we report them as observations made after seeing the result, not as an established explanation. First, the small AWEx images carry no JPEG block structure. The ratio of pixel differences across $8\times8$ block boundaries to differences inside blocks has a median of \BlockAwex{} for the AWEx probes, against \BlockEarvnLow{} for the EarVN1.0 probes stored at quality 70 to 80 and \BlockEarvnHigh{} for those at quality 90 or above; AWEx is distributed as PNG and its compression history is unknown. A compression-aware model has no blocking to remove there. Second, the experiment has little resolving power on AWEx: a subject has a median of \RecAwexGalMed{} enrolled images (EarVN1.0: \RecEarvnGalMed{}), and large probes are identified no better than small ones (\RecAwexReRankRef{}\% against \RecAwexReRankBic{}\% with the ResNet-18 recogniser), so resolution does not appear to be what limits the recogniser on this dataset.
+AWEx behaves differently. No upscaling method changes the rank-1 rate significantly there, with either recogniser: our model by \RecAwexReEstVsBic{} and \RecAwexRfEstVsBic{} points, the published weights by \RecAwexRePubVsBic{} and \RecAwexRfPubVsBic{}, BSRGAN by \RecAwexReBsrganVsBic{} and \RecAwexRfBsrganVsBic{}. \emph{The gain observed on EarVN1.0 is not replicated on AWEx.}
+
+\paragraph{When does upscaling help identification?} The two datasets differ in two respects, each of which bounds what an upscaling step can contribute. We examined them after seeing the AWEx result, and report them as conditions suggested by the data, not as an established explanation.
+
+\emph{Compression.} The small AWEx images carry no JPEG block structure. The ratio of pixel differences across $8\times8$ block boundaries to differences inside blocks has a median of \BlockAwex{} for the AWEx probes, against \BlockEarvnLow{} for the EarVN1.0 probes stored at quality 70 to 80 and \BlockEarvnHigh{} for those at quality 90 or above; AWEx is distributed as PNG and its compression history is unknown. A compression-aware model has no blocking to remove there.
+
+\emph{Headroom.} Upscaling can at best give back what low resolution took from the recogniser. We call \emph{headroom} the difference between the rank-1 rate of large probes and that of bicubically upscaled small probes. On EarVN1.0 it is large (\RecRankRef{}\% against \RecRankBic{}\% with the ResNet-18 recogniser); on AWEx, where a subject has a median of \RecAwexGalMed{} enrolled images against \RecEarvnGalMed{} on EarVN1.0, it is absent (\RecAwexReRankRef{}\% against \RecAwexReRankBic{}\%). Within EarVN1.0 the gain of our model follows the headroom of the subject: among the \HeadEarvnReSubj{} subjects with at least five small probes, the half with less headroom (\HeadEarvnReLowRoom{} points on average) gains \HeadEarvnReLowGain{} points and the half with more (\HeadEarvnReHighRoom{}) gains \HeadEarvnReHighGain{}; with the ResNet-50 recogniser the two halves gain \HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{}. The rank correlation between headroom and gain is positive but does not reach significance at this number of subjects (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$). Headroom alone is not sufficient: the AWEx subjects that do have it (\HeadAwexReHighRoom{} points in the upper half) gain \HeadAwexReHighGain{} and \HeadAwexRfHighGain{} points with the two recognisers, although these per-subject figures rest on a median of two probes.
+
+In our data, then, upscaling improves identification where the probes are compressed \emph{and} the recogniser loses accuracy at low resolution. EarVN1.0 meets both conditions and AWEx neither, so the two datasets cannot separate them; the split by file quality and the split by headroom within EarVN1.0 are the only within-dataset evidence for each.
 
 \begin{table}[t]
 \centering
@@ -155,7 +163,7 @@ Upscaling & ResNet-18 & ResNet-50 & ResNet-18 & ResNet-50 \\
 \end{tabular}}
 \end{table}
 
-Three conclusions follow. First, on real small ear images that are JPEG-compressed, the finding of Section~\ref{sec:analysis} carries over: SR trained with bicubic downsampling gives no identification benefit, with or without fine-tuning on ear data, and compression-aware training does, with two recognisers and a control. Second, the choice among compression-only degradations makes no measurable difference to identification, which settles the question left open in Section~\ref{sec:ablation}; the generic pipeline is slightly but significantly worse, in addition to its lower fidelity (Table~\ref{tab:main}). Third, the benefit is tied to the compression of the input: it varies with the quality stored in the probe files and is absent on a dataset whose images show no compression structure. We therefore do not claim that SR improves ear identification in general. Figure~\ref{fig:qualitative} shows examples.
+Three conclusions follow. First, on real small ear images that are JPEG-compressed, the finding of Section~\ref{sec:analysis} carries over: SR trained with bicubic downsampling gives no identification benefit, with or without fine-tuning on ear data, and compression-aware training does, with two recognisers and a control. Second, the choice among compression-only degradations makes no measurable difference to identification, which settles the question left open in Section~\ref{sec:ablation}; the generic pipeline is slightly but significantly worse, in addition to its lower fidelity (Table~\ref{tab:main}). Third, the benefit is conditional: it appears where the probes are compressed and the recogniser has headroom between large and small images, it varies with the quality stored in the probe files and with the headroom of the subject, and it is absent on AWEx, where neither condition holds. We therefore do not claim that SR improves ear identification in general; we claim to have identified when it does. Figure~\ref{fig:qualitative} shows examples.
 
 
 \begin{figure}[t]
@@ -169,4 +177,23 @@ Three conclusions follow. First, on real small ear images that are JPEG-compress
 \todo{viewer study on real small images of the reserved subjects: pairs (ours vs.\ bicubic, ours vs.\ published weights, ours vs.\ generic), number of viewers, preference rate with confidence interval. Tools: \texttt{evaluate.py --save-sr}, \texttt{viewer\_study.py}.}
 
 \subsection{Efficiency}
-The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. On an RTX~3080, SPAN with 48 channels (\ParamsSpan{}M parameters) enlarges a $48\times68$ input in \LatSpan{}~ms and DISP in \LatDisp{}~ms (median, 32-bit precision), against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}). \todo{latency on a smartphone (iPhone 12 Pro Max, A14, Core ML; $48\times68$ input, batch 1): compute units used, median and 95th percentile for SPAN, DISP and the reference models, against the 33~ms threshold. If the threshold is not met, change ``Real-Time'' in the title.}
+\label{sec:efficiency}
+The method changes the weights of the backbone and nothing else, so its cost is that of the backbone. We take real time to mean a median latency of at most 33~ms (30 frames per second) for one $48\times68$ input, the largest input size considered here. On a desktop GPU (RTX~3080, 32-bit precision) SPAN with 48 channels (\ParamsSpan{}M parameters) needs \LatSpan{}~ms and DISP \LatDisp{}~ms, against \LatBsrgan{}~ms for BSRGAN (Table~\ref{tab:published}).
+
+To test the claim on consumer hardware we convert the models to Core ML with 16-bit weights and measure them on an \PhoneName{} (\PhoneChip{}, iOS \PhoneOs{}), a phone released in 2020, with the performance tool of Xcode, which reports the median prediction time on the device. Table~\ref{tab:latencyios} gives the result with computation restricted to the CPU and with all compute units (CPU, GPU and neural engine) allowed. SPAN runs in \LatPhoneSpanCpu{}~ms on the CPU alone and \LatPhoneSpanAll{}~ms with all units; DISP in \LatPhoneDispCpu{} and \LatPhoneDispAll{}~ms; BSRGAN in \LatPhoneBsrganCpu{} and \LatPhoneBsrganAll{}~ms. \todo{state which models meet the 33~ms threshold once the measurements exist; if SPAN does not, change ``Real-Time'' in the title. The tool reports medians only; no 95th percentile is available.} The converted models reproduce the PyTorch outputs to within 16-bit rounding (PSNR between the two outputs: \CoremlPsnrSpan{}~dB for SPAN and \CoremlPsnrDisp{}~dB for DISP).
+
+\begin{table}[t]
+\centering
+\caption{Median latency (ms) for one $48\times68$ input at $\times4$: desktop GPU (RTX~3080, PyTorch, 32-bit) and smartphone (\PhoneName{}, Core ML, 16-bit).}
+\label{tab:latencyios}
+\small
+\begin{tabular}{@{}lrccc@{}}
+\toprule
+ & Params & Desktop & \multicolumn{2}{c}{Smartphone} \\
+\cmidrule(l){4-5}
+Model & (K) & GPU & CPU only & All units \\
+\midrule
+\tabinput{generated/tab_latency_ios}
+\bottomrule
+\end{tabular}
+\end{table}

@@ -44,6 +44,24 @@ Dataset & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & Measured \
 \end{tabular}}
 \end{table}
 
+\subsection{Ears, small inputs, or compression? A control on natural images}
+\label{sec:natural}
+Three things distinguish our benchmark from the protocol under which these models were trained: the content (ears), the input size (a few dozen pixels) and the compression. To separate them we evaluate the same \NPub{} models on natural images: the \NatN{} validation images of DIV2K~\cite{agustsson2017div2k}, each downsized to inputs of 24 to \NatLargePx{} pixels and degraded with the same JPEG levels (Table~\ref{tab:natural}). No model is trained or added for this control. At JPEG quality 75 and 36-pixel inputs, the median gain over bicubic interpolation on natural images is \NatSQLowMed{}~dB (\NatSQLowBelow{} of the \NPub{} models below bicubic, \NatSQLowSig{} significantly), and at \NatLargePx{}-pixel inputs it is \NatLQLowMed{}~dB (\NatLQLowBelow{} below, \NatLQLowSig{} significantly). At quality 60 the corresponding medians are \NatSQVLowMed{} and \NatLQVLowMed{}~dB. \todo{interpret once the numbers exist, along two comparisons: (a) small against large natural inputs, i.e.\ whether the loss of the advantage depends on input size; (b) natural against ear images at the same input size, i.e.\ whether the crossover lies at the same quality. If large inputs fall as small ones do, state that the threshold is a property of compression and that what is specific to ears in this paper is the benchmark and the identification result.}
+
+\begin{table}[t]
+\centering
+\caption{Natural images against ear images: median PSNR gain over bicubic interpolation of the \NPub{} published models (dB) by input size and input degradation. In parentheses: number of models with negative mean gain / number significantly below zero.}
+\label{tab:natural}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrccccc@{}}
+\toprule
+Images & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & JPEG 60 \\
+\midrule
+\tabinput{generated/tab_natural}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \subsection{Fidelity and perceptual metrics disagree}
 At quality 75, \LpipsQLowBetter{} of the \NPub{} models still have a lower LPIPS than bicubic interpolation (for SPAN, \SpanQLowLpips{} against \BicQLowLpips{}). The outputs look sharper while being further from the ground truth. This matters for how the finding is worded, and for applications: where the enlarged image is evidence, or the input of a recognition system, sharper but less faithful is not obviously an improvement. The perceptual models make the trade explicit. BSRGAN reaches an LPIPS of \BsrganQLowLpips{} at quality 75, the best of all models, at a PSNR \BsrganQLowGap{}~dB below bicubic interpolation and at \LatRatio{} times the latency of SPAN.
 
