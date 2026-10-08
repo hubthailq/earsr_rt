@@ -30,6 +30,10 @@ def _load_ckpt_model(path: str | Path) -> dict:
     return sd["model"] if isinstance(sd, dict) and "model" in sd else sd
 
 
+# Mã lần chạy không cho gạch dưới trong tên thân (earsr/runid.py), nên mô hình trong kho có gạch dưới cần tên ngắn.
+TRAIN_ALIAS = {"rrdb": "rrdb_psnr"}
+
+
 def build_trainable(backbone: str, variant: str, pretrain: str, scale: int,
                     init_ckpt: str | Path | None = None, wdir: Path | None = None) -> nn.Module:
     """Mô hình ở dạng huấn luyện, nhận và trả tensor [0, 1].
@@ -57,6 +61,7 @@ def build_trainable(backbone: str, variant: str, pretrain: str, scale: int,
                 raise ValueError(f"pretrain='{pretrain}' cần init_ckpt")
             net.load_state_dict(_load_ckpt_model(init_ckpt), strict=True)
         return net
+    backbone = TRAIN_ALIAS.get(backbone, backbone)
     if backbone not in SPECS:
         raise KeyError(f"không có backbone '{backbone}'")
     spec = SPECS[backbone]

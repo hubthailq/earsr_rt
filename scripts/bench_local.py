@@ -22,7 +22,7 @@ import torch  # noqa: E402
 from earsr.deploy.latency import measure_latency  # noqa: E402
 from earsr.device import describe_device, free_gpu_cache, is_oom  # noqa: E402
 from earsr.eval.complexity import count_flops, count_params  # noqa: E402
-from earsr.models.registry import SPECS, Bicubic, build_model, list_models  # noqa: E402
+from earsr.models.registry import CHAINS, SPECS, Bicubic, build_chain, build_model, list_models  # noqa: E402
 from earsr.models.variants import all_variants, build_span_variant  # noqa: E402
 
 INPUT_HW = {4: (68, 48), 2: (136, 96)}
@@ -37,6 +37,9 @@ def main() -> None:
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--half", action="store_true", help="FP16 (chỉ có nghĩa trên GPU)")
     ap.add_argument("--groups", nargs="*", default=None)
+    ap.add_argument("--models", nargs="*", default=None,
+                    help="chỉ đo các mô hình này: tên trong kho hoặc tên chuỗi khử nén rồi phóng (fbcnn_bicubic, "
+                         "fbcnn_span_ch48). Khi có tham số này thì không đo các biến thể SPAN")
     ap.add_argument("--oom-retries", type=int, default=3, help="số lần đo lại một mô hình khi GPU hết bộ nhớ")
     ap.add_argument("--oom-wait", type=float, default=30.0, help="số giây chờ trước mỗi lần đo lại")
     a = ap.parse_args()
@@ -79,13 +82,17 @@ def main() -> None:
             print(f"{name:24s} median {r['median_ms']:8.2f} ms   p95 {r['p95_ms']:8.2f} ms", flush=True)
 
     add("bicubic", "baseline", Bicubic(4), 4)
-    for n in list_models(available_only=True):
+    for n in (a.models if a.models is not None else list_models(available_only=True)):
+        if n in CHAINS:
+            m = build_chain(n)
+            add(n, "chain", m, 4, {"group": "chain", "params": count_params(m)})
+            continue
         s = SPECS[n]
         if a.groups and s.group not in a.groups:
             continue
         m = build_model(n)
         add(n, "zoo", m, s.scale, {"group": s.group, "params": count_params(m), "flops_g_256": count_flops(m)["flops_g"]})
-    for v in all_variants():
+    for v in ([] if a.models is not None else all_variants()):
         m = build_span_variant(v).eval().switch_to_deploy()
         add(f"spanvar_{v}", "variant", m, 4, {"params": count_params(m), "flops_g_256": count_flops(m)["flops_g"]})
     keys = []

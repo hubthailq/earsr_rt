@@ -165,6 +165,14 @@ SPECS: dict[str, ModelSpec] = {s.name: s for s in [
     # --- trần trên, tối ưu PSNR ---
     ModelSpec("rrdb_psnr", 4, _rrdb(4), "kair_RRDB_psnr_x4.pth", None, convert=_kair, group="upper",
               pretrain="DF2K (ESRGAN bản PSNR)", source=_KAIR, note="RRDB 16,7 triệu tham số, bản tối ưu PSNR"),
+    # --- RRDB học bằng suy giảm ngoài thực tế, bản tối ưu độ trung thực (mốc cho vòng phản biện, 08/10/2026):
+    #     cùng kiến trúc với rrdb_psnr, khác dữ liệu huấn luyện; không thuộc 16 mô hình học bằng bicubic của bài ---
+    ModelSpec("bsrnet", 4, _rrdb(4), "BSRNet.pth", None, convert=_kair, group="upper",
+              pretrain="suy giảm tổng hợp của BSRGAN (mờ, nhiễu, JPEG)", source=_KAIR,
+              note="BSRNet: bản tối ưu PSNR của BSRGAN, cùng suy giảm huấn luyện"),
+    ModelSpec("realesrnet", 4, _rrdb(4), "RealESRNet_x4plus.pth", "params_ema", group="upper",
+              pretrain="suy giảm bậc cao của Real-ESRGAN (mờ, nhiễu, JPEG)", source=_RESR,
+              note="Real-ESRNet: bản tối ưu L1 của Real-ESRGAN, cùng suy giảm huấn luyện"),
     # --- cảm nhận ---
     ModelSpec("esrgan", 4, _rrdb(4), "kair_ESRGAN_x4.pth", None, convert=_kair, group="perceptual",
               objective="gan", pretrain="DF2K, suy giảm bicubic", source=_KAIR, note="ESRGAN bản GAN"),
@@ -213,6 +221,36 @@ for _s in [
               note="hạng 6 NTIRE 2026; ERRN, khác họ SPAN"),
 ]:
     SPECS[_s.name] = _s
+
+
+# --- Khử nén rồi mới phóng (mốc cho vòng phản biện, 08/10/2026) ---
+# Mạng khử nén nhận và trả ảnh RGB trong [0, 1] cùng cỡ, nên không nằm trong SPECS (SPECS chỉ chứa mạng phóng ảnh).
+@dataclass(frozen=True)
+class RestorerSpec:
+    name: str
+    build: Callable[[], nn.Module]
+    weights: str
+    ckpt_key: str | None = None
+    prefix: str = ""                    # tiền tố thêm vào tên tham số khi nạp (mạng được bọc trong một lớp ngoài)
+    source: str = ""
+    note: str = ""
+
+
+def _fbcnn():
+    from .zoo.fbcnn import FBCNNBlind
+    return FBCNNBlind()
+
+
+RESTORERS: dict[str, RestorerSpec] = {
+    "fbcnn": RestorerSpec("fbcnn", _fbcnn, "fbcnn_color.pth", prefix="net.", source="https://github.com/jiaxi-jiang/FBCNN",
+                          note="FBCNN bản màu, chế độ mù (tự đoán mức nén); trọng số chính thức của tác giả"),
+}
+
+# Tên chuỗi -> (mạng khử nén, bước phóng). Bước phóng là 'bicubic' hoặc một tên trong SPECS.
+CHAINS: dict[str, tuple[str, str]] = {
+    "fbcnn_bicubic": ("fbcnn", "bicubic"),
+    "fbcnn_span_ch48": ("fbcnn", "span_ch48"),
+}
 
 
 def weights_dir() -> Path:
@@ -271,3 +309,39 @@ class Bicubic(nn.Module):
 
     def forward(self, x):
         return F.interpolate(x, scale_factor=self.scale, mode="bicubic", align_corners=False)
+
+
+def build_restorer(name: str, wdir: Path | None = None) -> nn.Module:
+    """Mạng khử nén theo tên, đã nạp chặt trọng số công bố: RGB [0, 1] -> RGB [0, 1] cùng cỡ."""
+    if name not in RESTORERS:
+        raise KeyError(f"không có mạng khử nén '{name}'. Có: {sorted(RESTORERS)}")
+    spec = RESTORERS[name]
+    path = (wdir or weights_dir()) / spec.weights
+    if not path.is_file():
+        raise FileNotFoundError(f"thiếu trọng số của '{name}': {path}. Xem scripts/get_weights.sh")
+    sd = torch.load(path, map_location="cpu", weights_only=False)
+    if spec.ckpt_key is not None:
+        sd = sd[spec.ckpt_key]
+    net = spec.build()
+    net.load_state_dict({spec.prefix + k: v for k, v in sd.items()}, strict=True)
+    return net.eval()
+
+
+class Chain(nn.Module):
+    """Khử nén rồi phóng trong một lần gọi, không lượng tử hóa ở giữa. Chỉ dùng để đo độ trễ và đếm tham số;
+    các phép chấm chất lượng đi qua ``earsr.eval.infer.make_predictor`` (ảnh trung gian là ảnh 8 bit)."""
+
+    def __init__(self, pre: nn.Module, post: nn.Module):
+        super().__init__()
+        self.pre, self.post = pre, post
+
+    def forward(self, x):
+        return self.post(self.pre(x).clamp(0, 1))
+
+
+def build_chain(name: str, wdir: Path | None = None) -> Chain:
+    if name not in CHAINS:
+        raise KeyError(f"không có chuỗi '{name}'. Có: {sorted(CHAINS)}")
+    pre, post = CHAINS[name]
+    up = Bicubic(4) if post == "bicubic" else build_model(post, wdir=wdir)
+    return Chain(build_restorer(pre, wdir), up).eval()

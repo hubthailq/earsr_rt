@@ -11,10 +11,13 @@
 \makeatletter\newcommand{\tabinput}[1]{\@@input #1.tex }\makeatother
 \input{generated/numbers}
 \setlength{\belowcaptionskip}{4pt}
-\journal{Image and Vision Computing}
+% bỏ dòng chân trang "Preprint submitted to ... <ngày>" ở trang đầu
+\makeatletter
+\def\ps@pprintTitle{\let\@oddhead\@empty\let\@evenhead\@empty\def\@oddfoot{}\let\@evenfoot\@oddfoot}
+\makeatother
 \begin{document}
 \begin{frontmatter}
-\title{Real-Time Super-Resolution for Low-Resolution Ear Images:\\ Degradation Matters More Than Architecture}
+\title{Real-Time Super-Resolution of Small Compressed Ear Images:\\ An Empirical Study of Published Models and Training Degradation}
 % Đơn vị của Thai Le Quang: tạm ghi cùng đơn vị với đồng tác giả; SỬA nếu khác. Tên khoa chưa điền.
 \author[hcmou]{Thai Le Quang}
 \author[hcmou]{Vinh Truong Hoang\corref{cor1}}
@@ -25,7 +28,7 @@
 \input{sections/abstract}
 \end{abstract}
 \begin{keyword}
-ear biometrics \sep image super-resolution \sep efficient super-resolution \sep degradation modelling \sep JPEG compression \sep benchmark
+Ear biometrics \sep Efficient super-resolution \sep Real-world degradation \sep Compression artifacts \sep Low-resolution recognition \sep On-device inference \sep Benchmark
 \end{keyword}
 \end{frontmatter}
 
@@ -38,7 +41,7 @@ ear biometrics \sep image super-resolution \sep efficient super-resolution \sep 
 \input{sections/discussion}
 
 \section*{Data and code availability}
-All datasets used are public. The code, the subject-wise splits, the measured degradation parameters, the per-image result files behind every table and the trained weights will be released at \todo{repository URL}.
+The datasets used in this study are publicly available from their providers. The code, the subject-wise splits, the measured degradation parameters, the per-image result files and the trained weights will be made publicly available upon publication.
 
 \bibliographystyle{elsarticle-num}
 \bibliography{refs}

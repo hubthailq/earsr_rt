@@ -1,0 +1,5 @@
+Sixteen published efficient SR models are evaluated on small compressed ear images
+Under JPEG compression these models can fall below bicubic interpolation
+The effect depends on the ratio of compression error to interpolation error
+Training with JPEG compression restores the advantage at no extra inference cost
+Identification of real small ear images improves on EarVN1.0 and not on AWEx

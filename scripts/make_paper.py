@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sinh mọi con số, bảng và hình của bản thảo từ results/ (không gõ tay số nào vào bài).
 
-  python scripts/make_paper.py            # ghi paper/generated/*.tex và paper/figures/*.pdf
+  python scripts/make_paper.py            # ghi paper/generated/*.tex và paper/figures/*.png (hình là ảnh PNG 600 dpi)
   cd paper && latexmk -pdf main.tex
 
 Mỗi con số trong bài là một macro LaTeX ở paper/generated/numbers.tex. Số nào chưa có kết quả thì macro in ra một ô
@@ -640,56 +640,113 @@ def natural_control(res: Path, out: Path, q_ami: pd.DataFrame) -> None:
             put(k, None, why)
 
 
-def error_ratio(res: Path, fig: Path) -> None:
-    """Một đại lượng cho mọi bộ ảnh: sai số do nén thêm vào, chia cho sai số nội suy.
+def error_ratio(res: Path, out: Path, fig: Path) -> None:
+    """Sai số do nén so với sai số nội suy, trên mọi bộ ảnh.
 
     Với mỗi ô (bộ ảnh × cỡ ảnh vào × mức JPEG): E_i là MSE của nội suy bicubic trên ảnh vào sạch, E_c là phần MSE tăng
-    thêm khi ảnh vào bị nén; tỉ số = E_c / E_i (tính từ các file theo ảnh của mốc bicubic). Trục kia là trung vị phần hơn
-    bicubic của 16 mô hình có sẵn. Chỉ lấy các ô nén ở một mức JPEG (ô 'est' trộn hai mức nén cùng nhiễu, mờ)."""
+    thêm khi ảnh vào bị nén. Ba phép tính, đều từ các file theo ảnh đã có:
+      1. tỉ số E_c / E_i và trung vị phần hơn bicubic của 16 mô hình, từng ô (hình và tương quan hạng);
+      2. phân tích MSE của từng mô hình: MSE(nén) = a·E_i + b·E_c, với a = MSE(sạch) / E_i. b > 1 nghĩa là mô hình
+         khuếch đại sai số nén;
+      3. tỉ số (và mức JPEG) tại đó phần hơn đổi dấu, nội suy tuyến tính theo log tỉ số giữa hai mức nén kề nhau, cho
+         từng bộ ảnh và cỡ ảnh, kèm khoảng tin cậy bootstrap theo người (theo ảnh với DIV2K).
+    Chỉ lấy các ô nén ở một mức JPEG (ô 'est' trộn hai mức nén cùng nhiễu, mờ)."""
+    import os
+
     from scipy.stats import spearmanr
 
     why = "div2k"
-    sets = (("AMI", "t2", "t2_summary"), ("DIV2K", "t2_div2k", "t2_div2k_summary"), ("EarVN1.0", "t2_earvn", "t2_earvn_summary"),
-            ("AWEx", "t2_awex", "t2_awex_summary"))
-    rows = []
-    for name, per, summ in sets:
-        f = res / summ / "quality.csv"
+    sets = (("AMI", "t2"), ("DIV2K", "t2_div2k"), ("EarVN1.0", "t2_earvn"), ("AWEx", "t2_awex"))
+    names = ("Cells", "Sets", "MaxAbove", "MinBelow", "Mixed", "Spearman", "SpearmanQ", "AmiQLow", "DivQLow", "AmiQHigh",
+             "DivQVLow", "PxMin", "PxMax")
+
+    def mse(per, model, t, k, scale=4):
+        f = res / per / f"{model}__hr{t}_x{scale}_{k}.csv"
         if not f.exists():
-            continue
-        q = pd.read_csv(f)
-        q = q[q.scale == 4] if "scale" in q.columns else q
-        for t in sorted(q.tier.unique()):
-            fc = res / per / f"bicubic__hr{t}_x4_bic.csv"
-            if not fc.exists():
-                continue
-            c = pd.read_csv(fc).set_index("key").psnr_y
-            for k in sorted(q[q.tier == t].degrade.unique()):
-                g = q[(q.tier == t) & (q.degrade == k) & q.model.isin(PSNR16)]
-                fj = res / per / f"bicubic__hr{t}_x4_{k}.csv"
-                if not k.startswith("bicjpeg") or len(g) != 16 or not fj.exists():
-                    continue
-                j = pd.read_csv(fj).set_index("key").psnr_y.loc[c.index]
-                ei, ej = float((10 ** (-c / 10)).mean()), float((10 ** (-j / 10)).mean())
-                rows.append({"set": name, "px": int(t) // 4, "q": int(k[7:]), "ratio": (ej - ei) / ei,
-                             "gain": float(g.gain.median()), "below": int((g.gain < 0).sum())})
-    R = pd.DataFrame(rows)
-    have = len(R) > 0 and "DIV2K" in set(R.set)
-    if not have:
-        for k in ("Cells", "Sets", "MaxAbove", "MinBelow", "Thresh", "Spearman", "AmiQLow", "DivQLow", "AmiQHigh", "DivQVLow",
-                  "Mixed", "PxMin", "PxMax"):
+            return None
+        d = pd.read_csv(f, dtype={"subject": str}).set_index("key")
+        return 10 ** (-d.psnr_y / 10), d.subject
+
+    if not (res / "t2_div2k").is_dir():
+        for k in names:
             put("Ratio" + k, None, why)
+        for k in ("CrossNatMin", "CrossNatMax", "CrossAmiMin", "CrossAmiMax", "CrossWildMin", "CrossWildMax", "CrossAllMin",
+                  "CrossAllMax", "CrossQNatMin", "CrossQNatMax", "CrossQAmiMin", "CrossQAmiMax", "CrossQWildMin",
+                  "CrossQWildMax", "AmpMin", "AmpMax", "ReduceMin", "ReduceMax", "XtwoRatio", "XtwoGainClean", "XtwoGainQLow"):
+            put(k, None, why)
+        write(out / "tab_crossover.tex", "\\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} \\\\\n")
         return
+
+    rng = np.random.default_rng(0)
+    cells, cross, amp_b, amp_a = [], [], [], []
+    for name, per in sets:
+        tiers = sorted({int(f.split("__hr")[1].split("_")[0]) for f in os.listdir(res / per)
+                        if f.startswith("bicubic__hr") and "_x4_bic.csv" in f})
+        for t in tiers:
+            base = mse(per, "bicubic", t, "bic")
+            if base is None:
+                continue
+            ei, subj = base
+            sr_clean = {m_: mse(per, m_, t, "bic") for m_ in PSNR16}
+            if any(v is None for v in sr_clean.values()):
+                continue
+            pts = {}
+            for q in (93, 85, 75, 60):
+                bj = mse(per, "bicubic", t, f"bicjpeg{q}")
+                sj = {m_: mse(per, m_, t, f"bicjpeg{q}") for m_ in PSNR16}
+                if bj is None or any(v is None for v in sj.values()):
+                    continue
+                J = np.stack([bj[0].loc[ei.index].to_numpy()] + [sj[m_][0].loc[ei.index].to_numpy() for m_ in PSNR16], 1)
+                pts[q] = J
+                Ei, Ec = float(ei.mean()), float(J[:, 0].mean() - ei.mean())
+                a_ = np.array([float(sr_clean[m_][0].loc[ei.index].mean()) / Ei for m_ in PSNR16])
+                b_ = (J[:, 1:].mean(0) - a_ * Ei) / Ec
+                amp_a += a_.tolist()
+                amp_b += b_.tolist()
+                psnr = -10 * np.log10(J)
+                g = psnr[:, 1:].mean(0) - psnr[:, 0].mean()
+                cells.append({"set": name, "px": t // 4, "q": q, "ratio": Ec / Ei, "gain": float(np.median(g)),
+                              "below": int((g < 0).sum()), "b_median": float(np.median(b_)), "b_min": float(b_.min())})
+            if len(pts) < 2:
+                continue
+            qs = sorted(pts, reverse=True)
+            E = ei.to_numpy()
+            sv = subj.to_numpy()
+            us = np.unique(sv)
+            idx = {u: np.where(sv == u)[0] for u in us}
+
+            def crossing(rows, qs=qs, pts=pts, E=E):
+                e0 = E[rows].mean()
+                r, g = [], []
+                for q in qs:
+                    J = pts[q][rows]
+                    p = -10 * np.log10(J)
+                    r.append((J[:, 0].mean() - e0) / e0)
+                    g.append(np.median(p[:, 1:].mean(0) - p[:, 0].mean()))
+                for i in range(len(g) - 1):
+                    if g[i] > 0 >= g[i + 1] and r[i] > 0:
+                        w = g[i] / (g[i] - g[i + 1])
+                        return float(np.exp(np.log(r[i]) + w * (np.log(r[i + 1]) - np.log(r[i])))), qs[i] + w * (qs[i + 1] - qs[i])
+                return np.nan, np.nan
+
+            cr, cq = crossing(np.arange(len(E)))
+            bs = np.array([crossing(np.concatenate([idx[u] for u in rng.choice(us, len(us))])) for _ in range(400)])
+            cross.append({"set": name, "px": t // 4, "n": len(E), "levels": len(qs), "ratio": cr,
+                          "ratio_lo": float(np.nanpercentile(bs[:, 0], 2.5)), "ratio_hi": float(np.nanpercentile(bs[:, 0], 97.5)),
+                          "q": cq, "q_lo": float(np.nanpercentile(bs[:, 1], 2.5)), "q_hi": float(np.nanpercentile(bs[:, 1], 97.5))})
+    R, X = pd.DataFrame(cells), pd.DataFrame(cross).dropna(subset=["ratio"])
     R.to_csv(res / "error_ratio.csv", index=False)
+    X.to_csv(res / "error_ratio_crossover.csv", index=False)
     above, below = R[R.below == 0], R[R.below == 16]
     put("RatioCells", len(R))
     put("RatioSets", R.set.nunique())
     put("RatioPxMin", int(R.px.min()))
     put("RatioPxMax", int(R.px.max()))
-    put("RatioMaxAbove", num(above.ratio.max(), 3))
-    put("RatioMinBelow", num(below.ratio.min(), 3))
-    put("RatioThresh", num((above.ratio.max() + below.ratio.min()) / 2, 2))
+    put("RatioMaxAbove", num(above.ratio.max(), 2))
+    put("RatioMinBelow", num(below.ratio.min(), 2))
     put("RatioMixed", len(R) - len(above) - len(below))
     put("RatioSpearman", num(spearmanr(R.ratio, R.gain).statistic, 2))
+    put("RatioSpearmanQ", num(spearmanr(R.q, R.gain).statistic, 2))
 
     def one(st, px, qq):
         x = R[(R.set == st) & (R.px == px) & (R.q == qq)]
@@ -699,21 +756,50 @@ def error_ratio(res: Path, fig: Path) -> None:
     put("RatioAmiQHigh", one("AMI", 36, 93))
     put("RatioDivQLow", one("DIV2K", 36, 75))
     put("RatioDivQVLow", one("DIV2K", 36, 60))
+    put("AmpMin", num(min(amp_b), 1))
+    put("AmpMax", num(max(amp_b), 1))
+    put("ReduceMin", num(min(amp_a), 2))
+    put("ReduceMax", num(max(amp_a), 2))
+    for tag, sel in (("Nat", X.set == "DIV2K"), ("Ami", X.set == "AMI"), ("Wild", X.set.isin(["EarVN1.0", "AWEx"])),
+                     ("All", X.set == X.set)):
+        put(f"Cross{tag}Min", num(X[sel].ratio.min(), 2))
+        put(f"Cross{tag}Max", num(X[sel].ratio.max(), 2))
+        if tag != "All":
+            put(f"CrossQ{tag}Min", int(round(X[sel].q.min())))
+            put(f"CrossQ{tag}Max", int(round(X[sel].q.max())))
+    rows = []
+    for r in X.to_dict("records"):
+        kind = "Natural" if r["set"] == "DIV2K" else "Ear"
+        rows.append(f"{kind} ({r['set']}) & {r['px']} & {r['levels']} & {r['q']:.0f} {{\\scriptsize[{min(r['q_lo'], r['q_hi']):.0f}, "
+                    f"{max(r['q_lo'], r['q_hi']):.0f}]}} & {num(r['ratio'], 2)} {{\\scriptsize[{num(r['ratio_lo'], 2)}, "
+                    f"{num(r['ratio_hi'], 2)}]}} \\\\")
+    write(out / "tab_crossover.tex", "\n".join(rows) + "\n")
+    # ô ×2 duy nhất có sẵn: SwinIR-light ×2 trên AMI (đáp án 144 px, ảnh vào 72 px)
+    c2, j2 = mse("t2", "bicubic", 144, "bic", 2), mse("t2", "bicubic", 144, "bicjpeg75", 2)
+    s2c, s2j = mse("t2", "swinir_light_x2", 144, "bic", 2), mse("t2", "swinir_light_x2", 144, "bicjpeg75", 2)
+    if all(v is not None for v in (c2, j2, s2c, s2j)):
+        e0 = float(c2[0].mean())
+        put("XtwoRatio", num((float(j2[0].mean()) - e0) / e0, 2))
+        ps = lambda v: float((-10 * np.log10(v[0])).mean())   # noqa: E731
+        put("XtwoGainClean", num(ps(s2c) - ps(c2), 2, True))
+        put("XtwoGainQLow", num(ps(s2j) - ps(j2), 2, True))
+    else:
+        for k in ("XtwoRatio", "XtwoGainClean", "XtwoGainQLow"):
+            put(k, None, "x2")
 
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
+    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False})
     f, ax = plt.subplots(figsize=(5.2, 3.0))
     col = {"AMI": "C3", "EarVN1.0": "C1", "AWEx": "C4", "DIV2K": "0.35"}
     mk = {60: "v", 75: "o", 85: "s", 93: "^"}
+    ax.axvspan(X.ratio.min(), X.ratio.max(), color="0.9", lw=0, zorder=0)
     for (st, qq), g in R.groupby(["set", "q"]):
-        ax.scatter(g.ratio, g.gain, s=16 + g.px / 6, c=col[st], marker=mk.get(qq, "x"), alpha=0.85, linewidths=0)
-    thr = (above.ratio.max() + below.ratio.min()) / 2
-    ax.axvline(thr, color="0.6", lw=0.8, ls=":")
-    ax.axhline(0, color="C0", lw=0.9, ls="--")
+        ax.scatter(g.ratio, g.gain, s=16 + g.px / 6, c=col[st], marker=mk.get(qq, "x"), alpha=0.85, linewidths=0, zorder=2)
+    ax.axhline(0, color="C0", lw=0.9, ls="--", zorder=1)
     ax.set_xscale("log")
     ax.set_xlabel("Compression error / interpolation error ($E_c/E_i$)")
     ax.set_ylabel("Median PSNR gain over bicubic (dB)")
@@ -721,7 +807,7 @@ def error_ratio(res: Path, fig: Path) -> None:
     h2 = [plt.Line2D([], [], marker=v, ls="", color="k", label=f"JPEG {k}") for k, v in sorted(mk.items(), reverse=True)]
     ax.legend(handles=h1 + h2, frameon=False, fontsize=6.5, ncol=2, loc="upper right")
     f.tight_layout()
-    f.savefig(fig / "fig_ratio.pdf")
+    f.savefig(fig / "fig_ratio.png", dpi=600)
     plt.close(f)
 
 
@@ -785,9 +871,15 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
         rows.append(f"{DISPLAY[name]} & {num(lat.params[name] / 1e3, 0)} & {num(lat.median_ms[name], 2)} & "
                     f"{cell(name, 'cpu')} & {cell(name, 'all')} \\\\")
     write(out / "tab_latency_ios.tex", "\n".join(rows) + "\n")
-    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp"), ("bsrgan", "Bsrgan")):
+    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp"), ("bsrgan", "Bsrgan"), ("edsr_baseline", "Edsr"),
+                      ("swinir_light", "Swin"), ("rrdb_psnr", "Rrdb")):
         for cu, t2 in (("cpu", "Cpu"), ("all", "All")):
             put(f"LatPhone{tag}{t2}", num(v[(name, cu)], 1) if (name, cu) in v else None, why)
+    # số phép tính của SwinIR-light còn nằm lại trên CPU khi cho phép mọi đơn vị tính
+    sw = d[(d.name == "swinir_light") & (d.compute_units == "all")] if len(d) and "ops_cpu" in d.columns else []
+    put("PhoneSwinOpsCpu", int(sw.ops_cpu.iloc[0]) if len(sw) else None, why)
+    put("PhoneSwinOps", int(sw.ops_cpu.iloc[0] + sw.ops_gpu.iloc[0] + sw.ops_ne.iloc[0]) if len(sw) else None, why)
+    put("PhoneNModels", len({k[0] for k in v}))
     ex = res / "coreml_export.json"   # scripts/export_coreml.py: phép so đầu ra Core ML với PyTorch
     ce = {x["name"]: x for x in json.loads(ex.read_text())} if ex.exists() else {}
     for name, tag in (("span_ch48", "Span"), ("disp26", "Disp")):
@@ -808,7 +900,7 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
+    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False})
     fig.mkdir(parents=True, exist_ok=True)
     q, P = pub["q"], tr["P"]["ami"]
     kinds = ["bicjpeg60", "bicjpeg75", "bicjpeg85", "bicjpeg93", "bic"]
@@ -831,7 +923,7 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
     axes[0].set_ylabel("PSNR-Y gain over bicubic (dB)")
     axes[0].legend(frameon=False, fontsize=7, loc="upper left")
     f.tight_layout()
-    f.savefig(fig / "fig_jpeg_sweep.pdf")
+    f.savefig(fig / "fig_jpeg_sweep.png", dpi=600)
     plt.close(f)
 
     f, ax = plt.subplots(figsize=(3.6, 3.0))
@@ -850,7 +942,7 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
     ax.set_ylabel("PSNR-Y gain over bicubic (dB)")
     f.legend(frameon=False, fontsize=6.5, loc="lower center", ncol=2)
     f.tight_layout(rect=(0, 0.12, 1, 1))
-    f.savefig(fig / "fig_size.pdf")
+    f.savefig(fig / "fig_size.png", dpi=600)
     plt.close(f)
 
 
@@ -860,34 +952,45 @@ QUAL = [("bicubic", "Bicubic"), ("span_ch48", "SPAN-S\npublished"), ("bsrgan", "
         ("N2_span-zero+xearvn_pub_rand_x4_hrall_est_f2", "SPAN-S\nmeasured")]
 
 
-def qualitative(res: Path, fig: Path) -> bool:
-    """Ảnh nhỏ thật đã phóng ×4 bằng sáu phương pháp. Trả về False nếu chưa có ảnh (results/recog/sr)."""
+def qualitative(res: Path, fig: Path, raw: Path) -> bool:
+    """Ảnh nhỏ thật (cột đầu, lặp điểm ảnh ×4) và ảnh đã phóng ×4 bằng sáu phương pháp.
+
+    Trả về False nếu chưa có ảnh đã phóng (results/recog/sr2) hoặc không thấy ảnh gốc trong `raw`."""
     import cv2
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # sr2: 12 ảnh rải trên nhiều người (mã từ 07/10); sr: 16 ảnh đầu, đều của một người (mã cũ)
-    root, picks = (res / "recog" / "sr2", (0, 3, 6, 9)) if (res / "recog" / "sr2" / "bicubic").is_dir() else (res / "recog" / "sr", (3, 4, 9, 14))
+    # sr2: 12 ảnh rải trên nhiều người (mã từ 07/10); sr: 16 ảnh đầu, đều của một người (mã cũ).
+    # Không lấy ảnh 0 của sr2: ảnh 40×146 px, phần cắt giữa không còn thấy vành tai.
+    root, picks = (res / "recog" / "sr2", (1, 3, 6, 9)) if (res / "recog" / "sr2" / "bicubic").is_dir() else (res / "recog" / "sr", (3, 4, 9, 14))
     if not all((root / m).is_dir() for m, _ in QUAL):
         return False
     names = sorted(p.name for p in (root / QUAL[0][0]).glob("*.png"))
     names = [names[i] for i in picks if i < len(names)]
     if not names:
         return False
-    f, axes = plt.subplots(len(names), len(QUAL), figsize=(6.6, 2.1 * len(names)), squeeze=False)
+    cols = [(None, "Input")] + QUAL
+    f, axes = plt.subplots(len(names), len(cols), figsize=(6.6, 1.25 * len(names)), squeeze=False)
     for i, n in enumerate(names):
-        for j, (m, label) in enumerate(QUAL):
-            img = cv2.imread(str(root / m / n))
+        subject, stem = n.rsplit(".", 1)[0].split("__", 1)
+        src = sorted((raw / subject).glob(stem + ".*"))
+        if not src:
+            print(f"hình minh họa: không thấy ảnh gốc {raw / subject / stem}.*")
+            plt.close(f)
+            return False
+        for j, (m, label) in enumerate(cols):
+            # cột đầu: ảnh gốc, mỗi điểm ảnh lặp 4×4 để cùng cỡ với các cột sau mà không nội suy
+            img = cv2.imread(str(root / m / n)) if m else cv2.imread(str(src[0])).repeat(4, axis=0).repeat(4, axis=1)
             h, w = img.shape[:2]
-            c = img[h // 2 - min(h, int(1.4 * w)) // 2: h // 2 + min(h, int(1.4 * w)) // 2]   # cắt giữa, bỏ bớt nền
+            c = img[h // 2 - min(h, int(1.25 * w)) // 2: h // 2 + min(h, int(1.25 * w)) // 2]   # cắt giữa, bỏ bớt nền
             axes[i, j].imshow(c[:, :, ::-1], interpolation="nearest")
             axes[i, j].axis("off")
             if i == 0:
                 axes[i, j].set_title(label, fontsize=7)
     f.tight_layout(pad=0.2)
-    f.savefig(fig / "fig_qualitative.pdf", dpi=200)
+    f.savefig(fig / "fig_qualitative.png", dpi=600)
     plt.close(f)
     return True
 
@@ -898,6 +1001,7 @@ def main(argv=None) -> None:
     ap.add_argument("--paper", default="paper")
     ap.add_argument("--folds", default="splits/ami_5fold.json")
     ap.add_argument("--degrade-params", default="configs/degrade_estimated.json")
+    ap.add_argument("--earvn-raw", default="data/raw/EarVN1.0", help="ảnh gốc EarVN1.0, cho cột đầu của hình minh họa")
     a = ap.parse_args(argv)
     res, out, fig = Path(a.results), Path(a.paper) / "generated", Path(a.paper) / "figures"
     pub = published(res, out)
@@ -907,10 +1011,10 @@ def main(argv=None) -> None:
     recognition_extra(res, out)
     latency_ios(res, out, pub["lat"])
     natural_control(res, out, pub["q"])
-    error_ratio(res, fig)
+    error_ratio(res, out, fig)
     headroom(res)
     figures(pub, tr, fig)
-    write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.pdf}\n" if qualitative(res, fig)
+    write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")
     lines = ["% Sinh bởi scripts/make_paper.py. KHÔNG sửa tay: chạy lại script khi có kết quả mới."]
     lines += [f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in sorted(M.items())]

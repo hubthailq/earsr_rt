@@ -38,6 +38,20 @@ def make_predictor(model_name: str, scale: int, device: str = "cpu"):
         return lambda lr: unsharp(imresize(lr, float(scale)))
     from ..models import registry
 
+    if model_name in registry.CHAINS:
+        # Khử nén rồi mới phóng. Ảnh trung gian được làm tròn về 8 bit, như một ảnh đã khử nén được lưu lại.
+        pre_name, post_name = registry.CHAINS[model_name]
+        post = make_predictor(post_name, scale, device)
+        pre = GpuFirst(lambda dev: registry.build_restorer(pre_name).to(dev), device, name=pre_name).warm()
+
+        @torch.no_grad()
+        def chained(lr: np.ndarray) -> np.ndarray:
+            with full_precision():
+                clean = pre.run(lambda model, dev: to_uint8(model(to_tensor(lr).to(dev))))
+            return post(clean)
+
+        chained.runner = pre
+        return chained
     if model_name in registry.SPECS and registry.SPECS[model_name].scale != scale:
         raise ValueError(f"{model_name} là mô hình ×{registry.SPECS[model_name].scale}, không phải ×{scale}")
     # Ưu tiên ``device``; hết bộ nhớ thì ảnh đó chạy trên CPU và GPU được thử lại sau (earsr/device.py).

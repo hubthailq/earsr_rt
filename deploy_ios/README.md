@@ -58,7 +58,7 @@ span_ch48,cpu,7.42,35.1,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,
 span_ch48,all,1.95,120.4,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,toàn bộ trên Neural Engine
 ```
 
-(Hai dòng trên là ví dụ về định dạng, không phải số đo.) Sau đó commit file này và báo Claude; `scripts/make_paper.py` sẽ
+(Hai dòng trên là ví dụ về định dạng, không phải số đo.) Sau đó commit file này; `scripts/make_paper.py` sẽ
 đưa số vào bảng độ trễ và mục 6.7 của bản thảo.
 
 ## 5. Nếu Xcode không cho đo
@@ -66,4 +66,4 @@ span_ch48,all,1.95,120.4,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,to�
 - Không thấy iPhone trong danh sách thiết bị: mở Xcode → Window → Devices and Simulators, xem máy đã "Connected" chưa.
 - Xcode đòi tài khoản: Xcode → Settings → Accounts, thêm Apple ID (miễn phí cũng được).
 - Báo cáo hiệu năng chỉ cho trung vị, không có phân vị 95. Bài báo trung vị và ghi rõ điều đó.
-- Vẫn không được thì báo Claude: phương án dự phòng là một app đo nhỏ, hoặc đo trên Android theo `docs/ANDROID.md`.
+- Vẫn không được: phương án dự phòng là một app đo nhỏ, hoặc đo trên Android theo `docs/ANDROID.md`.

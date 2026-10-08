@@ -1,7 +1,7 @@
 # earsr_rt
 
 Mã nguồn cho bài "SR real-time cho ảnh tai độ phân giải thấp". Project này mới hoàn toàn, tách khỏi
-`earsr_project_span`. Kế hoạch đi kèm: `claude/paper-plan-ridgesr-2026-10-05.md` (bản 22).
+`earsr_project_span`. Kế hoạch đi kèm: `docs/paper-plan-ridgesr-2026-10-05.md`.
 
 ## Trạng thái (05/10/2026)
 
@@ -107,7 +107,7 @@ configs/criteria.yaml   tiêu chí đạt ghi trước
 splits/ami_5fold.json   chia 5 fold theo người (có mã băm)
 docs/        DATA_AND_OUTPUTS.md, RUNBOOK.md, AMI_PERMISSION.md, STATUS.md, ANDROID.md, THIRD_PARTY.md
 results/     kết quả sơ bộ của giai đoạn 1 (CPU)
-tests/       150 kiểm thử
+tests/       157 kiểm thử
 ```
 
 ## Kiểm thử

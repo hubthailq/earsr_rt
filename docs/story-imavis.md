@@ -131,18 +131,25 @@ Bài viết hai điều kiện này là "điều kiện do số liệu gợi ý"
 - **Kiến trúc mất khác biệt khi nén cũng là hiện tượng chung:** trên ảnh tự nhiên 16 mô hình cách nhau 0,47 dB khi sạch và
   0,07 dB ở JPEG 75.
 
-**Một đại lượng giải thích cả hai** (tính từ kết quả có sẵn, không chạy thêm): tỉ số giữa phần sai số do nén thêm vào và
-sai số nội suy của bicubic (E_c / E_i). Trên 35 ô (bốn bộ ảnh × cỡ ảnh vào 24 đến 192 px × mức JPEG 60 đến 93): mọi ô có tỉ
-số từ 0,168 trở xuống thì cả 16 mô hình hơn bicubic; mọi ô từ 0,170 trở lên thì cả 16 kém (riêng EarVN1.0 ở mức 75 là 14
-trên 16). Tương quan hạng −0,91. Ảnh tai trơn nên sai số nội suy nhỏ (bicubic đạt 36,7 dB trên AMI, 23,5 dB trên DIV2K),
-cùng một mức JPEG chiếm phần sai số lớn hơn nhiều: ở mức 75 tỉ số là 0,69 với AMI và 0,10 với DIV2K.
+**Đại lượng tổ chức kết quả** (tính từ kết quả có sẵn, không chạy thêm): tỉ số giữa phần sai số do nén thêm vào và sai số
+nội suy của bicubic (E_c / E_i), trên 35 ô (bốn bộ ảnh × cỡ ảnh vào 24 đến 192 px × mức JPEG 60 đến 93).
+
+- **Đo được, đứng vững:** ở cả 35 ô, mọi mô hình trong 16 mô hình đều giảm sai số nội suy (còn 0,38 đến 0,76 lần) và khuếch
+  đại sai số nén (1,6 đến 15,8 lần). Vì vậy mô hình chỉ thắng khi sai số nén còn nhỏ so với sai số nội suy.
+- **Tỉ số xếp thứ tự các ô tốt hơn mức JPEG:** tương quan hạng với phần hơn là −0,91, so với 0,79 của mức JPEG.
+- **KHÔNG có ngưỡng chung** (bản đầu ngày 08/10 viết "khoảng 0,17" là sai, do lưới mức nén thưa): điểm đổi dấu nội suy, kèm
+  bootstrap, là 0,13 đến 0,17 với ảnh tự nhiên (mức JPEG 64 đến 66), 0,26 đến 0,28 với AMI (mức 87 đến 89), 0,23 đến 0,36
+  với ảnh tai ngoài thực tế (mức 76 đến 81, ước lượng thô vì chỉ hai mức nén). Tỉ số giải thích được phần lớn, không phải
+  toàn bộ, khác biệt giữa các bộ ảnh.
+- Ảnh tai trơn nên sai số nội suy nhỏ (bicubic đạt 36,7 dB trên AMI, 23,5 dB trên DIV2K), cùng một mức JPEG chiếm phần sai
+  số lớn hơn nhiều: ở mức 75 tỉ số là 0,69 với AMI và 0,10 với DIV2K.
 
 **Phần riêng của ảnh tai, viết lại:** không phải hiện tượng, mà là vị trí của nó: các mức nén mà ảnh tai nhỏ thật mang
-nằm bên kia ngưỡng, còn ảnh tự nhiên ở cùng mức nén thì chưa.
+nằm bên kia điểm đổi dấu, còn ảnh tự nhiên ở cùng mức nén thì chưa.
 
-**Giới hạn phải nêu:** ngưỡng 0,17 là thực nghiệm; chỉ kiểm với 16 mô hình học bằng bicubic, ×4, nén JPEG; hai ô sát ngưỡng
-nằm hai phía ở tỉ số gần bằng nhau với phần hơn khác nhau, nên phần hơn không phải hàm của riêng tỉ số. Chưa rà tài liệu
-xem quy tắc này đã có ai nêu chưa.
+**Giới hạn phải nêu:** chỉ kiểm với 16 mô hình học bằng bicubic, ×4, nén JPEG (ô ×2 duy nhất có sẵn khớp chiều nhưng không
+kiểm được gì nhiều); hệ số khuếch đại không phải hằng số; lượt tìm kiếm web không thấy ai nêu quan hệ này nhưng chưa có hệ
+thống.
 
 Bản thảo: mục 4.3 mới (bảng, hình `fig_ratio.pdf`), abstract viết lại mở đầu bằng quy tắc này, mở bài và thảo luận sửa theo.
 
@@ -179,13 +186,27 @@ bảng và hình bằng script.
 
 Chỉ làm nếu người phản biện yêu cầu, hoặc thuộc bài sau.
 
-- **Để dành cho vòng phản biện** (đều rẻ, chỉ chấm hoặc vài lần huấn luyện): mốc BSRNet và Real-ESRNet; mốc khử nén rồi SR;
+- **Để dành cho vòng phản biện** (đều rẻ, chỉ chấm hoặc vài lần huấn luyện): mốc BSRNet và Real-ESRNet; mốc khử nén rồi SR
+  (hai mốc này được duyệt làm trước khi nộp ngày 08/10, xem mục 5b);
   thêm seed; độ bền với thứ tự suy giảm; đối chứng trên DIV2K; hệ số ×2; AWEx biên an toàn 1,5; bộ dữ liệu thứ ba.
 - **Bỏ khỏi bài này:** dò tốc độ học, ba giao thức huấn luyện (T6), khối `pad` và N5b, N1, N3, T4, T5, nhánh trộn ảnh sạch.
 - **Bài sau:** kiến trúc mới (hướng B, C ở `TODO.md` mục 2b), dùng benchmark và mốc của bài này.
 
 Hệ quả cho câu chữ: vì không có mốc BSRNet và Real-ESRNet, P1 phải viết là "mô hình học bằng bicubic", không viết "mọi mô
 hình có sẵn". Suy giảm tổng quát đã có mặt trong bài qua nhánh huấn luyện có kiểm soát (cùng thân, khác suy giảm).
+
+## 5b. Mở lại danh sách đóng một lần (08/10/2026)
+
+Hai vòng phản biện thử trên bản thảo hoàn chỉnh đều nêu cùng hai lỗ hổng, và người dùng duyệt làm trước khi nộp:
+
+| Việc | Lỗ hổng nó đóng | Loại | Trạng thái |
+|---|---|---|---|
+| J1. FBCNN rồi bicubic, FBCNN rồi SPAN công bố, kèm độ trễ | "Sao không khử nén trước rồi mới phóng?" | Chỉ chấm | Mã xong, chờ chạy |
+| J2a. BSRNet, Real-ESRNet | "16 mô hình công bố đều học bằng bicubic; mạng lớn học có nén thì sao?" | Chỉ chấm | Mã xong, chờ chạy |
+| J2b. RRDB tinh chỉnh với công thức của SPAN nhánh est, 5 fold | Câu "suy giảm có tác dụng lớn hơn kiến trúc" thiếu đối chứng cùng điều kiện | 5 lần huấn luyện | Mã xong, chờ chạy |
+
+Quy tắc: mỗi việc một cấu hình chốt trước; kết quả nào cũng đưa vào bài; sau ba việc này danh sách đóng lại. Việc tách hai
+điều kiện của phần nhận dạng KHÔNG được duyệt (xem `TODO.md` mục 0, việc K). Lệnh chạy: `docs/RUNBOOK.md` mục 6.
 
 ## 6. Rủi ro còn lại, nói thẳng
 

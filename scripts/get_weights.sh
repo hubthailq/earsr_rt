@@ -29,13 +29,17 @@ dl $K/RRDB.pth              kair_RRDB_psnr_x4.pth
 dl $K/ESRGAN.pth            kair_ESRGAN_x4.pth
 dl $K/BSRGAN.pth            BSRGAN.pth
 dl $K/msrresnet_x4_psnr.pth msrresnet_x4_psnr.pth
+dl $K/BSRNet.pth            BSRNet.pth
 R=https://github.com/xinntao/Real-ESRGAN/releases/download
 dl $R/v0.1.0/RealESRGAN_x4plus.pth        RealESRGAN_x4plus.pth
 dl $R/v0.2.1/RealESRGAN_x2plus.pth        RealESRGAN_x2plus.pth
 dl $R/v0.2.5.0/realesr-general-x4v3.pth   realesr-general-x4v3.pth
+dl $R/v0.1.1/RealESRNet_x4plus.pth       RealESRNet_x4plus.pth
 S=https://github.com/JingyunLiang/SwinIR/releases/download/v0.0
 dl $S/002_lightweightSR_DIV2K_s64w8_SwinIR-S_x4.pth swinir_light_x4.pth
 dl $S/002_lightweightSR_DIV2K_s64w8_SwinIR-S_x2.pth swinir_light_x2.pth
+# FBCNN (khử vết nén JPEG, bản màu): mạng đặt trước bước phóng trong mốc "khử nén rồi phóng"
+dl https://github.com/jiaxi-jiang/FBCNN/releases/download/v1.0/fbcnn_color.pth fbcnn_color.pth
 # EDSR-baseline: máy chủ của tác giả (không nằm trên GitHub). Tên file gốc mang 8 ký tự đầu của SHA-256.
 dl https://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x4-6b446fab.pt edsr_baseline_x4.pth
 SHA="$( (sha256sum "$W/edsr_baseline_x4.pth" 2>/dev/null || shasum -a 256 "$W/edsr_baseline_x4.pth") | cut -c1-8)"

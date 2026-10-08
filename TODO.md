@@ -39,7 +39,9 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   15,82 ms. Ở chế độ mọi đơn vị, cả ba mô hình chạy trọn trên Neural Engine. Số nằm ở `results/latency_ios.csv`.
   **Chữ "Real-Time" trong tiêu đề giữ được.** Điều phải viết thẳng (đã viết ở mục 6.7): trên Neural Engine cả BSRGAN cũng
   dưới 33 ms, nên ở cỡ ảnh này ngưỡng real-time không loại được mô hình lớn; lý do chọn mạng nhỏ là độ trung thực và phần
-  dư thời gian, không phải tính khả thi. Chỉ có trung vị, không có phân vị 95. 14 mô hình còn lại chưa đo (tùy chọn).
+  dư thời gian, không phải tính khả thi. Chỉ có trung vị, không có phân vị 95. **Đo thêm ba mốc (08/10):** EDSR-baseline 12,75 / 1,76 ms; RRDB 107,91 / 15,53 ms;
+  SwinIR-light 61,47 / 40,13 ms (không đạt ngưỡng ở cả hai chế độ; 240 trên 1.280 phép tính vẫn nằm trên CPU). Tổng cộng 6
+  mô hình đã đo; 11 mô hình còn lại không đo.
 - [x] 08/10 **C. [labai217] Đối chứng trên ảnh tự nhiên: XONG** (425 file, commit `300de40`). Kết quả: mục 3b4 của `docs/story-imavis.md`. Khi xong phải commit và push kết quả
   (hai dòng cuối của khối lệnh dưới). Đây là Phần 2 của góp ý ghi ở mục "Góp ý ngày 08/10" ngay bên dưới. Chỉ chấm, không huấn luyện, khoảng 30 đến 60 phút (ước lượng):
   ```bash
@@ -60,36 +62,111 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   git add TODO.md docs paper scripts deploy_ios/README.md results
   git commit -m "Natural-image control interpreted; error-ratio rule; iPhone latency measured" && git push
   ```
-- [ ] **F. [Bạn] Phần còn lại của rà tài liệu:** (0) **mới:** tìm xem đã có ai nêu quy tắc "SR chỉ thắng nội suy khi sai số nén
-  nhỏ so với sai số nội suy" chưa (từ khóa: compressed image super-resolution, interpolation error, crossover, JPEG quality);
-  bài hiện viết đây là quy tắc thực nghiệm của mình, chưa kiểm tính mới; (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250) rồi sửa hai ô TBD ở
-  mục 1 và 2 của bản thảo; (b) tìm có hệ thống trên IEEE Xplore và Scopus; (c) đối chiếu 24 mục "chưa tra" ở đầu
-  `paper/refs.bib`; (d) đọc Li và cộng sự (TIFS 2019), Bulat và cộng sự (ECCV 2018).
-- [ ] **G. [Claude, khi bạn bảo] Hoàn thiện bản thảo:** hình phổ sai số cho mục 4.1 (ô TBD); chọn lại ảnh cho hình định tính
-  (đã có 12 ảnh của 12 người ở `results/recog/sr2`); rút abstract xuống giới hạn của tạp chí (hiện dài); highlights và các
-  tuyên bố Elsevier yêu cầu; số trang cho `refs.bib`; tên khoa của đơn vị; quyền dùng ảnh EarVN1.0 và AMI trong hình; mục 6.6
-  (khảo sát người xem) đang là ô TBD: không làm khảo sát thì xóa mục đó.
-- [ ] **H. Đưa thầy đọc** `paper/main.pdf` khi E và G xong.
+- [x] 08/10 **F (phần Claude làm được): đối chiếu danh mục tham khảo.** Cả 44 mục của `paper/refs.bib` đã được đối chiếu với
+  Crossref (tên bài, tác giả, nơi đăng, năm, trang, DOI) hoặc trang arXiv, NeurIPS, CVF. Sửa: chính tả tên Markićević, trang và
+  DOI của mọi mục, năm của ESRGAN và AIM 2022 theo kỷ yếu. Bỏ 2 mục không kiểm đủ (Bogatyrev BMVC 2024, Menezes 2021).
+- [x] 08/10 **G. Hoàn thiện bản thảo: XONG.** Viết lại toàn bộ văn bản theo văn phong chừng mực (người dùng yêu cầu: bỏ dấu gạch
+  dài, bỏ lời khẳng định mạnh); gỡ mọi ô TBD và ghi chú nháp; bỏ mục khảo sát người xem; đổi tiêu đề; hình định tính lấy ảnh
+  của bốn người; soạn `paper/highlights.txt`. (Mục khai dùng AI do Claude tự thêm đã được gỡ theo yêu cầu của người dùng ngày 08/10; không thêm lại.) Bản thảo 35 trang, 14 bảng, 4 hình.
+- [x] 08/10 **G2. Sắp lại phần mở bài để đưa điểm riêng lên trước** (người dùng hỏi): thêm một đoạn nói thẳng điều đã biết và
+  ba câu hỏi bài trả lời; ba đoạn kết quả theo ba câu hỏi đó; danh sách đóng góp thành bốn mục, phần ảnh thật thành mục riêng.
+- [x] 08/10 **G3. Hình minh họa (Hình 4)** (người dùng hỏi vì hàng 3 trông "ảo"): thêm cột `Input` là ảnh gốc lặp điểm ảnh
+  4×4 (đọc từ `data/raw/EarVN1.0`, tham số `--earvn-raw` của `make_paper.py`); đổi ảnh hàng 1 (ảnh 40×146 px cắt giữa
+  không còn thấy vành tai) sang ảnh số 1 của `results/recog/sr2`. Hình vẫn là PNG do mã sinh. Hai câu nhận xét bằng mắt tôi tự thêm vào 6.5
+  (ảnh mịn hơn; BSRGAN vẽ ra cạnh không có trong ảnh vào) đã gỡ theo yêu cầu người dùng: không thêm lại.
+- [x] 08/10 **G4. Ba chỗ sửa theo nhận xét phản biện thử** (người dùng dán nhận xét, đồng ý sửa): (1) câu cuối đoạn "Relation to
+  previous findings" không còn so mạng nhỏ đã huấn luyện có nén với mạng lớn học bằng bicubic; viết rõ là chưa huấn luyện mạng
+  lớn có nén; (2) gộp đóng góp 3 và 4 thành một, bỏ số mili-giây khỏi danh sách đóng góp (vẫn ở tóm tắt và mục 6.6);
+  (3) thêm một câu giới hạn: chưa so với cách khử nén bằng mạng riêng rồi mới phóng. Bài thành 35 trang.
+  (Ghi chú lúc đó: mốc khử nén rồi phóng để dành cho vòng sửa. Cùng ngày người dùng đổi ý và duyệt làm trước khi nộp: việc J.)
+- [x] 08/10 **G5. Hai câu về AWEx viết cùng mức với đoạn "hai điều kiện"** (nhận xét phản biện thử, người dùng dán): câu kết
+  không còn giải thích AWEx bằng riêng "không có cấu trúc nén"; câu tổng kết cuối 6.5 bỏ chữ "depended on". Cả hai nay nêu
+  hai khác biệt (không thấy khối JPEG; khoảng trống ảnh lớn/ảnh nhỏ nhỏ hơn nhiều so với EarVN1.0) và nói dữ liệu không tách được.
+  Viết "much smaller", không viết "gần bằng không": trên AWEx khoảng trống là 0,4 điểm (ResNet-18) và 3,3 điểm (ResNet-50).
+- [x] 08/10 **G6. Phần đầu bài viết cùng mức với câu kết** (nhận xét phản biện thử; người dùng bảo sửa chỗ nào nhận xét đúng):
+  tóm tắt (242 từ), đoạn trả lời câu hỏi thứ hai và đóng góp thứ hai không còn viết "suggest two conditions"; nay nêu: tăng trên
+  EarVN1.0, không đổi trên AWEx, hai khác biệt xét sau khi có kết quả và không tách được. Dòng highlights thứ năm sửa theo.
+  Mở bài: "As a result" đổi thành "Consistent with this". Không hạ thêm phần nhận dạng nữa: ngưỡng tỉ số của ảnh tai cao hơn
+  ảnh tự nhiên khoảng hai lần (0,26 đến 0,28 so với 0,13 đến 0,17) trong khi tỉ số ở JPEG 75 chênh bảy lần (0,69 so với 0,10),
+  nên độ mịn giải thích đúng chiều; đây là lý lẽ trả lời nếu phản biện thật hỏi.
+- [ ] **J. Mốc cho vòng phản biện, đưa vào bài trước khi nộp** (người dùng duyệt ngày 08/10 sau hai vòng phản biện thử;
+  danh sách đóng của `docs/story-imavis.md` mở lại ĐÚNG MỘT LẦN cho ba việc này rồi đóng). Mỗi việc một cấu hình, chốt trước
+  khi chạy, ra số nào báo số đó; không chạy lại với cấu hình khác để tìm số đẹp.
+  - **J1. Khử nén rồi mới phóng** (chỉ chấm): FBCNN bản màu, chế độ mù, rồi bicubic (`fbcnn_bicubic`) và rồi SPAN công bố
+    (`fbcnn_span_ch48`). Kèm đo độ trễ của chuỗi, vì bài là bài real-time. FBCNN có 71,9 triệu tham số (đã đếm).
+  - **J2a. RRDB học có nén, trọng số có sẵn** (chỉ chấm): `bsrnet`, `realesrnet` (cùng kiến trúc RRDB 16,7 triệu tham số).
+  - **J2b. Tinh chỉnh RRDB với đúng công thức của SPAN nhánh est** (huấn luyện mới, 5 lần): `scripts/make_rrdb_jobs.sh`;
+    mã lần chạy `REV_rrdb-zero+xearvn_..._est_f<fold>`, gộp thành nhánh `rrdb/est`. Khác SPAN đúng một chỗ: bật `--amp`, vì
+    RRDB ở lô 64 cần khoảng 12 GB ở FP32 (ước từ phép thử trên CPU), quá RTX 3080. Fold 2, 3, 4 trước; chỉ khi cả ba qua
+    phép thử ảnh sáng mới chạy fold 1 và 5, một lần. Nếu phải chỉnh (ví dụ tốc độ học) thì chỉ chỉnh trên fold 2, 3, 4.
+  - [x] 08/10 Mã đã viết và thử trên Mac: `earsr/models/zoo/fbcnn.py` (rút từ kho của tác giả, Apache-2.0), kho mô hình có
+    `bsrnet`, `realesrnet`, `RESTORERS`, `CHAINS`; `scripts/run_review.sh`, `scripts/summarize_review.py`,
+    `scripts/make_rrdb_jobs.sh`; `bench_local.py --models`; 7 kiểm thử mới (`tests/test_review.py`), tổng 157 qua.
+    Ba bộ trọng số nạp chặt được; FBCNN tăng PSNR trên Set5 nén (JPEG 10: 26,58 lên 29,23 dB) và đoán đúng mức nén.
+    Phép thử nối dây trên 10 ảnh AMI ở 36 px, JPEG 75 (KHÔNG phải kết quả): bicubic 33,96; SPAN công bố 33,52; BSRNet 33,67;
+    Real-ESRNet 32,49; FBCNN rồi bicubic 34,39; FBCNN rồi SPAN 34,72 dB. Chuỗi FBCNN rồi SPAN chậm hơn SPAN khoảng 6,5 lần
+    trên CPU máy Mac (35 so với 5,5 ms).
+  - [ ] **[Bạn, máy Mac]** commit và push (lệnh ở cuối câu trả lời ngày 08/10).
+  - [ ] **[Bạn, labai217] Bước 1:** tải ba bộ trọng số mới, rồi `nohup bash scripts/run_review.sh > review.log 2>&1 &`
+    (J1 và J2a; chấm độ trung thực trên ba bộ, nhận dạng với ba mạng, độ trễ trên GPU). Xong thì commit `results/` và push.
+    Lệnh đầy đủ: `docs/RUNBOOK.md` mục 6.
+  - [ ] **[Bạn, labai217] Bước 2:** `bash scripts/make_rrdb_jobs.sh` rồi chạy hàng đợi (fold 2, 3, 4). Xem dòng
+    "phép thử ảnh sáng" của ba lần chạy. Cả ba ỔN ĐỊNH thì `FINAL_RUN=1 FOLDS="1 5" bash scripts/make_rrdb_jobs.sh jobs/rrdb_final.txt`
+    và chạy tiếp. Sau đó gọi lại `bash scripts/run_review.sh` (file đã có được bỏ qua), commit và push.
+  - [ ] **[Claude, máy Mac] Bước 3, sau khi pull kết quả:** đọc `results/rev_summary/summary.md`; thêm vào `make_paper.py`
+    một bảng (các mốc mới cạnh bicubic, SPAN công bố, SPAN nhánh est: PSNR ở ảnh vào sạch, JPEG 93, 75, suy giảm ước lượng;
+    hạng 1 trên EarVN1.0; tham số; độ trễ) và các macro; viết một mục con ở mục 6 và sửa các câu liên quan. Quy tắc câu chữ:
+    - FBCNN rồi SPAN ngang hoặc hơn SPAN nhánh est: phần huấn luyện viết thành "lựa chọn rẻ nhất lúc chạy", bỏ ý "tốt nhất";
+      sửa tóm tắt nếu cần. Kém hơn: ghi số, không bình luận thêm.
+    - BSRNet hoặc Real-ESRNet hơn bicubic dưới nén: câu "mô hình công bố kém bicubic" giữ phạm vi "học bằng bicubic" (đã viết
+      như vậy), thêm một câu về hai mô hình này.
+    - RRDB nhánh est hơn SPAN nhánh est: ghi mức chênh cạnh chi phí (CPU điện thoại 108 so với 4,7 ms); câu "suy giảm có tác
+      dụng lớn hơn kiến trúc" chỉ giữ nếu mức chênh nhỏ hơn tác dụng của suy giảm trên cùng thân. Gỡ câu "We did not train a
+      larger network with compression" ở phần thảo luận và câu giới hạn về khử nén (thêm ở G4), thay bằng kết quả.
+    - Sau đó đóng lại danh sách trong `docs/story-imavis.md`.
+- [ ] **K. Ý để dành, CHƯA duyệt, không làm trước khi phản biện thật yêu cầu** (ghi ngày 08/10 để nhớ):
+  - **Tách hai điều kiện của phần nhận dạng.** Không huấn luyện lại bộ nhận dạng trên AWEx (gallery trung vị 2 ảnh mỗi người
+    nên khoảng trống khó xuất hiện; chỉ thử được một chiều). Cách rẻ hơn, chỉ chấm: trên EarVN1.0, thu nhỏ ảnh lớn của người
+    test thành ảnh dò nhỏ không nén, rồi nén ở JPEG 75 và 93; cùng người, cùng bộ nhận dạng, chỉ đổi mức nén. Điểm yếu: ảnh dò
+    là ảnh tổng hợp. Ghi chú thêm: SPAN công bố không đổi hạng 1 trên AWEx dù ảnh ở đó không thấy khối JPEG, nên khoảng trống
+    gần bằng không có thể là lý do chính; đây là phỏng đoán, phép thử trên sẽ kiểm được.
+  - **Chuẩn nén khác JPEG** (WebP, HEIC, khung hình video): hiện chỉ trả lời bằng phần giới hạn.
+  - **So với phương pháp phóng ảnh dành riêng cho tai hoặc mặt:** hiện chỉ trả lời bằng phần tài liệu liên quan.
+  - Các mục còn lại ở `docs/story-imavis.md` mục 5 (thêm seed, thứ tự suy giảm, hệ số ×2, bộ dữ liệu thứ ba).
+- [ ] **Đang chờ: người dùng đọc soát `paper/main.pdf`**, ổn thì gửi thầy; sau khi thầy đồng ý mới dọn mã nguồn (việc I).
+- [ ] **F2. [Bạn] Việc chỉ tác giả làm được:** theo `paper/SUBMISSION_CHECKLIST.md` (đơn vị công tác, tuyên bố xung đột lợi ích,
+  CRediT, tài trợ, quyết định về tiêu đề, quyền dùng ảnh ở hình 4, đọc toàn văn bài IWSSIP 2023, tìm tài
+  liệu có hệ thống).
+- [ ] **H. Đưa thầy đọc** `paper/main.pdf`.
+- [ ] **I. TRƯỚC KHI NỘP hoặc công khai mã (người dùng dặn ngày 08/10): không để lại dấu vết nào của AI trong bài và trong mã.**
+  Trạng thái: thư mục `paper/` (bản thảo, PDF, checklist) và mọi file mã, README đã sạch (đã rà bằng grep ngày 08/10).
+  Còn chứa: các ghi chú làm việc nội bộ (`TODO.md`, `CLAUDE.md`, `docs/HANDOFF.md`, `docs/STATUS.md`, `docs/story-imavis.md`,
+  `docs/paper-plan-*.md`) và **lịch sử git** của kho làm việc. Cách xử lý: không công khai kho làm việc; xuất bản sạch bằng
+  ```bash
+  bash scripts/make_release.sh ~/earsr_rt_release      # bỏ ghi chú nội bộ, rà từ cấm, dừng nếu còn
+  ```
+  rồi tạo kho công khai mới từ thư mục đó (không kèm lịch sử). Chạy lại script này mỗi lần trước khi công khai.
+  Bản thảo gửi tạp chí chỉ lấy từ `paper/`.
 
-### Ba điểm dè dặt của quy tắc tỉ số sai số: việc phải làm (người dùng dặn ghi lại ngày 08/10)
+### Ba điểm dè dặt của quy tắc tỉ số sai số: ĐÃ LÀM ngày 08/10, kết quả làm bài phải viết hẹp lại
 
-Quy tắc: mô hình có sẵn hơn bicubic khi sai số do nén thêm vào nhỏ hơn khoảng 0,17 lần sai số nội suy (mục 4.3 của bản thảo,
-mục 3b4 của `docs/story-imavis.md`). Ba chỗ chưa chắc, mỗi chỗ một việc:
-
-- [ ] **Dè dặt 1: ngưỡng là thực nghiệm, mới kiểm với mô hình học bằng bicubic, ×4, nén JPEG.**
-  Việc [Claude, không tốn GPU]: thêm các ô ×2 đã có sẵn trong `results/t2/` (SwinIR-light ×2 và các mô hình ×2 khác trên AMI,
-  ảnh sạch và JPEG 75) vào phép tính tỉ số, xem chúng có nằm đúng phía của ngưỡng không; báo kết quả dù thuận hay nghịch.
-  Phần không kiểm được bằng số liệu có sẵn (codec khác, mô hình học có nén) giữ ở mục giới hạn của bài, không chạy thêm.
-- [ ] **Dè dặt 2: ranh giới 0,168 / 0,170 sắc một phần do may** (hai ô sát ngưỡng thuộc hai bộ ảnh khác nhau, phần hơn khác nhau).
-  Việc [Claude, không tốn GPU]: (i) báo khoảng đổi dấu của **từng bộ ảnh** thay cho một con số chung (DIV2K: giữa 0,12 và
-  0,17; AMI: giữa 0,17 và 0,36; AWEx: giữa 0,08 và 0,38; EarVN1.0: giữa 0,06 và 0,39) và viết ngưỡng là "khoảng một phần sáu";
-  (ii) bootstrap theo ảnh cho tỉ số và cho dấu của phần hơn ở các ô sát ngưỡng, để biết ranh giới chắc tới đâu;
-  (iii) sửa câu trong abstract và mục 4.3 nếu khoảng tin cậy cho thấy con số 0,17 viết quá chính xác.
-- [ ] **Dè dặt 3: chưa rà xem quy tắc này đã có ai nêu chưa.**
-  Việc [Claude, khi bạn bảo]: một lượt tìm kiếm web như lượt rà tài liệu ngày 07/10 (từ khóa: compressed image
-  super-resolution, interpolation error, JPEG quality crossover, SR worse than bicubic).
-  Việc [Bạn]: tìm có hệ thống trên IEEE Xplore và Scopus (đã ghi ở việc F, mục 0). Nếu đã có người nêu: bài trích dẫn và
-  viết đóng góp là "kiểm quy tắc đó trên ảnh tai và chỉ ra ảnh tai nằm bên kia ngưỡng"; nếu chưa: giữ cách viết hiện tại.
+- [x] 08/10 **Dè dặt 2 (ranh giới sắc do may): ĐÚNG LÀ DO MAY. Không có ngưỡng chung 0,17.** Nội suy điểm đổi dấu cho từng bộ
+  ảnh và cỡ ảnh, bootstrap theo người: ảnh tự nhiên (DIV2K) đổi dấu ở tỉ số 0,13 đến 0,17 (mức JPEG 64 đến 66); AMI ở 0,26
+  đến 0,28 (mức 87 đến 89); ảnh tai ngoài thực tế ở 0,23 đến 0,36 (mức 76 đến 81; chỉ có hai mức nén nên ước lượng thô).
+  Khoảng tin cậy của DIV2K và AMI không chồng nhau. **Bài đã sửa:** bỏ con số 0,17; viết "một giá trị phụ thuộc bộ ảnh, giữa
+  0,13 và 0,36"; thêm bảng điểm đổi dấu (mục 4.3); hình đổi vạch đứng thành dải.
+  Phần còn đứng vững, và nay được đo chứ không chỉ lập luận: trong cả 35 ô, **mọi** mô hình trong 16 mô hình đều giảm sai
+  số nội suy (còn 0,38 đến 0,76 lần) và khuếch đại sai số nén (1,6 đến 15,8 lần). Tỉ số xếp thứ tự các ô tốt hơn mức JPEG
+  (tương quan hạng −0,91 so với 0,79). Hệ số khuếch đại không phải hằng số (lớn nhất khi nén nhẹ), nên không có mô hình
+  hai tham số gọn.
+- [x] 08/10 **Dè dặt 1 (mới kiểm ×4):** kết quả cũ chỉ có **một** mô hình PSNR ở ×2 (SwinIR-light ×2 trên AMI) và một ô: tỉ số
+  1,21, phần hơn −0,53 dB (ảnh sạch +2,41). Khớp chiều nhưng là một điểm nằm rất xa điểm đổi dấu, không kiểm được gì
+  nhiều. Bài ghi đúng như vậy và giữ "×4, JPEG, mô hình học bằng bicubic" ở mục giới hạn. Không chạy thêm.
+- [x] 08/10 **Dè dặt 3 (tính mới): lượt tìm kiếm web (4 truy vấn) không thấy bài nào nêu quan hệ này theo tỉ số sai số.** Thấy:
+  các bài SR cho ảnh nén có lúc báo một phương pháp SR chung kém bicubic trên ảnh JPEG (ví dụ trong so sánh của CISRDCNN);
+  một benchmark SR sau codec video (Bogatyrev và cộng sự, BMVC 2024; mới thấy tên bài, chưa mở). Bài viết: "không tìm thấy
+  phát biểu nào về quan hệ này trong phần tài liệu đã tìm, nhưng lượt tìm chưa có hệ thống". **Vẫn là việc của bạn** ở việc
+  F: tìm có hệ thống, và mở bài BMVC 2024 để kiểm trích dẫn (mục này trong `refs.bib` còn nhãn VERIFY).
 
 ### Góp ý ngày 08/10 (hai phần) và trạng thái: ĐỌC LẠI SAU KHI ĐO IPHONE XONG
 
@@ -150,6 +227,9 @@ Xcode chỉ cho trung vị, không có phân vị 95.
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 08/10 **[Claude]** Ba điểm dè dặt của quy tắc tỉ số: tính điểm đổi dấu theo từng bộ ảnh với khoảng tin cậy; đo hệ số
+      giảm sai số nội suy và khuếch đại sai số nén của từng mô hình ở từng ô; kiểm ô ×2; tìm kiếm web. Kết quả: không có
+      ngưỡng chung, bài sửa lại (abstract, mở bài, mục 4.3, thảo luận, related work). `make_paper.py`: hàm `error_ratio` viết lại.
 - [x] 08/10 **[Bạn + Claude]** Đo iPhone bằng Xcode 26.3 (6 lần đo, ba mô hình); Claude đọc số từ ảnh chụp màn hình, điền
       `results/latency_ios.csv`, viết kết luận ở mục 6.7. Trước đó: chuyển đủ 17 mô hình sang Core ML.
 - [x] 08/10 **[Claude]** Đọc kết quả đối chứng trên DIV2K; tìm ra quy tắc tỉ số sai số (35 ô, bốn bộ ảnh, ngưỡng quanh 0,17,
@@ -365,6 +445,7 @@ Giả định: bài này là bài phát hiện cộng benchmark cộng cách hu�
 nhắc, chưa chốt). Xếp theo mức quan trọng. Các mục 1, 2, 3 chạm thẳng vào câu đóng góp chính.
 
 - [ ] **1. Mốc có sẵn loại "SR ngoài thực tế, bản tối ưu độ trung thực"**: BSRNet, Real-ESRNet, SwinIR real-SR bản PSNR.
+      **08/10: đã duyệt và viết mã cho BSRNet, Real-ESRNet (mục 0, việc J2a); chờ chạy.**
       Mười sáu mô hình PSNR đang có đều học bằng bicubic; các mô hình học bằng suy giảm thực tế trong kho đều là bản GAN. Chưa
       có mô hình nào vừa học suy giảm thực tế vừa tối ưu PSNR. Nếu chúng hơn bicubic khi ảnh bị nén thì câu "mọi mô hình có sẵn
       kém bicubic" phải sửa thành "mọi mô hình học bằng bicubic". Chỉ chấm; BSRNet và Real-ESRNet dùng kiến trúc RRDB đã có
@@ -377,7 +458,7 @@ nhắc, chưa chốt). Xếp theo mức quan trọng. Các mục 1, 2, 3 chạm 
       nén (theo trí nhớ của Claude có cuộc thi AIM 2022 về SR ảnh và video đã nén; **cần kiểm**), suy giảm ngoài thực tế
       (Real-ESRGAN, BSRGAN), ước lượng suy giảm theo miền, SR ảnh mặt nhỏ ngoài thực tế. Người phản biện sẽ dẫn các bài này để
       nói hiện tượng đã biết; bài phải nói rõ phần nào mới (ảnh vài chục pixel, ngưỡng mức nén, miền tai, mô hình real-time).
-- [ ] **4. Mốc "khử nén rồi mới SR"**: một mạng khử vết JPEG có sẵn (ví dụ FBCNN) đặt trước SPAN công bố. Câu hỏi hiển nhiên
+- [ ] **4. Mốc "khử nén rồi mới SR"** (**08/10: đã duyệt và viết mã, mục 0 việc J1; chờ chạy**): một mạng khử vết JPEG có sẵn (ví dụ FBCNN) đặt trước SPAN công bố. Câu hỏi hiển nhiên
       của người phản biện: sao không khử nén trước. Chỉ chấm; phải thêm kiến trúc vào kho. Mốc này không real-time, dùng làm
       tham chiếu chất lượng.
 - [ ] **5. Giải thích vì sao mô hình kém bicubic**, không chỉ báo số: phổ sai số, sai số theo vị trí trên lưới khối 8×8,

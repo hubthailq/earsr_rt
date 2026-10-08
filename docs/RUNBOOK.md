@@ -205,6 +205,39 @@ Hình dùng ảnh AMI cần thư đồng ý của tác giả bộ dữ liệu: x
 
 Sau đó làm theo mục 2.7 của kế hoạch: xác định kịch bản, điền `[X]`, chọn nhánh câu, viết bình luận từng bảng.
 
+## 6. Mốc thêm cho vòng phản biện (08/10/2026; `TODO.md` mục 0, việc J)
+
+Ba việc, mỗi việc một cấu hình chốt trước: khử nén rồi mới phóng (FBCNN), RRDB học có nén với trọng số có sẵn (BSRNet,
+Real-ESRNet), và RRDB tinh chỉnh với đúng công thức của SPAN nhánh est.
+
+```bash
+# Bước 1: chỉ chấm (độ trung thực trên ba bộ, nhận dạng, độ trễ). Không chạy song song với việc khác trên cùng GPU,
+# vì script có đo độ trễ.
+cd weights
+curl -L --fail -o BSRNet.pth            https://github.com/cszn/KAIR/releases/download/v1.0/BSRNet.pth
+curl -L --fail -o RealESRNet_x4plus.pth https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.1/RealESRNet_x4plus.pth
+curl -L --fail -o fbcnn_color.pth       https://github.com/jiaxi-jiang/FBCNN/releases/download/v1.0/fbcnn_color.pth
+cd ..
+nohup bash scripts/run_review.sh > review.log 2>&1 &
+tail -f review.log                       # xong khi thấy dòng "Xong. Đọc: results/rev_summary/summary.md"
+
+# Bước 2: tinh chỉnh RRDB, fold 2, 3, 4 trước
+bash scripts/make_rrdb_jobs.sh
+nohup python scripts/run_queue.py jobs/rrdb.txt > rrdb.log 2>&1 &
+grep -h "phép thử ảnh sáng" jobs/rrdb.txt.logs/*.log     # phải là ba dòng ỔN ĐỊNH, không có CẢNH BÁO
+
+# Bước 3: chỉ khi cả ba fold trên ỔN ĐỊNH. Fold 1 và 5 chạy đúng một lần.
+FINAL_RUN=1 FOLDS="1 5" bash scripts/make_rrdb_jobs.sh jobs/rrdb_final.txt
+nohup python scripts/run_queue.py jobs/rrdb_final.txt > rrdb_final.log 2>&1 &
+
+# Bước 4: chấm thêm các lần chạy RRDB (file đã có được bỏ qua) và tóm tắt lại
+nohup bash scripts/run_review.sh > review2.log 2>&1 &
+```
+
+Hết bộ nhớ GPU ở bước 2 (lệnh lỗi ngay trong phút đầu, xem `jobs/rrdb.txt.logs/`): dừng, không tự giảm lô; lô nhỏ hơn là một
+công thức khác và phải ghi lại trước khi chạy. Kết quả: `results/rev*`, `results/recog/rev_*`, `results/latency_review.csv`,
+`results/rev_summary/summary.md`.
+
 ## Quy tắc về mã lần chạy
 
 Mã lần chạy không chứa mọi siêu tham số (tốc độ học, số bước, trọng số loss...). Chạy lại cùng mã với siêu
