@@ -3,7 +3,8 @@
 Thiết bị: iPhone 12 Pro Max (chip A14), iOS 18.7.8. Máy Mac: Xcode 26.3. Ảnh vào 68×48 (cao × rộng), mỗi lần một ảnh, ×4.
 Ngưỡng real-time của bài: trung vị không quá 33 ms.
 
-**Trạng thái (08/10/2026):** sáu mô hình đã chuyển sang Core ML và khớp với PyTorch trên máy Mac. Các bước đo trong Xcode
+**Trạng thái (08/10/2026):** 17 mô hình (16 mô hình PSNR của bài và BSRGAN) đã chuyển sang Core ML và khớp với PyTorch trên máy
+Mac; `span_ch48` đã biên dịch thử được cho iOS 17; iPhone đã bật Developer Mode. Các bước đo trong Xcode
 dưới đây viết theo hiểu biết về Xcode, **chưa được chạy thử trên máy này**; tên nút có thể khác đôi chút.
 
 ## 1. Chuyển mô hình (làm trên máy Mac; đã làm xong cho sáu mô hình mặc định)
@@ -34,7 +35,10 @@ rsync -av --include='config.json' --include='ckpt/' --include='ckpt/best.pt' --e
 
 ## 3. Đo từng mô hình trong Xcode
 
-Thứ tự ưu tiên: `span_ch48`, `disp26`, `bsrgan` là bắt buộc; `edsr_baseline`, `swinir_light`, `rrdb_psnr` nếu còn thời gian.
+**Bắt buộc đo ba mô hình:** `span_ch48` và `disp26` (hai thân của bài) và `bsrgan` (mốc lớn, chậm). Sáu lần chạy, khoảng 15 phút.
+14 mô hình còn lại là tùy chọn: bài chỉ cần chứng minh mô hình của mình chạy real-time, không cần độ trễ trên điện thoại của
+cả 16 mô hình (bảng 1 của bài đã có độ trễ GPU cho cả 16). Nếu muốn thêm thì ưu tiên `edsr_baseline`, `swinir_light`,
+`rrdb_psnr`; đo mô hình nào thì bảng độ trễ của bài tự có dòng mô hình đó.
 
 1. Trong Finder, mở thư mục `deploy_ios/models/`, bấm đúp `span_ch48.mlpackage`. Xcode mở mô hình.
 2. Chọn thẻ **Performance**.

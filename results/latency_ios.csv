@@ -1,13 +1,35 @@
 name,compute_units,median_ms,load_ms,device,chip,ios,xcode,date,note
-span_ch48,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
-span_ch48,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
-disp26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
-disp26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
-bsrgan,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
-bsrgan,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch48,cpu,4.72,11.99,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,62/62 phép tính trên CPU; compilation 48.43 ms
+span_ch48,all,0.80,14.42,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,62/62 phép tính trên Neural Engine; compilation 48.13 ms
+disp26,cpu,2.33,10.94,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,41/41 phép tính trên CPU; compilation 42.33 ms
+disp26,all,0.45,13.16,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,41/41 phép tính trên Neural Engine; compilation 42.23 ms
+bsrgan,cpu,101.23,91.48,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,1024/1024 phép tính trên CPU; compilation 374.57 ms
+bsrgan,all,15.82,96.19,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-10-08,1024/1024 phép tính trên Neural Engine; compilation 369.42 ms
 edsr_baseline,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 edsr_baseline,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 swinir_light,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 swinir_light,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 rrdb_psnr,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 rrdb_psnr,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+msrresnet,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+msrresnet,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+rlfn,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+rlfn,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+efdn,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+efdn,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+safmnpp,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+safmnpp,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+smfan,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+smfan,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch28,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch28,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+pds26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+pds26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+pkdsr26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+pkdsr26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+dscf26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+dscf26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+errn26,cpu,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+errn26,all,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,

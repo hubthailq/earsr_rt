@@ -112,5 +112,214 @@
   ],
   "name": "bsrgan",
   "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/span_ch28.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 150688,
+  "checked": true,
+  "max_abs_diff": 0.0074964165687561035,
+  "psnr_vs_torch_db": 61.74379253174184,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "span_ch28",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/span_ch26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 130828,
+  "checked": true,
+  "max_abs_diff": 0.01042194664478302,
+  "psnr_vs_torch_db": 61.29016310720907,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "span_ch26",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/rlfn.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 317218,
+  "checked": true,
+  "max_abs_diff": 0.006619751453399658,
+  "psnr_vs_torch_db": 59.92795850617908,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "rlfn",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/efdn.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 276192,
+  "checked": true,
+  "max_abs_diff": 0.009518027305603027,
+  "psnr_vs_torch_db": 57.193435779272676,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "efdn",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/safmnpp.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 211572,
+  "checked": true,
+  "max_abs_diff": 0.004771111533045769,
+  "psnr_vs_torch_db": 65.64665265497538,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "safmnpp",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/smfan.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 84408,
+  "checked": true,
+  "max_abs_diff": 0.006596922874450684,
+  "psnr_vs_torch_db": 61.08145973796415,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "smfan",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/msrresnet.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 1517571,
+  "checked": true,
+  "max_abs_diff": 0.0018458962440490723,
+  "psnr_vs_torch_db": 72.50092725079173,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "msrresnet",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/pds26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 141748,
+  "checked": true,
+  "max_abs_diff": 0.0074471235275268555,
+  "psnr_vs_torch_db": 60.00621812363814,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "pds26",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/pkdsr26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 143928,
+  "checked": true,
+  "max_abs_diff": 0.006948411464691162,
+  "psnr_vs_torch_db": 59.20956883106642,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "pkdsr26",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/dscf26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 125992,
+  "checked": true,
+  "max_abs_diff": 0.01464754343032837,
+  "psnr_vs_torch_db": 61.23188175853795,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "dscf26",
+  "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/errn26.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 245968,
+  "checked": true,
+  "max_abs_diff": 0.00804227590560913,
+  "psnr_vs_torch_db": 58.16124137867969,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "errn26",
+  "kind": "zoo"
  }
 ]

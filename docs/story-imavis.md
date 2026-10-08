@@ -162,7 +162,7 @@ Bản thảo: mục 4.3 mới (bảng, hình `fig_ratio.pdf`), abstract viết l
 
 ## 4. Bằng chứng còn thiếu: danh sách đóng
 
-Năm việc. **Việc 1, nửa đầu việc 2 (nhận dạng) và việc 3 đã xong (08/10)**; việc 4 chờ người dùng đo trên iPhone; việc 5 xong lượt đầu; khảo sát người xem để dành.
+Năm việc. **Việc 1, nửa đầu việc 2 (nhận dạng) và việc 3 đã xong (08/10)**; việc 4 xong (iPhone 12 Pro Max: SPAN 4,7 ms chỉ CPU, 0,8 ms trên Neural Engine); việc 5 xong lượt đầu; khảo sát người xem để dành.
 
 | # | Việc | Phục vụ | Chi phí | Kết quả đổi gì trong bài |
 |---|---|---|---|---|

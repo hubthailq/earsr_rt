@@ -778,8 +778,9 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
         return num(v[(name, cu)], 1) if (name, cu) in v else "\\todo{--}"
 
     rows = []
-    for name in ("disp26", "span_ch48", "edsr_baseline", "swinir_light", "rrdb_psnr", "bsrgan"):
-        if name in ("edsr_baseline", "swinir_light", "rrdb_psnr") and (name, "cpu") not in v and (name, "all") not in v:
+    required = ("span_ch48", "disp26", "bsrgan")
+    for name in sorted(PSNR16 + ["bsrgan"], key=lambda m_: lat.params.get(m_, 0)):
+        if name not in required and (name, "cpu") not in v and (name, "all") not in v:
             continue   # mốc tùy chọn: không đo thì không có dòng
         rows.append(f"{DISPLAY[name]} & {num(lat.params[name] / 1e3, 0)} & {num(lat.median_ms[name], 2)} & "
                     f"{cell(name, 'cpu')} & {cell(name, 'all')} \\\\")
@@ -791,6 +792,9 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
     ce = {x["name"]: x for x in json.loads(ex.read_text())} if ex.exists() else {}
     for name, tag in (("span_ch48", "Span"), ("disp26", "Disp")):
         put("CoremlPsnr" + tag, num(ce[name]["psnr_vs_torch_db"], 1) if name in ce and "psnr_vs_torch_db" in ce[name] else None, why)
+    for cu, t2 in (("cpu", "Cpu"), ("all", "All")):   # BSRGAN chậm hơn SPAN bao nhiêu lần trên điện thoại
+        ok = ("span_ch48", cu) in v and ("bsrgan", cu) in v
+        put(f"LatPhoneRatio{t2}", int(round(v[("bsrgan", cu)] / v[("span_ch48", cu)])) if ok else None, why)
     first = d.iloc[0] if len(d) else None
     put("PhoneName", first["device"] if first is not None else "iPhone 12 Pro Max")
     put("PhoneChip", first["chip"] if first is not None else "A14 Bionic")

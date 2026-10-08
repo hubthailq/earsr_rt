@@ -169,6 +169,12 @@ x̂ = G ⊙ f_S + (1 − G) ⊙ f_T
 
 ## 1.5 Ngưỡng real-time (đề xuất, ghi trước khi đo)
 
+> **Thực tế đã đo (08/10/2026), khác bảng đề xuất bên dưới ở ba điểm.** Thiết bị là iPhone 12 Pro Max (chip A14, iOS 18.7.8),
+> không phải Jetson Nano hay Android. Phần mềm là Core ML với trọng số FP16, đo bằng công cụ Performance của Xcode 26.3,
+> không phải TensorRT. Công cụ chỉ cho trung vị, nên không có phân vị 95 và không áp được ghi chú "không ổn định".
+> Giữ nguyên: cỡ ảnh vào 48×68, lô 1, ngưỡng 33 ms đặt trước khi đo. Kết quả: SPAN 4,72 ms (chỉ CPU) và 0,80 ms
+> (Neural Engine); DISP 2,33 và 0,45 ms; BSRGAN 101,23 và 15,82 ms. Nguồn: `results/latency_ios.csv`.
+
 | Yếu tố | Giá trị đề xuất |
 |---|---|
 | Thiết bị | Jetson Nano (cần bạn xác nhận đời máy và dung lượng bộ nhớ); thêm một điện thoại Android làm số đo thứ hai |

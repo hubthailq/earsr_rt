@@ -34,13 +34,12 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   git add .gitignore TODO.md docs paper scripts deploy_ios/README.md results
   git commit -m "Identification reframed as two conditions; natural-image control script; Core ML export" && git push
   ```
-- [ ] **B. [Bạn, iPhone + Xcode] Đo độ trễ trên iPhone 12 Pro Max.** Hướng dẫn: `deploy_ios/README.md` mục 2, 3, 4. Mở từng
-  file trong `deploy_ios/models/` bằng Xcode, thẻ Performance, chọn iPhone, chạy hai lần (CPU Only, rồi All), ghi số
-  Prediction (trung vị, ms) vào cột `median_ms` của `results/latency_ios.csv`. Bắt buộc: `span_ch48`, `disp26`, `bsrgan`.
-  Các bước trong Xcode chưa được Claude chạy thử; vướng thì chụp màn hình gửi Claude. Xong thì:
-  ```bash
-  git add results/latency_ios.csv && git commit -m "iPhone latency measured" && git push
-  ```
+- [x] 08/10 **B. Đo độ trễ trên iPhone 12 Pro Max: XONG** (Xcode 26.3; bản 27.0 cho ra 0,00 ms nên không dùng). Trung vị thời
+  gian dự đoán, ảnh vào 48×68: SPAN 4,72 ms (chỉ CPU) và 0,80 ms (mọi đơn vị); DISP 2,33 và 0,45 ms; BSRGAN 101,23 và
+  15,82 ms. Ở chế độ mọi đơn vị, cả ba mô hình chạy trọn trên Neural Engine. Số nằm ở `results/latency_ios.csv`.
+  **Chữ "Real-Time" trong tiêu đề giữ được.** Điều phải viết thẳng (đã viết ở mục 6.7): trên Neural Engine cả BSRGAN cũng
+  dưới 33 ms, nên ở cỡ ảnh này ngưỡng real-time không loại được mô hình lớn; lý do chọn mạng nhỏ là độ trung thực và phần
+  dư thời gian, không phải tính khả thi. Chỉ có trung vị, không có phân vị 95. 14 mô hình còn lại chưa đo (tùy chọn).
 - [x] 08/10 **C. [labai217] Đối chứng trên ảnh tự nhiên: XONG** (425 file, commit `300de40`). Kết quả: mục 3b4 của `docs/story-imavis.md`. Khi xong phải commit và push kết quả
   (hai dòng cuối của khối lệnh dưới). Đây là Phần 2 của góp ý ghi ở mục "Góp ý ngày 08/10" ngay bên dưới. Chỉ chấm, không huấn luyện, khoảng 30 đến 60 phút (ước lượng):
   ```bash
@@ -53,11 +52,14 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   (**chưa phải kết luận**): trên ảnh tự nhiên ở JPEG 75 mô hình xấp xỉ hòa bicubic ở cả ảnh 36 px lẫn 192 px, chỉ kém ở
   JPEG 60; tức có thể không có hiệu ứng theo cỡ ảnh, nhưng ngưỡng của ảnh tai (quanh mức 85) cao hơn của ảnh tự nhiên.
   **Không làm:** chạy mạng mới, hay thêm bước khử nén để tìm số đẹp.
-- [x] 08/10 **D. `git pull` phần đối chứng: xong.** Còn phần iPhone (việc B): đo xong thì commit rồi báo Claude.
-- [ ] **E. [Claude] Điền bài và viết phần diễn giải.** Phần đối chứng **xong ngày 08/10** (mục 4.3, quy tắc tỉ số sai số, hình
-  mới, abstract viết lại). **Còn phần iPhone** (6 macro trống): sau khi có `results/latency_ios.csv`, viết câu kết
-  luận ở mục 6.7 (mô hình nào đạt ngưỡng 33 ms; nếu SPAN không đạt thì sửa chữ "Real-Time" trong tiêu đề); sửa mục 1.5
-  của kế hoạch (thiết bị đo là iPhone); kết quả ra sao báo nguyên như vậy.
+- [x] 08/10 **D. `git pull` phần đối chứng và báo số đo iPhone: xong.**
+- [x] 08/10 **E. [Claude] Điền bài và viết phần diễn giải: XONG.** Mục 4.3 (đối chứng, quy tắc tỉ số sai số) và mục 6.7 (iPhone) đã
+  viết; bản thảo không còn macro số nào trống. Còn ba việc "dè dặt" của quy tắc tỉ số (ngay dưới danh sách này).
+- [ ] **A2. [Bạn, máy Mac] Commit và push** phần vừa làm:
+  ```bash
+  git add TODO.md docs paper scripts deploy_ios/README.md results
+  git commit -m "Natural-image control interpreted; error-ratio rule; iPhone latency measured" && git push
+  ```
 - [ ] **F. [Bạn] Phần còn lại của rà tài liệu:** (0) **mới:** tìm xem đã có ai nêu quy tắc "SR chỉ thắng nội suy khi sai số nén
   nhỏ so với sai số nội suy" chưa (từ khóa: compressed image super-resolution, interpolation error, crossover, JPEG quality);
   bài hiện viết đây là quy tắc thực nghiệm của mình, chưa kiểm tính mới; (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250) rồi sửa hai ô TBD ở
@@ -68,6 +70,26 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   tuyên bố Elsevier yêu cầu; số trang cho `refs.bib`; tên khoa của đơn vị; quyền dùng ảnh EarVN1.0 và AMI trong hình; mục 6.6
   (khảo sát người xem) đang là ô TBD: không làm khảo sát thì xóa mục đó.
 - [ ] **H. Đưa thầy đọc** `paper/main.pdf` khi E và G xong.
+
+### Ba điểm dè dặt của quy tắc tỉ số sai số: việc phải làm (người dùng dặn ghi lại ngày 08/10)
+
+Quy tắc: mô hình có sẵn hơn bicubic khi sai số do nén thêm vào nhỏ hơn khoảng 0,17 lần sai số nội suy (mục 4.3 của bản thảo,
+mục 3b4 của `docs/story-imavis.md`). Ba chỗ chưa chắc, mỗi chỗ một việc:
+
+- [ ] **Dè dặt 1: ngưỡng là thực nghiệm, mới kiểm với mô hình học bằng bicubic, ×4, nén JPEG.**
+  Việc [Claude, không tốn GPU]: thêm các ô ×2 đã có sẵn trong `results/t2/` (SwinIR-light ×2 và các mô hình ×2 khác trên AMI,
+  ảnh sạch và JPEG 75) vào phép tính tỉ số, xem chúng có nằm đúng phía của ngưỡng không; báo kết quả dù thuận hay nghịch.
+  Phần không kiểm được bằng số liệu có sẵn (codec khác, mô hình học có nén) giữ ở mục giới hạn của bài, không chạy thêm.
+- [ ] **Dè dặt 2: ranh giới 0,168 / 0,170 sắc một phần do may** (hai ô sát ngưỡng thuộc hai bộ ảnh khác nhau, phần hơn khác nhau).
+  Việc [Claude, không tốn GPU]: (i) báo khoảng đổi dấu của **từng bộ ảnh** thay cho một con số chung (DIV2K: giữa 0,12 và
+  0,17; AMI: giữa 0,17 và 0,36; AWEx: giữa 0,08 và 0,38; EarVN1.0: giữa 0,06 và 0,39) và viết ngưỡng là "khoảng một phần sáu";
+  (ii) bootstrap theo ảnh cho tỉ số và cho dấu của phần hơn ở các ô sát ngưỡng, để biết ranh giới chắc tới đâu;
+  (iii) sửa câu trong abstract và mục 4.3 nếu khoảng tin cậy cho thấy con số 0,17 viết quá chính xác.
+- [ ] **Dè dặt 3: chưa rà xem quy tắc này đã có ai nêu chưa.**
+  Việc [Claude, khi bạn bảo]: một lượt tìm kiếm web như lượt rà tài liệu ngày 07/10 (từ khóa: compressed image
+  super-resolution, interpolation error, JPEG quality crossover, SR worse than bicubic).
+  Việc [Bạn]: tìm có hệ thống trên IEEE Xplore và Scopus (đã ghi ở việc F, mục 0). Nếu đã có người nêu: bài trích dẫn và
+  viết đóng góp là "kiểm quy tắc đó trên ảnh tai và chỉ ra ảnh tai nằm bên kia ngưỡng"; nếu chưa: giữ cách viết hiện tại.
 
 ### Góp ý ngày 08/10 (hai phần) và trạng thái: ĐỌC LẠI SAU KHI ĐO IPHONE XONG
 
@@ -128,6 +150,8 @@ Xcode chỉ cho trung vị, không có phân vị 95.
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 08/10 **[Bạn + Claude]** Đo iPhone bằng Xcode 26.3 (6 lần đo, ba mô hình); Claude đọc số từ ảnh chụp màn hình, điền
+      `results/latency_ios.csv`, viết kết luận ở mục 6.7. Trước đó: chuyển đủ 17 mô hình sang Core ML.
 - [x] 08/10 **[Claude]** Đọc kết quả đối chứng trên DIV2K; tìm ra quy tắc tỉ số sai số (35 ô, bốn bộ ảnh, ngưỡng quanh 0,17,
       tương quan hạng −0,91) từ kết quả có sẵn; thêm `error_ratio` và hình vào `make_paper.py`; viết mục 4.3, viết lại abstract,
       sửa mở bài, thảo luận, kết luận.
