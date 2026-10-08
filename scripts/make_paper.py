@@ -565,10 +565,20 @@ def recognition_extra(res: Path, out: Path) -> None:
         put(f"Rec{name}RankEst", num(d["s"].loc["span/est", "rank1"], 1) if ok else None, why)
         put(f"Rec{name}EstVsBic", txt(d["p"].loc[("span/est", "bicubic")], "d_rank1") if ok else None, why)
         put(f"Rec{name}PubVsBic", txt(d["p"].loc[(PUB, "bicubic")], "d_rank1") if ok else None, why)
+        put(f"Rec{name}BsrganVsBic", txt(d["p"].loc[("bsrgan (published)", "bicubic")], "d_rank1") if ok else None, why)
+        put(f"Rec{name}GenVsEst", txt(d["p"].loc[("span/generic", "span/est")], "d_rank1") if ok else None, why)
+        put(f"Rec{name}JpgVsEst", txt(d["p"].loc[("span/bicjpeg75", "span/est")], "d_rank1") if ok else None, why)
     a = L["awex_resnet18"]
     put("RecAwexEnrolled", len(a["meta"]["subjects"]) if a else None, why)
     put("RecAwexSubj", a["meta"]["n_probe_subjects"] if a else None, why)
     put("RecAwexProbes", a["meta"]["n_probe"] if a else None, why)
+    f = res / "recog" / "blockiness.json"   # scripts/probe_blockiness.py
+    bl = json.loads(f.read_text()) if f.exists() else None
+    put("BlockEarvnLow", num(bl["earvn"]["groups"]["low"]["median"]) if bl else None, why)
+    put("BlockEarvnHigh", num(bl["earvn"]["groups"]["high"]["median"]) if bl else None, why)
+    put("BlockAwex", num(bl["awex"]["groups"]["all"]["median"]) if bl else None, why)
+    put("RecEarvnGalMed", int(bl["earvn"]["gallery_per_subject_median"]) if bl else None, why)
+    put("RecAwexGalMed", int(bl["awex"]["gallery_per_subject_median"]) if bl else None, why)
     f = res / "recog" / "recognizer_resnet50_train_log.json"
     put("RecRfValAcc", num(100 * json.loads(f.read_text())["info"]["val_acc"], 1) if f.exists() else None, why)
 

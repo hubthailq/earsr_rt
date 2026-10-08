@@ -566,6 +566,11 @@ Tức mô hình học với phân bố mức nén đo từ dữ liệu mất dư
 - Hệ quả: C5 viết lại thành "phải huấn luyện với nén phủ đúng dải mức nén của ảnh thật; phép đo dùng để xác định dải đó";
   bỏ ý "suy giảm tổng quát không dùng được" (nó kém về độ trung thực, không kém về nhận dạng).
 
+**Lần chạy cuối trên 5 fold (08/10/2026).** Fold 1 và 5 đã được dùng, một lần, với cấu hình chốt trước (24 lần huấn luyện).
+Kết luận về độ trung thực không đổi (mức đổi lớn nhất 0,07 dB). Nhận dạng trên EarVN1.0 được xác nhận bằng mạng thứ hai;
+trên AWEx phần tăng không lặp lại. Chi tiết: mục 3b2 của `docs/story-imavis.md`; số đầy đủ: bản thảo `paper/`.
+**Từ đây không còn fold giữ kín: mọi thay đổi cấu hình sau ngày này đều là sau khi đã thấy kết quả test.**
+
 **Bảng theo dõi luận điểm** (yêu cầu ở mục 2.7, bước 1; cập nhật 07/10).
 
 | # | Trạng thái | Căn cứ | Hệ quả cho bài |

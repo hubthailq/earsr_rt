@@ -76,6 +76,32 @@ nhánh ước lượng, vì nó được chốt trước khi có các phép so n
 **Điểm mạnh mới của bài:** phát hiện P1 nay có bằng chứng trên ảnh thật, không chỉ trên ảnh mô phỏng: mô hình học bằng
 bicubic không giúp gì cho nhận dạng (kể cả sau khi tinh chỉnh trên ảnh tai), mô hình học có nén tăng rank-1 gần gấp đôi.
 
+## 3b2. Kết quả lần chạy cuối trên 5 fold và phần nhận dạng mở rộng (08/10/2026)
+
+**Hai fold giữ kín (1 và 5) cho cùng kết luận.** 60 lần huấn luyện, cả 60 qua phép thử ảnh sáng. Trên AMI nay là 700 ảnh
+của 100 người. Trong 149 con số của phần độ trung thực, 41 số đổi, mức đổi lớn nhất 0,07 dB. Theo từng fold (AMI, 36 px,
+ảnh vào ước lượng): ước lượng trừ bicubic +1,46 / +1,48 / +1,48 / +1,40 / +1,30 dB ở fold 1 đến 5; trừ tổng quát
++0,93 / +1,09 / +0,96 / +1,17 / +0,90 dB.
+
+**Nhận dạng trên EarVN1.0 được xác nhận bằng mạng thứ hai (ResNet-50):** bicubic 17,5% lên 27,0% (+9,5 [6,5; 12,7]); SPAN công
+bố +1,1 [−0,5; 2,6]. Với 5 fold, nhánh tổng quát kém nhánh ước lượng một chút nhưng có ý nghĩa (−1,3 [−2,6; −0,1] với
+ResNet-18; −2,6 [−4,9; −0,6] với ResNet-50). JPEG 75 và mức nén rút đều vẫn ngang nhánh ước lượng.
+
+**Tách theo mức nén của file ảnh dò (EarVN1.0):** ở mức 70 đến 80 (1.431 ảnh, 33 người) SPAN công bố −0,1 [−1,3; 1,0], mô
+hình của bài +9,3 [4,3; 14,8], BSRGAN +6,3 [−1,3; 13,8]. Ở mức từ 90 (574 ảnh, 12 người) SPAN công bố +3,0 [1,6; 4,6], mô
+hình của bài +18,5 [10,6; 26,7], BSRGAN +35,2 [22,5; 48,0]. Ngưỡng của ảnh mô phỏng lặp lại trên ảnh thật.
+
+**AWEx: phần tăng KHÔNG lặp lại.** 112 người đăng ký, 81 người có ảnh nhỏ thật, 428 ảnh dò. Không phương pháp nào đổi rank-1
+có ý nghĩa: mô hình của bài −3,8 [−7,9; 0,5] (ResNet-18) và +1,9 [−2,7; 6,4] (ResNet-50); SPAN công bố +0,5 và −0,5; BSRGAN
++0,5 và +1,6. Hai quan sát rút ra **sau khi thấy kết quả** (chưa phải lời giải thích đã kiểm):
+- ảnh nhỏ của AWEx không có lưới khối JPEG (tỉ số biên khối 0,98; EarVN1.0 là 1,19 ở mức 75 và 1,08 ở mức 93); AWEx phát
+  hành dạng PNG, không rõ lịch sử nén;
+- phép đo yếu trên AWEx: trung vị 2 ảnh đăng ký mỗi người (EarVN1.0: 24), và ảnh dò lớn không được nhận tốt hơn ảnh dò nhỏ
+  (32,2% so với 31,8%), tức độ phân giải không phải thứ giới hạn mạng nhận dạng ở bộ này.
+
+**Câu chữ trong bài đã sửa theo:** phần tăng nhận dạng "gắn với việc ảnh vào bị nén"; bài viết rõ "không tuyên bố SR cải thiện
+nhận dạng tai nói chung". Kết quả AWEx được báo nguyên trong bảng 10 và trong abstract.
+
 ## 3c. Kết quả rà tài liệu lượt đầu (07/10/2026; tìm kiếm web, chưa phải rà có hệ thống)
 
 - **Về ảnh tai:** chỉ tìm thấy một bài SR cho ảnh tai (Markičević, Peer, Emeršič, IWSSIP 2023: EDSR và SwinIR, ×2 và ×4, trên

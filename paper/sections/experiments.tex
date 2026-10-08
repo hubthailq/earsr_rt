@@ -2,7 +2,7 @@
 \label{sec:experiments}
 
 \subsection{Setup}
-For each backbone and each fold we fine-tune one model per training degradation: \emph{bicubic}, \emph{generic}, \emph{bicubic + JPEG 75} and \emph{measured}. All use the recipe of Section~\ref{sec:stable} and differ in nothing else, so differences between them are attributable to the degradation. Together with the two ablation runs per fold of Table~\ref{tab:stability} this gives \NRuns{} runs. Models are compared with bicubic interpolation and with the published weights of the same backbone on four cells: AMI with 36-pixel inputs (\NAmiImg{} images of \NAmiSubj{} subjects), EarVN1.0 with 24-pixel inputs (\NEarvnImg{} images, \NEarvnSubj{} subjects) and AWEx with 24 and 36-pixel inputs (\NAwexSImg{} and \NAwexMImg{} images).
+For each backbone and each fold we fine-tune one model per training degradation: \emph{bicubic}, \emph{generic}, \emph{bicubic + JPEG 75} and \emph{measured}. All use the recipe of Section~\ref{sec:stable} and differ in nothing else, so differences between them are attributable to the degradation. Together with the two ablation runs per fold of Table~\ref{tab:stability} and the two JPEG-only variants of Section~\ref{sec:ablation} this gives \NRuns{} runs over the \NFolds{} folds. Models are compared with bicubic interpolation and with the published weights of the same backbone on four cells: AMI with 36-pixel inputs (\NAmiImg{} images of \NAmiSubj{} subjects), EarVN1.0 with 24-pixel inputs (\NEarvnImg{} images, \NEarvnSubj{} subjects) and AWEx with 24 and 36-pixel inputs (\NAwexSImg{} and \NAwexMImg{} images).
 
 \subsection{The training degradation decides}
 Table~\ref{tab:matrix} crosses the training degradation with the degradation of the test input, for SPAN on AMI. Three observations follow. First, fine-tuning on ear images with bicubic downsampling improves the clean column and nothing else: under compression the fine-tuned model is as far below bicubic interpolation as the published weights. Domain data without the right degradation does not help. Second, the generic pipeline yields a model that is below bicubic interpolation on clean inputs on all four cells (by \GenVsBicCleanMin{} to \GenVsBicCleanMax{}~dB) and between \GenVsBicEstMin{} and \GenVsBicEstMax{}~dB of it on inputs degraded with the measured pipeline; it is the best choice only on inputs produced by the generic pipeline itself, which the classifier of Section~\ref{sec:measured} shows to be unlike real small ear images. Third, on JPEG~75 inputs the measured degradation recovers \DegEffMin{} to \DegEffMax{}~dB over bicubic training across the four cells, and the fixed JPEG~75 degradation \JpgEffMin{} to \JpgEffMax{}~dB. This is an order of magnitude more than the \SpreadQLow{}~dB that separates the \NPub{} published architectures under the same inputs (Section~\ref{sec:capacity}).
@@ -24,7 +24,7 @@ Training degradation & Clean & JPEG 93 & JPEG 75 & Measured & Generic \\
 \end{table}
 
 \subsection{Main result}
-Table~\ref{tab:main} gives the paired differences between SPAN fine-tuned with the measured degradation and each reference, on inputs degraded with the measured pipeline. The model exceeds bicubic interpolation by \EstVsBicMin{} to \EstVsBicMax{}~dB, the published weights by \EstVsPubMin{} to \EstVsPubMax{}~dB and the generic pipeline by \EstVsGenMin{} to \EstVsGenMax{}~dB; no confidence interval contains zero. LPIPS improves as well, by \EstLpipsVsBicMin{} to \EstLpipsVsBicMax{} over bicubic interpolation and by \EstLpipsVsGenMin{} to \EstLpipsVsGenMax{} over the generic pipeline. The result holds in each fold separately (measured minus generic on AMI: \EstVsGenFoldMin{} to \EstVsGenFoldMax{}~dB across folds), on inputs compressed at a single quality (\EstVsBicQLowMin{} to \EstVsBicQLowMax{}~dB over bicubic at quality 75 and \EstVsBicQHighMin{} to \EstVsBicQHighMax{}~dB at quality 93), and for the second backbone: DISP fine-tuned with the measured degradation exceeds bicubic interpolation by \DispEstVsBicMin{} to \DispEstVsBicMax{}~dB and its generic counterpart by \DispEstVsGenMin{} to \DispEstVsGenMax{}~dB. The gain is larger for smaller inputs (Figure~\ref{fig:size}): \EstVsBicAmiS{}, \EstVsBicAmiM{} and \EstVsBicAmiL{}~dB over bicubic at 24, 36 and 48 pixels on AMI.
+Table~\ref{tab:main} gives the paired differences between SPAN fine-tuned with the measured degradation and each reference, on inputs degraded with the measured pipeline. The model exceeds bicubic interpolation by \EstVsBicMin{} to \EstVsBicMax{}~dB, the published weights by \EstVsPubMin{} to \EstVsPubMax{}~dB and the generic pipeline by \EstVsGenMin{} to \EstVsGenMax{}~dB; no confidence interval contains zero. LPIPS improves as well, by \EstLpipsVsBicMin{} to \EstLpipsVsBicMax{} over bicubic interpolation and by \EstLpipsVsGenMin{} to \EstLpipsVsGenMax{} over the generic pipeline. The result holds in each fold separately, including the two held-out folds (measured minus generic on AMI: \EstVsGenFoldMin{} to \EstVsGenFoldMax{}~dB across folds), on inputs compressed at a single quality (\EstVsBicQLowMin{} to \EstVsBicQLowMax{}~dB over bicubic at quality 75 and \EstVsBicQHighMin{} to \EstVsBicQHighMax{}~dB at quality 93), and for the second backbone: DISP fine-tuned with the measured degradation exceeds bicubic interpolation by \DispEstVsBicMin{} to \DispEstVsBicMax{}~dB and its generic counterpart by \DispEstVsGenMin{} to \DispEstVsGenMax{}~dB. The gain is larger for smaller inputs (Figure~\ref{fig:size}): \EstVsBicAmiS{}, \EstVsBicAmiM{} and \EstVsBicAmiL{}~dB over bicubic at 24, 36 and 48 pixels on AMI.
 
 \begin{table}[t]
 \centering
@@ -93,11 +93,27 @@ Table~\ref{tab:recog} reports rank-1 identification and equal error rate (EER). 
 
 \emph{Bicubic-trained models do not help.} The published SPAN weights reach \RecRankPub{}\% (\RecPubVsBic{} percentage points relative to bicubic upscaling), and SPAN fine-tuned on ear images with bicubic downsampling \RecRankBict{}\% (\RecBictVsBic{}).
 
-\emph{Every compression-aware model nearly doubles the rate.} SPAN with the measured degradation reaches \RecRankEst{}\%, a paired gain of \RecEstVsBic{} points over bicubic upscaling and \RecEstVsPub{} over the published weights, and lowers the EER from \RecEerBic{}\% to \RecEerEst{}\% (\RecEerEstVsBic{}). The second backbone behaves alike (DISP: \RecRankDispEst{}\%, \RecDispEstVsBic{} over bicubic). Within the group the differences from our model are about one point and not significant: \RecJpgVsEst{} for fixed JPEG~75, \RecMixVsEst{} for the measured levels alone, \RecUniVsEst{} for uniform levels and \RecGenVsEst{} for the generic pipeline.
+\emph{Every compression-aware model nearly doubles the rate.} SPAN with the measured degradation reaches \RecRankEst{}\%, a paired gain of \RecEstVsBic{} points over bicubic upscaling and \RecEstVsPub{} over the published weights, and lowers the EER from \RecEerBic{}\% to \RecEerEst{}\% (\RecEerEstVsBic{}). The second backbone behaves alike (DISP: \RecRankDispEst{}\%, \RecDispEstVsBic{} over bicubic). Within the group the differences are small. The fixed JPEG~75 and uniform-level variants are indistinguishable from our model (\RecJpgVsEst{} and \RecUniVsEst{} points); the levels-only variant and the generic pipeline are about one point lower (\RecMixVsEst{} and \RecGenVsEst{}).
 
 \emph{Large GAN-trained models are not significantly better.} BSRGAN and Real-ESRGAN reach \RecRankBsrgan{}\% and \RecRankRealesrgan{}\% (\RecBsrganVsEst{} points for BSRGAN relative to our model), at \LatRatio{} times the latency.
 
 The control recogniser, which has never seen an ear, gives much lower rates and the same ordering: \RecCtlRankBic{}\% with bicubic upscaling, \RecCtlRankPub{}\% with the published weights and \RecCtlRankEst{}\% with our model (\RecCtlEstVsBic{} over bicubic).
+
+\begin{table}[t]
+\centering
+\caption{Identification of real small ear images (short side 24 to 48 pixels) after $\times4$ upscaling. Rank-1 rate with 95\% confidence interval and equal error rate, in \%, for an ear recogniser and for frozen ImageNet features. Fine-tuned rows average the models of the folds.}
+\label{tab:recog}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Ear recogniser (ResNet-18)} & \multicolumn{2}{c}{ImageNet features (ResNet-50)} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Upscaling & Rank-1 & EER & Rank-1 & EER \\
+\midrule
+\tabinput{generated/tab_recog}
+\bottomrule
+\end{tabular}}
+\end{table}
 
 \paragraph{By compression level of the probe} The quality setting of each real probe can be read from its file, which allows a direct test of the threshold found on synthesised inputs in Section~\ref{sec:analysis}. Table~\ref{tab:recogquality} splits the probes into those stored at JPEG quality 70 to 80 (\RecQLowN{} probes of \RecQLowSubj{} subjects) and those stored at quality 90 or above (\RecQHighN{} probes of \RecQHighSubj{} subjects). For the heavily compressed probes the published SPAN weights change the rank-1 rate by \RecQLowPub{} points relative to bicubic upscaling; for the lightly compressed ones by \RecQHighPub{}. The compression-aware model gains \RecQLowEst{} and \RecQHighEst{} points. The pattern predicted from synthesised inputs, a bicubic-trained model that is useful at quality 93 and not at quality 75, is thus observed on real images through an independent measure. The table also locates the advantage of the GAN-trained models: BSRGAN gains \RecQHighBsrgan{} points on the lightly compressed probes and \RecQLowBsrgan{} on the heavily compressed ones. The two groups contain largely different subjects, so the comparison is between methods within a group, not between groups.
 
@@ -117,7 +133,11 @@ Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
 \end{tabular}}
 \end{table}
 
-\paragraph{A second dataset and a second recogniser} To test whether these results depend on the dataset or on the recogniser, we repeat the experiment on AWEx, which was used for no training of any kind (\RecAwexEnrolled{} subjects enrolled, \RecAwexProbes{} real small probes of \RecAwexSubj{} subjects, same protocol), and with a second ear recogniser, a ResNet-50 trained on the same data (\RecRfValAcc{}\% accuracy on held-out images of its training subjects). Table~\ref{tab:recogrobust} gives the paired differences from bicubic upscaling. On AWEx the compression-aware model changes the rank-1 rate by \RecAwexReEstVsBic{} points and the published weights by \RecAwexRePubVsBic{}; with the ResNet-50 recogniser on EarVN1.0 the corresponding figures are \RecEarvnRfEstVsBic{} and \RecEarvnRfPubVsBic{}. \todo{interpret once the numbers exist; AWEx images are stored as PNG, so their compression history is unknown and no split by quality is possible. Report the result whatever its sign.}
+\paragraph{A second dataset and a second recogniser} To test whether these results depend on the recogniser or on the dataset, we repeat the experiment with a second ear recogniser, a ResNet-50 trained on the same data (\RecRfValAcc{}\% accuracy on held-out images of its training subjects), and on AWEx, which was used for no training of any kind (\RecAwexEnrolled{} subjects enrolled, \RecAwexProbes{} real small probes of \RecAwexSubj{} subjects, same protocol). Table~\ref{tab:recogrobust} gives the paired differences from bicubic upscaling.
+
+The second recogniser confirms the result on EarVN1.0: the rank-1 rate rises from \RecEarvnRfRankBic{}\% with bicubic upscaling to \RecEarvnRfRankEst{}\% with our model (\RecEarvnRfEstVsBic{} points), against \RecEarvnRfPubVsBic{} for the published weights. With this recogniser the generic pipeline is significantly below our model (\RecEarvnRfGenVsEst{} points).
+
+AWEx behaves differently. No upscaling method changes the rank-1 rate significantly there, with either recogniser: our model by \RecAwexReEstVsBic{} and \RecAwexRfEstVsBic{} points, the published weights by \RecAwexRePubVsBic{} and \RecAwexRfPubVsBic{}, BSRGAN by \RecAwexReBsrganVsBic{} and \RecAwexRfBsrganVsBic{}. \emph{The gain observed on EarVN1.0 is not replicated on AWEx.} Two properties of AWEx bear on this; we report them as observations made after seeing the result, not as an established explanation. First, the small AWEx images carry no JPEG block structure. The ratio of pixel differences across $8\times8$ block boundaries to differences inside blocks has a median of \BlockAwex{} for the AWEx probes, against \BlockEarvnLow{} for the EarVN1.0 probes stored at quality 70 to 80 and \BlockEarvnHigh{} for those at quality 90 or above; AWEx is distributed as PNG and its compression history is unknown. A compression-aware model has no blocking to remove there. Second, the experiment has little resolving power on AWEx: a subject has a median of \RecAwexGalMed{} enrolled images (EarVN1.0: \RecEarvnGalMed{}), and large probes are identified no better than small ones (\RecAwexReRankRef{}\% against \RecAwexReRankBic{}\% with the ResNet-18 recogniser), so resolution does not appear to be what limits the recogniser on this dataset.
 
 \begin{table}[t]
 \centering
@@ -135,23 +155,8 @@ Upscaling & ResNet-18 & ResNet-50 & ResNet-18 & ResNet-50 \\
 \end{tabular}}
 \end{table}
 
-Two conclusions follow. First, the finding of Section~\ref{sec:analysis} carries over to real images: SR trained with bicubic downsampling gives no identification benefit on real small ear images, with or without fine-tuning on ear data, and compression-aware training does. Second, on real images the choice among compression-aware degradations makes no measurable difference to identification. This settles the question left open in Section~\ref{sec:ablation}, and it qualifies our statement about the generic pipeline: its disadvantage is in fidelity (Table~\ref{tab:main}), not in identification. Figure~\ref{fig:qualitative} shows examples.
+Three conclusions follow. First, on real small ear images that are JPEG-compressed, the finding of Section~\ref{sec:analysis} carries over: SR trained with bicubic downsampling gives no identification benefit, with or without fine-tuning on ear data, and compression-aware training does, with two recognisers and a control. Second, the choice among compression-only degradations makes no measurable difference to identification, which settles the question left open in Section~\ref{sec:ablation}; the generic pipeline is slightly but significantly worse, in addition to its lower fidelity (Table~\ref{tab:main}). Third, the benefit is tied to the compression of the input: it varies with the quality stored in the probe files and is absent on a dataset whose images show no compression structure. We therefore do not claim that SR improves ear identification in general. Figure~\ref{fig:qualitative} shows examples.
 
-\begin{table}[t]
-\centering
-\caption{Identification of real small ear images (short side 24 to 48 pixels) after $\times4$ upscaling. Rank-1 rate with 95\% confidence interval and equal error rate, in \%, for an ear recogniser and for frozen ImageNet features. Fine-tuned rows average the models of the folds.}
-\label{tab:recog}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & \multicolumn{2}{c}{Ear recogniser (ResNet-18)} & \multicolumn{2}{c}{ImageNet features (ResNet-50)} \\
-\cmidrule(lr){2-3}\cmidrule(l){4-5}
-Upscaling & Rank-1 & EER & Rank-1 & EER \\
-\midrule
-\tabinput{generated/tab_recog}
-\bottomrule
-\end{tabular}}
-\end{table}
 
 \begin{figure}[t]
 \centering
