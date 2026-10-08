@@ -571,6 +571,11 @@ Kết luận về độ trung thực không đổi (mức đổi lớn nhất 0,
 trên AWEx phần tăng không lặp lại. Chi tiết: mục 3b2 của `docs/story-imavis.md`; số đầy đủ: bản thảo `paper/`.
 **Từ đây không còn fold giữ kín: mọi thay đổi cấu hình sau ngày này đều là sau khi đã thấy kết quả test.**
 
+**Đối chứng trên ảnh tự nhiên (08/10/2026).** Cỡ ảnh không dời ngưỡng; ảnh tai đổi dấu ở mức nén nhẹ hơn ảnh tự nhiên; cả hai
+được giải thích bằng tỉ số sai số nén trên sai số nội suy (ngưỡng quanh 0,17 trên 35 ô của bốn bộ ảnh). Chi tiết: mục 3b4 của
+`docs/story-imavis.md`. Hệ quả cho C2 và C3: viết thành một quy tắc, và "kiến trúc không phải nút thắt khi nén" là hiện tượng
+chung, không riêng ảnh tai.
+
 **Bảng theo dõi luận điểm** (yêu cầu ở mục 2.7, bước 1; cập nhật 07/10).
 
 | # | Trạng thái | Căn cứ | Hệ quả cho bài |

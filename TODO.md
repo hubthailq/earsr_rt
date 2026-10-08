@@ -17,76 +17,108 @@ phân tích trên máy Mac.
 - Các dòng cũ bên dưới còn ghi "hỏi thầy", "chờ thầy đồng ý" (mục 2, 2b, 2c, và mục 1.1, E7 của kế hoạch) đọc là: quyết
   định thuộc về người dùng.
 
-## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 07/10/2026, sau khi gộp ba fold)
+## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 08/10/2026)
 
-**Quyết định của người dùng (06/10, đêm):** làm trước **một mô hình real-time tốt hơn các mô hình có sẵn** (hướng A). Hướng
-kiến trúc (B, C ở mục 2b) để bài sau.
+**Bài này:** phát hiện cộng benchmark cộng cách huấn luyện, không có kiến trúc mới (kiến trúc để bài sau); đích IMAVIS; thầy
+đọc khi bản thảo hoàn chỉnh. Phạm vi và kết quả: `docs/story-imavis.md`. Bản thảo: `paper/` (dựng theo `paper/README.md`).
+**Không còn fold giữ kín:** không chạy lại huấn luyện với cấu hình khác. **Không đề xuất thêm thí nghiệm ngoài danh sách dưới.**
 
-**Trạng thái:** khối `n2` xong trên ba fold (30 lần huấn luyện, cả 30 qua phép thử ảnh sáng), đã chấm trên AMI, EarVN1.0 và
-AWEx, đã phân tích. Bảng số ở mục 2.0 của kế hoạch bài báo ("Kết quả gộp ba fold và trên ba bộ ảnh"). Tóm tắt, SPAN 48 kênh
-học với suy giảm ước lượng, ảnh vào có nén kiểu ước lượng:
+**Đã xong:** tách "có nén" khỏi "đo từ dữ liệu"; 5 fold (60 lần huấn luyện); nhận dạng trên hai bộ ảnh với ba mạng nhận
+dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết lại câu đóng góp về nhận dạng theo "hai điều kiện".
 
-- hơn bicubic 1,2 đến 2,2 dB và hơn SPAN công bố 1,3 đến 1,9 dB trên cả ba bộ; LPIPS cũng tốt hơn cả hai;
-- hơn mô hình học với suy giảm tổng quát 1,1 đến 2,1 dB;
-- so với học bằng JPEG 75 cố định: +0,14 đến +0,26 dB dưới suy giảm ước lượng, +0,4 đến +0,6 dB ở JPEG 93, −0,06 đến
-  −0,14 dB ở JPEG 75;
-- cái giá: trên ảnh sạch kém SPAN công bố 1,2 đến 1,8 dB.
+### Danh sách đang dở (làm theo thứ tự; xong việc nào đánh dấu việc đó)
 
-**Phạm vi bài đã được phác ở `docs/story-imavis.md` (07/10; đích IMAVIS).** Bài này là bài phát hiện cộng benchmark cộng cách
-huấn luyện, không có kiến trúc mới; kiến trúc để bài sau (tự quyết theo mục "Cách làm việc với thầy"). Người dùng yêu cầu dừng
-việc bổ sung không có điểm cuối: bài cần đúng **năm việc** dưới đây, xong thì viết. Việc khác nằm ở mục "để dành" của
-file đó và chỉ làm khi người phản biện yêu cầu. **Không đề xuất thêm thí nghiệm ngoài danh sách này nếu không có lý do mới.**
+- [x] 08/10 **A. [Bạn, máy Mac] Commit và push** (xong):
+  ```bash
+  cd /Users/tql3308/Documents/ncs/paper_source_code/earsr_rt
+  git add .gitignore TODO.md docs paper scripts deploy_ios/README.md results
+  git commit -m "Identification reframed as two conditions; natural-image control script; Core ML export" && git push
+  ```
+- [ ] **B. [Bạn, iPhone + Xcode] Đo độ trễ trên iPhone 12 Pro Max.** Hướng dẫn: `deploy_ios/README.md` mục 2, 3, 4. Mở từng
+  file trong `deploy_ios/models/` bằng Xcode, thẻ Performance, chọn iPhone, chạy hai lần (CPU Only, rồi All), ghi số
+  Prediction (trung vị, ms) vào cột `median_ms` của `results/latency_ios.csv`. Bắt buộc: `span_ch48`, `disp26`, `bsrgan`.
+  Các bước trong Xcode chưa được Claude chạy thử; vướng thì chụp màn hình gửi Claude. Xong thì:
+  ```bash
+  git add results/latency_ios.csv && git commit -m "iPhone latency measured" && git push
+  ```
+- [x] 08/10 **C. [labai217] Đối chứng trên ảnh tự nhiên: XONG** (425 file, commit `300de40`). Kết quả: mục 3b4 của `docs/story-imavis.md`. Khi xong phải commit và push kết quả
+  (hai dòng cuối của khối lệnh dưới). Đây là Phần 2 của góp ý ghi ở mục "Góp ý ngày 08/10" ngay bên dưới. Chỉ chấm, không huấn luyện, khoảng 30 đến 60 phút (ước lượng):
+  ```bash
+  git pull
+  bash scripts/run_div2k_control.sh       # dòng cuối: "results/t2_div2k: 425 file" rồi "Xong."
+  git add results && git commit -m "Natural-image control: published models on DIV2K, five input sizes" && git push
+  ```
+  Nội dung: 16 mô hình có sẵn, cùng năm mức JPEG, trên 100 ảnh DIV2K ở ảnh vào 24, 36, 48, 96, 192 px. Câu hỏi: ngưỡng "kém
+  bicubic khi nén" là của ảnh tai, của cỡ ảnh nhỏ, hay của nén nói chung. Tín hiệu từ lần thử 6 ảnh, 3 mô hình trên máy Mac
+  (**chưa phải kết luận**): trên ảnh tự nhiên ở JPEG 75 mô hình xấp xỉ hòa bicubic ở cả ảnh 36 px lẫn 192 px, chỉ kém ở
+  JPEG 60; tức có thể không có hiệu ứng theo cỡ ảnh, nhưng ngưỡng của ảnh tai (quanh mức 85) cao hơn của ảnh tự nhiên.
+  **Không làm:** chạy mạng mới, hay thêm bước khử nén để tìm số đẹp.
+- [x] 08/10 **D. `git pull` phần đối chứng: xong.** Còn phần iPhone (việc B): đo xong thì commit rồi báo Claude.
+- [ ] **E. [Claude] Điền bài và viết phần diễn giải.** Phần đối chứng **xong ngày 08/10** (mục 4.3, quy tắc tỉ số sai số, hình
+  mới, abstract viết lại). **Còn phần iPhone** (6 macro trống): sau khi có `results/latency_ios.csv`, viết câu kết
+  luận ở mục 6.7 (mô hình nào đạt ngưỡng 33 ms; nếu SPAN không đạt thì sửa chữ "Real-Time" trong tiêu đề); sửa mục 1.5
+  của kế hoạch (thiết bị đo là iPhone); kết quả ra sao báo nguyên như vậy.
+- [ ] **F. [Bạn] Phần còn lại của rà tài liệu:** (0) **mới:** tìm xem đã có ai nêu quy tắc "SR chỉ thắng nội suy khi sai số nén
+  nhỏ so với sai số nội suy" chưa (từ khóa: compressed image super-resolution, interpolation error, crossover, JPEG quality);
+  bài hiện viết đây là quy tắc thực nghiệm của mình, chưa kiểm tính mới; (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250) rồi sửa hai ô TBD ở
+  mục 1 và 2 của bản thảo; (b) tìm có hệ thống trên IEEE Xplore và Scopus; (c) đối chiếu 24 mục "chưa tra" ở đầu
+  `paper/refs.bib`; (d) đọc Li và cộng sự (TIFS 2019), Bulat và cộng sự (ECCV 2018).
+- [ ] **G. [Claude, khi bạn bảo] Hoàn thiện bản thảo:** hình phổ sai số cho mục 4.1 (ô TBD); chọn lại ảnh cho hình định tính
+  (đã có 12 ảnh của 12 người ở `results/recog/sr2`); rút abstract xuống giới hạn của tạp chí (hiện dài); highlights và các
+  tuyên bố Elsevier yêu cầu; số trang cho `refs.bib`; tên khoa của đơn vị; quyền dùng ảnh EarVN1.0 và AMI trong hình; mục 6.6
+  (khảo sát người xem) đang là ô TBD: không làm khảo sát thì xóa mục đó.
+- [ ] **H. Đưa thầy đọc** `paper/main.pdf` khi E và G xong.
 
-**Trạng thái năm việc (08/10):** việc 1 xong; việc 2a (nhận dạng, bản mở rộng) xong; **việc 3 (5 fold) xong**; việc 5 (rà tài
-liệu) xong lượt đầu. Còn: việc 4 (độ trễ trên iOS), việc 2b (khảo sát người xem, để dành), phần việc của người dùng ở
-việc 5, và hoàn thiện bản thảo. Kết quả: mục 3b, 3b2, 3c của `docs/story-imavis.md`.
+### Góp ý ngày 08/10 (hai phần) và trạng thái: ĐỌC LẠI SAU KHI ĐO IPHONE XONG
 
-**Không còn fold giữ kín.** Mọi thay đổi cấu hình huấn luyện sau ngày 08/10 đều là sau khi đã thấy kết quả test; không
-chạy lại để lấy số đẹp hơn.
+Người dùng dặn ghi lại để sau khi đo iPhone còn nhớ và làm tiếp. Nguyên văn góp ý nhận được:
 
-**Khi người dùng hỏi "làm gì tiếp", trả lời theo đúng thứ tự dưới đây.**
+> Có một cách làm bài mạnh hơn mà không cần chạy thêm. Đưa kết quả AWEx vào câu đóng góp, đừng viết nó như một thất bại.
+> Câu đó là: phóng ảnh chỉ giúp nhận dạng tai khi hai điều cùng đúng. Ảnh dò đã bị nén, và ảnh lớn của cùng những người đó
+> được nhận tốt hơn ảnh nhỏ. EarVN1.0 thỏa cả hai: ảnh lớn 60%, ảnh nhỏ 13%, mạng học với dải JPEG thêm khoảng 10 đến 12
+> điểm rank-1. AWEx không thỏa điều thứ hai: ảnh lớn 32%, ảnh nhỏ 32%, và không phương pháp nào đổi rank-1. Phần độ trung
+> thực giữ nguyên: từ khoảng JPEG 85 trở xuống, mạng công bố kém bicubic, và dải JPEG lúc huấn luyện là thứ sửa được.
+> Một thí nghiệm còn có thể làm câu này sắc hơn. Chấm các mạng công bố trên ảnh thường, cùng mức JPEG, ở cỡ nhỏ và cỡ lớn.
+> Nếu chỉ ảnh nhỏ rơi xuống dưới bicubic, bài có thêm một phát hiện về cỡ ảnh. Nếu ảnh lớn cũng rơi như vậy, viết rằng
+> ngưỡng là của nén, và phần riêng của tai là nhận dạng. Không chạy mạng mới. Không chạy khử nén để tìm số đẹp.
 
-0. **[Bạn] Commit và push** trên máy Mac:
-   ```bash
-   git add TODO.md docs paper scripts results/recog/blockiness.json
-   git commit -m "Five-fold results in draft; recognition on two datasets interpreted" && git push
-   ```
-0b. **[labai217] Đối chứng trên ảnh tự nhiên (góp ý nhận ngày 08/10; chỉ chấm, không huấn luyện, không thêm mô hình).**
-   Cùng 16 mô hình có sẵn, cùng các mức JPEG, trên 100 ảnh DIV2K valid thu về ảnh vào 24, 36, 48, 96, 192 px. Câu hỏi: ngưỡng
-   "kém bicubic khi nén" là của ảnh tai, của cỡ ảnh nhỏ, hay của nén nói chung. Khoảng 30 đến 60 phút (ước lượng):
-   ```bash
-   git pull
-   bash scripts/run_div2k_control.sh                 # dòng cuối: "results/t2_div2k: 425 file" rồi "Xong."
-   git add results && git commit -m "Natural-image control: published models on DIV2K, five input sizes" && git push
-   ```
-   **[Claude] sau khi pull:** `make_paper.py` (bảng ở mục 4.3 của bản thảo tự điền), viết phần diễn giải, kết quả ra sao báo
-   nguyên như vậy. Tín hiệu từ lần thử 6 ảnh, 3 mô hình trên máy Mac (**chưa phải kết luận**): trên ảnh tự nhiên, ở JPEG 75
-   mô hình xấp xỉ hòa bicubic (+0,05 đến +0,10 dB) ở cả ảnh vào 36 px lẫn 192 px, và chỉ kém bicubic ở JPEG 60; tức có thể
-   không có hiệu ứng theo cỡ ảnh, nhưng ngưỡng của ảnh tai (quanh mức 85) cao hơn của ảnh tự nhiên.
-   **Không làm:** chạy mạng mới, hay thêm bước khử nén để tìm số đẹp.
-1. **[Bạn] Việc 4: đo độ trễ trên iPhone 12 Pro Max bằng Xcode.** Phần của Claude xong ngày 08/10: sáu mô hình đã chuyển
-   sang Core ML (`deploy_ios/models/*.mlpackage`, không đưa vào git) và khớp PyTorch trên máy Mac. **Phần của bạn:** làm theo
-   `deploy_ios/README.md` mục 2, 3, 4: mở từng `.mlpackage` trong Xcode, thẻ Performance, chạy trên iPhone hai lần (CPU
-   Only, All), ghi trung vị vào `results/latency_ios.csv`. Bắt buộc: `span_ch48`, `disp26`, `bsrgan`. Rồi:
-   ```bash
-   git add results/latency_ios.csv && git commit -m "iPhone latency measured" && git push
-   ```
-   và báo Claude. **Các bước trong Xcode chưa được Claude chạy thử** (viết theo hiểu biết về Xcode); vướng thì báo.
-   Số tham khảo đo trên chính máy Mac này (không dùng cho bài): SPAN 2,5 ms chỉ CPU, 0,4 ms mọi đơn vị; BSRGAN 56 ms và 14 ms.
-   Môi trường chuyển mô hình: `.venv-coreml` (Python 3.9 của Xcode, torch 2.7; coremltools không chạy đủ trên Python 3.14).
-   Tùy chọn: chép một lần chạy `est` từ labai217 về để đo bằng chính trọng số của bài (lệnh ở README mục 1).
-   **[Claude] sau khi có số:** `make_paper.py`, viết câu kết luận ở mục 6.7, sửa mục 1.5 của kế hoạch (thiết bị là iPhone).
-2. **[Bạn] Phần còn lại của việc 5 (rà tài liệu):** (a) đọc toàn văn bài IWSSIP 2023 (IEEE Xplore 10180250) rồi sửa hai ô TBD
-   ở mục 1 và 2 của bản thảo; (b) tìm có hệ thống trên IEEE Xplore và Scopus; (c) đối chiếu 24 mục "chưa tra" ở đầu
-   `paper/refs.bib`; (d) đọc Li và cộng sự (TIFS 2019), Bulat và cộng sự (ECCV 2018).
-3. **[Claude, khi bạn bảo] Hoàn thiện bản thảo:** hình phổ sai số cho mục 4.1 (ô TBD); chọn lại ảnh cho hình định tính (đã có
-   12 ảnh của 12 người ở `results/recog/sr2`); rút abstract xuống giới hạn của tạp chí (hiện dài); highlights và các tuyên
-   bố Elsevier yêu cầu; điền số trang cho `refs.bib`; tên khoa của đơn vị; quyền dùng ảnh EarVN1.0 và AMI trong hình.
-4. **Việc 2b: khảo sát người xem** (để dành; chỉ làm nếu bạn hoặc thầy muốn có trước khi nộp). Mục 6.6 của bản thảo đang là
-   ô TBD: nếu không làm thì xóa mục đó.
-5. **Đưa thầy đọc** `paper/main.pdf` khi xong bước 1 và 3.
+**Phần 1: viết AWEx thành câu đóng góp ("hai điều kiện").** Trạng thái: **đã viết vào bản thảo** (abstract, mở bài, mục 6.5,
+thảo luận, kết luận), đã commit ở việc A. Không cần chạy gì thêm.
 
-Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào không thuộc danh sách trên thì **không làm cho bài này**.
+- Câu trong bài: phóng ảnh giúp nhận dạng ở nơi ảnh dò đã bị nén **và** mạng nhận dạng mất độ chính xác ở độ phân giải
+  thấp ("có dư địa"); EarVN1.0 thỏa cả hai, AWEx không thỏa cái nào; "không tuyên bố SR cải thiện nhận dạng tai nói chung,
+  chỉ ra khi nào thì có".
+- **Chỗ Claude sửa so với góp ý:** AWEx không thỏa **cả hai** điều kiện, không chỉ điều kiện thứ hai (ảnh nhỏ của AWEx không
+  có lưới khối JPEG: tỉ số biên khối 0,98; EarVN1.0 là 1,19 và 1,08). Vì vậy hai bộ ảnh không tách được điều kiện nào là
+  điều kiện cần; bài nói rõ điều này và gọi đó là "điều kiện do số liệu gợi ý", hình thành sau khi thấy kết quả AWEx.
+- Bằng chứng trong từng bộ ảnh, tính từ kết quả có sẵn (không chạy mới): trên EarVN1.0 (30 người), nửa ít dư địa (+25,4
+  điểm) tăng +7,5, nửa nhiều dư địa (+55,9) tăng +16,4; với ResNet-50 là +5,3 và +14,6. Tương quan hạng dương nhưng chưa
+  đạt ý nghĩa (p = 0,14 và 0,06). Trên AWEx người có dư địa vẫn không tăng (−1,1 và +3,4), số rất nhiễu.
+- **Việc còn lại của Phần 1:** (i) bạn đọc lại các đoạn đã sửa trong `paper/main.pdf` (abstract; đoạn "When does upscaling
+  help identification?" ở mục 6.5) xem có đúng ý góp ý không; (ii) sau khi có kết quả Phần 2, Claude rà lại câu chữ của
+  Phần 1 cho khớp (ví dụ câu "phần riêng của ảnh tai là gì").
+
+**Phần 2: đối chứng trên ảnh tự nhiên.** Trạng thái: **XONG ngày 08/10**, đã viết vào bản thảo. Kết quả rơi vào nhánh thứ ba:
+cỡ ảnh không dời ngưỡng (ngưỡng là của nén), nhưng ảnh tai đổi dấu ở mức nén nhẹ hơn ảnh tự nhiên nhiều (93 đến 85 so với
+75 đến 60). Cả hai được giải thích bằng một đại lượng, tỉ số sai số nén trên sai số nội suy, ngưỡng quanh 0,17 trên 35 ô của
+bốn bộ ảnh (mục 3b4 của `docs/story-imavis.md`). Câu "phần riêng của ảnh tai" đã viết lại: là vị trí của ngưỡng, không
+phải hiện tượng. Phần ghi chú bên dưới giữ để đối chiếu.
+
+- Khi chạy xong: commit và push kết quả trên labai217, `git pull` trên máy Mac, báo Claude (việc D).
+- **Claude sẽ làm (việc E):** `make_paper.py`; viết diễn giải mục 4.3 theo đúng hai nhánh của góp ý:
+  - nếu chỉ ảnh nhỏ rơi dưới bicubic → bài có thêm một phát hiện về cỡ ảnh;
+  - nếu ảnh lớn cũng rơi → viết rằng ngưỡng là của nén, và phần riêng của ảnh tai là benchmark và kết quả nhận dạng;
+  - nhánh thứ ba mà lần thử 6 ảnh gợi ra (chưa phải kết luận): trên ảnh tự nhiên ngưỡng thấp hơn (quanh JPEG 60 đến 75) so
+    với ảnh tai (quanh 85), không phụ thuộc cỡ ảnh → khi đó phần riêng của ảnh tai gồm cả "ngưỡng cao hơn".
+  Sau đó sửa câu đóng góp ở abstract và mở bài cho khớp nhánh thực tế, và cập nhật mục 3b3 của `docs/story-imavis.md`.
+- Giữ đúng hai điều góp ý dặn: không chạy mạng mới; không thêm bước khử nén để tìm số đẹp.
+
+**Để dành, không làm cho bài này trừ khi bạn hoặc thầy yêu cầu:** khảo sát người xem; các mục 2b, 2c, 3, 3b bên dưới.
+
+**Ghi chú kỹ thuật cho việc B:** môi trường chuyển mô hình là `.venv-coreml` (Python 3.9 của Xcode, torch 2.7; coremltools
+không chạy đủ trên Python 3.14). Số tham khảo đo trên chính máy Mac (không dùng cho bài): SPAN 2,5 ms chỉ CPU, 0,4 ms mọi đơn
+vị; BSRGAN 56 ms và 14 ms. Tùy chọn: chép một lần chạy `est` từ labai217 về để đo bằng chính trọng số của bài (README mục 1).
+Xcode chỉ cho trung vị, không có phân vị 95.
 
 ## 1. Nhật ký các việc gần đây
 
@@ -96,6 +128,9 @@ Các mục 2b, 2c, 3, 3b bên dưới giữ để tham khảo; việc nào khôn
 > Đã sửa: tăng cường độ sáng lúc huấn luyện (mặc định), ảnh EarVN nhóm train trong khối `n2`, phép thử ảnh sáng sau mỗi lần
 > huấn luyện.
 
+- [x] 08/10 **[Claude]** Đọc kết quả đối chứng trên DIV2K; tìm ra quy tắc tỉ số sai số (35 ô, bốn bộ ảnh, ngưỡng quanh 0,17,
+      tương quan hạng −0,91) từ kết quả có sẵn; thêm `error_ratio` và hình vào `make_paper.py`; viết mục 4.3, viết lại abstract,
+      sửa mở bài, thảo luận, kết luận.
 - [x] 08/10 **[Claude]** Xét góp ý "hai điều kiện" cho phần nhận dạng. Viết lại câu đóng góp (abstract, mở bài, mục 6.5, thảo
       luận) theo đó, kèm một phép kiểm trong từng bộ ảnh tính từ kết quả có sẵn: phần tăng theo "dư địa" của từng người.
       Ghi rõ hai điều kiện bị lẫn nhau giữa hai bộ ảnh (EarVN1.0 thỏa cả hai, AWEx không thỏa cái nào). Thêm

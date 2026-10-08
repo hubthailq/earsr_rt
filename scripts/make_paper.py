@@ -628,6 +628,101 @@ def natural_control(res: Path, out: Path, q_ami: pd.DataFrame) -> None:
             put(f"Nat{tag}{kt}Below", st[k][1] if ok else None, why)
             put(f"Nat{tag}{kt}Sig", st[k][2] if ok else None, why)
     put("NatN", int(pd.read_csv(f).n.max()) if f.exists() else None, why)
+    if f.exists():
+        d = pd.read_csv(f)
+        x = d[(d.tier == 144) & d.model.isin(PSNR16)]
+        put("NatSpreadCleanS", num(x[x.degrade == "bic"].psnr_y.max() - x[x.degrade == "bic"].psnr_y.min()))
+        put("NatSpreadQLowS", num(x[x.degrade == "bicjpeg75"].psnr_y.max() - x[x.degrade == "bicjpeg75"].psnr_y.min()))
+        put("NatSBicClean", num(float(d[(d.tier == 144) & (d.model == "bicubic") & (d.degrade == "bic")].psnr_y.iloc[0])))
+        put("NatSmallPx", int(d.tier.min()) // 4)
+    else:
+        for k in ("NatSpreadCleanS", "NatSpreadQLowS", "NatSBicClean", "NatSmallPx"):
+            put(k, None, why)
+
+
+def error_ratio(res: Path, fig: Path) -> None:
+    """Một đại lượng cho mọi bộ ảnh: sai số do nén thêm vào, chia cho sai số nội suy.
+
+    Với mỗi ô (bộ ảnh × cỡ ảnh vào × mức JPEG): E_i là MSE của nội suy bicubic trên ảnh vào sạch, E_c là phần MSE tăng
+    thêm khi ảnh vào bị nén; tỉ số = E_c / E_i (tính từ các file theo ảnh của mốc bicubic). Trục kia là trung vị phần hơn
+    bicubic của 16 mô hình có sẵn. Chỉ lấy các ô nén ở một mức JPEG (ô 'est' trộn hai mức nén cùng nhiễu, mờ)."""
+    from scipy.stats import spearmanr
+
+    why = "div2k"
+    sets = (("AMI", "t2", "t2_summary"), ("DIV2K", "t2_div2k", "t2_div2k_summary"), ("EarVN1.0", "t2_earvn", "t2_earvn_summary"),
+            ("AWEx", "t2_awex", "t2_awex_summary"))
+    rows = []
+    for name, per, summ in sets:
+        f = res / summ / "quality.csv"
+        if not f.exists():
+            continue
+        q = pd.read_csv(f)
+        q = q[q.scale == 4] if "scale" in q.columns else q
+        for t in sorted(q.tier.unique()):
+            fc = res / per / f"bicubic__hr{t}_x4_bic.csv"
+            if not fc.exists():
+                continue
+            c = pd.read_csv(fc).set_index("key").psnr_y
+            for k in sorted(q[q.tier == t].degrade.unique()):
+                g = q[(q.tier == t) & (q.degrade == k) & q.model.isin(PSNR16)]
+                fj = res / per / f"bicubic__hr{t}_x4_{k}.csv"
+                if not k.startswith("bicjpeg") or len(g) != 16 or not fj.exists():
+                    continue
+                j = pd.read_csv(fj).set_index("key").psnr_y.loc[c.index]
+                ei, ej = float((10 ** (-c / 10)).mean()), float((10 ** (-j / 10)).mean())
+                rows.append({"set": name, "px": int(t) // 4, "q": int(k[7:]), "ratio": (ej - ei) / ei,
+                             "gain": float(g.gain.median()), "below": int((g.gain < 0).sum())})
+    R = pd.DataFrame(rows)
+    have = len(R) > 0 and "DIV2K" in set(R.set)
+    if not have:
+        for k in ("Cells", "Sets", "MaxAbove", "MinBelow", "Thresh", "Spearman", "AmiQLow", "DivQLow", "AmiQHigh", "DivQVLow",
+                  "Mixed", "PxMin", "PxMax"):
+            put("Ratio" + k, None, why)
+        return
+    R.to_csv(res / "error_ratio.csv", index=False)
+    above, below = R[R.below == 0], R[R.below == 16]
+    put("RatioCells", len(R))
+    put("RatioSets", R.set.nunique())
+    put("RatioPxMin", int(R.px.min()))
+    put("RatioPxMax", int(R.px.max()))
+    put("RatioMaxAbove", num(above.ratio.max(), 3))
+    put("RatioMinBelow", num(below.ratio.min(), 3))
+    put("RatioThresh", num((above.ratio.max() + below.ratio.min()) / 2, 2))
+    put("RatioMixed", len(R) - len(above) - len(below))
+    put("RatioSpearman", num(spearmanr(R.ratio, R.gain).statistic, 2))
+
+    def one(st, px, qq):
+        x = R[(R.set == st) & (R.px == px) & (R.q == qq)]
+        return num(float(x.ratio.iloc[0]), 2) if len(x) else None
+
+    put("RatioAmiQLow", one("AMI", 36, 75))
+    put("RatioAmiQHigh", one("AMI", 36, 93))
+    put("RatioDivQLow", one("DIV2K", 36, 75))
+    put("RatioDivQVLow", one("DIV2K", 36, 60))
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
+    f, ax = plt.subplots(figsize=(5.2, 3.0))
+    col = {"AMI": "C3", "EarVN1.0": "C1", "AWEx": "C4", "DIV2K": "0.35"}
+    mk = {60: "v", 75: "o", 85: "s", 93: "^"}
+    for (st, qq), g in R.groupby(["set", "q"]):
+        ax.scatter(g.ratio, g.gain, s=16 + g.px / 6, c=col[st], marker=mk.get(qq, "x"), alpha=0.85, linewidths=0)
+    thr = (above.ratio.max() + below.ratio.min()) / 2
+    ax.axvline(thr, color="0.6", lw=0.8, ls=":")
+    ax.axhline(0, color="C0", lw=0.9, ls="--")
+    ax.set_xscale("log")
+    ax.set_xlabel("Compression error / interpolation error ($E_c/E_i$)")
+    ax.set_ylabel("Median PSNR gain over bicubic (dB)")
+    h1 = [plt.Line2D([], [], marker="o", ls="", color=c, label=("ear: " if n != "DIV2K" else "natural: ") + n) for n, c in col.items()]
+    h2 = [plt.Line2D([], [], marker=v, ls="", color="k", label=f"JPEG {k}") for k, v in sorted(mk.items(), reverse=True)]
+    ax.legend(handles=h1 + h2, frameon=False, fontsize=6.5, ncol=2, loc="upper right")
+    f.tight_layout()
+    f.savefig(fig / "fig_ratio.pdf")
+    plt.close(f)
 
 
 def headroom(res: Path) -> None:
@@ -808,6 +903,7 @@ def main(argv=None) -> None:
     recognition_extra(res, out)
     latency_ios(res, out, pub["lat"])
     natural_control(res, out, pub["q"])
+    error_ratio(res, fig)
     headroom(res)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.pdf}\n" if qualitative(res, fig)

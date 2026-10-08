@@ -121,6 +121,31 @@ Bài viết hai điều kiện này là "điều kiện do số liệu gợi ý"
 
 **Đối chứng trên ảnh tự nhiên** (`scripts/run_div2k_control.sh`; chờ chạy): xem mục 0 của `TODO.md`.
 
+## 3b4. Đối chứng trên ảnh tự nhiên và quy tắc "tỉ số sai số" (08/10/2026)
+
+16 mô hình có sẵn trên 100 ảnh DIV2K, ảnh vào 24, 36, 48, 96, 192 px, cùng năm kiểu ảnh vào (`results/t2_div2k/`, 425 file).
+
+- **Cỡ ảnh không dời ngưỡng.** Trên ảnh tự nhiên, ở JPEG 75 cả 16 mô hình vẫn hơn bicubic ở mọi cỡ (trung vị +0,11 đến
+  +0,20 dB); ở JPEG 60 cả 16 đều kém ở mọi cỡ (−0,06 đến −0,08 dB).
+- **Nội dung thì có.** Ảnh tự nhiên đổi dấu giữa mức 75 và 60; ảnh tai (AMI) đổi dấu giữa mức 93 và 85.
+- **Kiến trúc mất khác biệt khi nén cũng là hiện tượng chung:** trên ảnh tự nhiên 16 mô hình cách nhau 0,47 dB khi sạch và
+  0,07 dB ở JPEG 75.
+
+**Một đại lượng giải thích cả hai** (tính từ kết quả có sẵn, không chạy thêm): tỉ số giữa phần sai số do nén thêm vào và
+sai số nội suy của bicubic (E_c / E_i). Trên 35 ô (bốn bộ ảnh × cỡ ảnh vào 24 đến 192 px × mức JPEG 60 đến 93): mọi ô có tỉ
+số từ 0,168 trở xuống thì cả 16 mô hình hơn bicubic; mọi ô từ 0,170 trở lên thì cả 16 kém (riêng EarVN1.0 ở mức 75 là 14
+trên 16). Tương quan hạng −0,91. Ảnh tai trơn nên sai số nội suy nhỏ (bicubic đạt 36,7 dB trên AMI, 23,5 dB trên DIV2K),
+cùng một mức JPEG chiếm phần sai số lớn hơn nhiều: ở mức 75 tỉ số là 0,69 với AMI và 0,10 với DIV2K.
+
+**Phần riêng của ảnh tai, viết lại:** không phải hiện tượng, mà là vị trí của nó: các mức nén mà ảnh tai nhỏ thật mang
+nằm bên kia ngưỡng, còn ảnh tự nhiên ở cùng mức nén thì chưa.
+
+**Giới hạn phải nêu:** ngưỡng 0,17 là thực nghiệm; chỉ kiểm với 16 mô hình học bằng bicubic, ×4, nén JPEG; hai ô sát ngưỡng
+nằm hai phía ở tỉ số gần bằng nhau với phần hơn khác nhau, nên phần hơn không phải hàm của riêng tỉ số. Chưa rà tài liệu
+xem quy tắc này đã có ai nêu chưa.
+
+Bản thảo: mục 4.3 mới (bảng, hình `fig_ratio.pdf`), abstract viết lại mở đầu bằng quy tắc này, mở bài và thảo luận sửa theo.
+
 ## 3c. Kết quả rà tài liệu lượt đầu (07/10/2026; tìm kiếm web, chưa phải rà có hệ thống)
 
 - **Về ảnh tai:** chỉ tìm thấy một bài SR cho ảnh tai (Markičević, Peer, Emeršič, IWSSIP 2023: EDSR và SwinIR, ×2 và ×4, trên
