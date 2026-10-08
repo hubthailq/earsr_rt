@@ -1,0 +1,695 @@
+{
+ "x4_hr96": {
+  "tau_b": 0.30086083390715773,
+  "concordant": 34,
+  "discordant": 13,
+  "tied_a_only": 9,
+  "tied_b_only": 40,
+  "n_pairs": 105,
+  "reversals": [
+   [
+    "edsr_baseline",
+    "errn26"
+   ],
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "dscf26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "swinir_light"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch26",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch48",
+    "swinir_light"
+   ]
+  ],
+  "tau_mean_rank": 0.2761904761904762,
+  "tau_lo": 0.06666666666666668,
+  "tau_hi": 0.40952380952380957,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "errn26",
+   "msrresnet",
+   "rlfn",
+   "safmnpp",
+   "edsr_baseline",
+   "disp26",
+   "efdn",
+   "smfan",
+   "span_ch28",
+   "pds26",
+   "dscf26",
+   "span_ch26",
+   "pkdsr26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "span_ch48",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "errn26",
+   "span_ch28",
+   "pds26",
+   "disp26",
+   "rlfn",
+   "span_ch26",
+   "dscf26",
+   "pkdsr26",
+   "swinir_light",
+   "efdn"
+  ],
+  "flipped": true
+ },
+ "x4_hr144": {
+  "tau_b": 0.3244428422615251,
+  "concordant": 37,
+  "discordant": 13,
+  "tied_a_only": 7,
+  "tied_b_only": 46,
+  "n_pairs": 105,
+  "reversals": [
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "rlfn",
+    "swinir_light"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "swinir_light"
+   ],
+   [
+    "smfan",
+    "errn26"
+   ],
+   [
+    "smfan",
+    "msrresnet"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
+   ],
+   [
+    "span_ch48",
+    "swinir_light"
+   ]
+  ],
+  "tau_mean_rank": 0.2571428571428572,
+  "tau_lo": 0.08571428571428572,
+  "tau_hi": 0.4285714285714286,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "msrresnet",
+   "errn26",
+   "edsr_baseline",
+   "rlfn",
+   "safmnpp",
+   "efdn",
+   "smfan",
+   "disp26",
+   "span_ch28",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "span_ch26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "span_ch48",
+   "smfan",
+   "safmnpp",
+   "rlfn",
+   "errn26",
+   "msrresnet",
+   "pds26",
+   "disp26",
+   "dscf26",
+   "pkdsr26",
+   "span_ch26",
+   "span_ch28",
+   "swinir_light",
+   "efdn"
+  ],
+  "flipped": true
+ },
+ "x4_hr192": {
+  "tau_b": 0.3100956581636525,
+  "concordant": 46,
+  "discordant": 20,
+  "tied_a_only": 8,
+  "tied_b_only": 29,
+  "n_pairs": 105,
+  "reversals": [
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
+   [
+    "efdn",
+    "smfan"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "rlfn",
+    "swinir_light"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "msrresnet"
+   ],
+   [
+    "safmnpp",
+    "swinir_light"
+   ],
+   [
+    "smfan",
+    "errn26"
+   ],
+   [
+    "smfan",
+    "msrresnet"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch28",
+    "pds26"
+   ],
+   [
+    "span_ch28",
+    "pkdsr26"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
+   ],
+   [
+    "span_ch48",
+    "swinir_light"
+   ]
+  ],
+  "tau_mean_rank": 0.29523809523809524,
+  "tau_lo": 0.14285714285714288,
+  "tau_hi": 0.4476190476190477,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "msrresnet",
+   "errn26",
+   "rlfn",
+   "edsr_baseline",
+   "safmnpp",
+   "efdn",
+   "smfan",
+   "disp26",
+   "span_ch28",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "span_ch26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "smfan",
+   "safmnpp",
+   "span_ch48",
+   "rlfn",
+   "pds26",
+   "swinir_light",
+   "pkdsr26",
+   "msrresnet",
+   "disp26",
+   "errn26",
+   "span_ch28",
+   "dscf26",
+   "span_ch26",
+   "efdn"
+  ],
+  "flipped": true
+ },
+ "x4_hr384": {
+  "tau_b": 0.3481553119113957,
+  "concordant": 50,
+  "discordant": 20,
+  "tied_a_only": 5,
+  "tied_b_only": 29,
+  "n_pairs": 105,
+  "reversals": [
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "msrresnet",
+    "pds26"
+   ],
+   [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "safmnpp"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "safmnpp",
+    "errn26"
+   ],
+   [
+    "safmnpp",
+    "msrresnet"
+   ],
+   [
+    "safmnpp",
+    "swinir_light"
+   ],
+   [
+    "smfan",
+    "errn26"
+   ],
+   [
+    "smfan",
+    "msrresnet"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "pds26"
+   ],
+   [
+    "span_ch28",
+    "pkdsr26"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
+   ]
+  ],
+  "tau_mean_rank": 0.37142857142857144,
+  "tau_lo": 0.20000000000000004,
+  "tau_hi": 0.4285714285714286,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "msrresnet",
+   "rlfn",
+   "edsr_baseline",
+   "errn26",
+   "safmnpp",
+   "efdn",
+   "smfan",
+   "disp26",
+   "span_ch28",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "span_ch26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "safmnpp",
+   "smfan",
+   "span_ch48",
+   "rlfn",
+   "pds26",
+   "swinir_light",
+   "msrresnet",
+   "pkdsr26",
+   "errn26",
+   "disp26",
+   "dscf26",
+   "span_ch28",
+   "span_ch26",
+   "efdn"
+  ],
+  "flipped": true
+ },
+ "x4_hr768": {
+  "tau_b": 0.18885055072700035,
+  "concordant": 42,
+  "discordant": 26,
+  "tied_a_only": 6,
+  "tied_b_only": 29,
+  "n_pairs": 105,
+  "reversals": [
+   [
+    "edsr_baseline",
+    "swinir_light"
+   ],
+   [
+    "efdn",
+    "disp26"
+   ],
+   [
+    "efdn",
+    "dscf26"
+   ],
+   [
+    "efdn",
+    "pds26"
+   ],
+   [
+    "efdn",
+    "pkdsr26"
+   ],
+   [
+    "msrresnet",
+    "edsr_baseline"
+   ],
+   [
+    "msrresnet",
+    "pds26"
+   ],
+   [
+    "pds26",
+    "disp26"
+   ],
+   [
+    "pds26",
+    "errn26"
+   ],
+   [
+    "rlfn",
+    "edsr_baseline"
+   ],
+   [
+    "rlfn",
+    "safmnpp"
+   ],
+   [
+    "rlfn",
+    "smfan"
+   ],
+   [
+    "rlfn",
+    "swinir_light"
+   ],
+   [
+    "safmnpp",
+    "msrresnet"
+   ],
+   [
+    "safmnpp",
+    "swinir_light"
+   ],
+   [
+    "smfan",
+    "msrresnet"
+   ],
+   [
+    "smfan",
+    "swinir_light"
+   ],
+   [
+    "span_ch26",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "efdn"
+   ],
+   [
+    "span_ch28",
+    "pds26"
+   ],
+   [
+    "span_ch28",
+    "pkdsr26"
+   ],
+   [
+    "span_ch48",
+    "edsr_baseline"
+   ],
+   [
+    "span_ch48",
+    "safmnpp"
+   ],
+   [
+    "span_ch48",
+    "smfan"
+   ],
+   [
+    "span_ch48",
+    "swinir_light"
+   ],
+   [
+    "swinir_light",
+    "pds26"
+   ]
+  ],
+  "tau_mean_rank": 0.10476190476190476,
+  "tau_lo": -0.04761904761904762,
+  "tau_hi": 0.3142857142857143,
+  "models": [
+   "span_ch48",
+   "span_ch28",
+   "span_ch26",
+   "rlfn",
+   "efdn",
+   "safmnpp",
+   "smfan",
+   "msrresnet",
+   "edsr_baseline",
+   "swinir_light",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "disp26",
+   "errn26"
+  ],
+  "order_a": [
+   "swinir_light",
+   "span_ch48",
+   "msrresnet",
+   "rlfn",
+   "edsr_baseline",
+   "efdn",
+   "errn26",
+   "safmnpp",
+   "smfan",
+   "disp26",
+   "span_ch28",
+   "pds26",
+   "pkdsr26",
+   "dscf26",
+   "span_ch26"
+  ],
+  "order_b": [
+   "edsr_baseline",
+   "smfan",
+   "safmnpp",
+   "span_ch48",
+   "rlfn",
+   "pds26",
+   "pkdsr26",
+   "msrresnet",
+   "dscf26",
+   "disp26",
+   "span_ch28",
+   "swinir_light",
+   "span_ch26",
+   "errn26",
+   "efdn"
+  ],
+  "flipped": true
+ }
+}
