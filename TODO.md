@@ -180,27 +180,44 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
       CPU thì SPAN tinh chỉnh; có bộ xử lý thần kinh và cần nhận dạng cao nhất thì mạng lớn học có nén).
     - Câu chữ hiện tại đã đúng mức ("lowest cost among the methods that improved both PSNR and identification"); không hạ thêm.
   - **M2. Phản biện có thể nói "dùng đồ có sẵn là đủ"** (BSRNet, FBCNN là trọng số công bố từ 2021).
-    - [ ] Làm L1 để lập luận chi phí có số trên điện thoại, rồi thêm cột "CPU điện thoại (ms)" vào bảng 14.
+    - [x] 04/11 (số trên điện thoại đã vào văn bản 6.6, không thêm cột vì bảng 14 trộn FP16 và FP32) Làm L1 để lập luận chi phí có số trên điện thoại, rồi thêm cột "CPU điện thoại (ms)" vào bảng 14.
     - [ ] Đề xuất, chưa duyệt: một hình đánh đổi (trục ngang độ trễ CPU điện thoại, trục dọc hạng 1 trên EarVN1.0, mỗi điểm
       một phương pháp), sinh PNG bằng `make_paper.py`. Không cần chạy gì mới ngoài L1.
-    - [ ] Viết một câu ở 6.6 nói rõ điều bài thêm so với đồ có sẵn: với cùng thân SPAN, tinh chỉnh có nén cho hạng 1 cao hơn
+    - [x] 04/11 Viết một câu ở 6.6 nói rõ điều bài thêm so với đồ có sẵn: với cùng thân SPAN, tinh chỉnh có nén cho hạng 1 cao hơn
       khử nén rồi phóng (25,0% so với 21,1%) mà không thêm mạng thứ hai. Số đã có trong bảng 14.
   - **M3. Lập luận real-time có chỗ hở** (RRDB chạy 15,53 ms trên iPhone khi dùng mọi bộ xử lý, dưới ngưỡng 33 ms của bài;
     chỉ tách được ở CPU: 4,72 so với 107,91 ms).
-    - [ ] Làm L1. Nếu chuỗi FBCNN rồi SPAN cũng dưới 33 ms trên CPU thì bài phải nói thẳng, và lợi thế còn lại là số tham
+    - [x] 04/11 (không dưới: 93,6 ms) Làm L1. Nếu chuỗi FBCNN rồi SPAN cũng dưới 33 ms trên CPU thì bài phải nói thẳng, và lợi thế còn lại là số tham
       số và bộ nhớ.
-    - [ ] Mục 6.7 (Efficiency): thêm một câu nói rõ kiến trúc RRDB (BSRNet, Real-ESRNet) đạt ngưỡng khi có bộ xử lý thần kinh
+    - [x] 04/11 Mục 6.7 (Efficiency): thêm một câu nói rõ kiến trúc RRDB (BSRNet, Real-ESRNet) đạt ngưỡng khi có bộ xử lý thần kinh
       và không đạt trên CPU, và rằng định nghĩa real-time của bài tính trên CPU. Hiện mục này chỉ nói vậy cho BSRGAN.
     - [ ] Sau L1, quyết định có giữ chữ "Real-Time" trong tiêu đề hay đổi thành cách nói hẹp hơn (việc này cũng nằm trong
       `paper/SUBMISSION_CHECKLIST.md`, mục quyết định về tiêu đề).
   - **M4. PSNR bị đặt dấu hỏi** (BSRNet: PSNR ngang bicubic nhưng hạng 1 cao nhất).
-    - [ ] Thêm một câu giới hạn ở phần thảo luận: phần phân tích tỉ số sai số nói về độ trung thực; PSNR không dự đoán được
+    - [x] 04/11 Thêm một câu giới hạn ở phần thảo luận: phần phân tích tỉ số sai số nói về độ trung thực; PSNR không dự đoán được
       thứ hạng nhận dạng giữa các phương pháp học bằng suy giảm khác nhau.
     - [ ] Đề xuất, chưa duyệt, chỉ tính từ số đã có: tương quan hạng giữa PSNR (ảnh vào `est` của EarVN1.0) và hạng 1 trên
       mọi phương pháp của bảng 10 và bảng 14; và xem LPIPS, DISTS (đã có trong `results/rev*`) có đi cùng hạng 1 hơn PSNR
       không. Nếu có thì thêm một câu và một cột; nếu không thì chỉ ghi câu giới hạn ở trên.
     - Không làm: đổi số đo chính của bài sang nhận dạng. Phần lõi (16 mô hình, tỉ số sai số, DIV2K) là kết quả về độ trung
       thực và vẫn đứng; với mô hình học bằng bicubic, PSNR và nhận dạng cho cùng kết luận.
+- [ ] **N. Luật chọn lúc chạy (góp ý ngày 04/11; người dùng bảo chạy phép thử khả thi).** Chọn giữa bicubic và mô hình
+  công bố cho từng ảnh từ mức JPEG và sai số tự nội suy của ảnh nhỏ (không dùng ảnh gốc). Mã: `scripts/analyze_selector.py`,
+  chỉ phân tích số đã có (`results/t2*`), ảnh nhỏ dựng lại ở `data/bench` trên Mac (khớp 0,0 dB với labai217). Kết quả:
+  `results/selector/summary_{span_ch48,rrdb_psnr}.md`.
+  - [x] 04/11 Phép thử xong. Sai số tự nội suy tương quan với E_i thật (Spearman 0,70 đến 0,81 trong từng bộ); tỉ số ước
+    lượng tương quan với tỉ số thật 0,81 đến 0,91.
+    - Hiệu chỉnh và thử trên cùng loại ảnh (AMI với AMI): luật tỉ số KHÔNG hơn luật chỉ dùng mức JPEG (−0,002 dB). Đúng như
+      dự đoán: trong một bộ, mức JPEG đã đủ.
+    - Hiệu chỉnh trên ảnh tự nhiên (DIV2K), thử trên ảnh tai: luật chỉ dùng JPEG chọn sai (dùng mô hình ở JPEG 75 và 85),
+      luật tỉ số hơn nó +0,099 [0,091; 0,105] dB trên AMI, +0,065 trên AWEx, +0,034 trên EarVN1.0 (đều có ý nghĩa; trên AMI
+      lấy lại khoảng 83% phần mà chọn đúng tuyệt đối lấy được). Chiều ngược lại (AMI sang DIV2K): +0,110. Lặp lại với RRDB
+      công bố: cùng kết quả.
+    - Hiệu chỉnh trên cả hai loại: lẫn lộn (hơn trên DIV2K và EarVN1.0, kém 0,017 dB trên AWEx).
+    - Mức lợi tuyệt đối nhỏ (0,03 đến 0,2 dB tính trên mọi mức nén), và không có ý nghĩa nếu đã có mô hình học dải JPEG.
+  - [x] 04/11 Người dùng đồng ý: đã thêm đoạn "Estimating the ratio without ground truth" ở mục 4.3 (8 macro `Sel*`
+    sinh từ `results/selector/comparisons_span_ch48.json`; có kiểm tự động). Không thành đóng góp riêng. Ghi chú cũ: Quyết định (người dùng): đưa vào bài thành một đoạn ngắn ở mục 4.3 (bằng chứng tỉ số có sức dự đoán ngoài miền
+    hiệu chỉnh) hay chỉ một câu ở phần thảo luận, hay bỏ. Đề xuất của Claude: một đoạn ngắn ở 4.3, không thành đóng góp riêng.
 - [ ] **K. Ý để dành, CHƯA duyệt, không làm trước khi phản biện thật yêu cầu** (ghi ngày 08/10 để nhớ):
   - **Tách hai điều kiện của phần nhận dạng.** Không huấn luyện lại bộ nhận dạng trên AWEx (gallery trung vị 2 ảnh mỗi người
     nên khoảng trống khó xuất hiện; chỉ thử được một chiều). Cách rẻ hơn, chỉ chấm: trên EarVN1.0, thu nhỏ ảnh lớn của người

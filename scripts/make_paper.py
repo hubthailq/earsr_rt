@@ -1038,6 +1038,32 @@ def review(res: Path, out: Path) -> None:
     write(out / "tab_review.tex", "\n".join(rows) + "\n")
 
 
+def selector(res: Path) -> None:
+    """Luật chọn lúc chạy giữa bicubic và SPAN công bố (scripts/analyze_selector.py; TODO.md, việc N)."""
+    why = "selector"   # chưa chạy scripts/analyze_selector.py
+    f = res / "selector" / "comparisons_span_ch48.json"
+    k = json.loads(f.read_text()) if f.exists() else None
+    if k is None:
+        for n_ in ("SelRhoMin", "SelRhoMax", "SelCrossMin", "SelCrossMax", "SelSame", "SelBack", "SelGainMax"):
+            put(n_, None, why)
+        return
+    rho = [v["rhat_vs_ratio"] for v in k["corr"].values()]
+    put("SelRhoMin", num(min(rho)))
+    put("SelRhoMax", num(max(rho)))
+    sc = k["scenarios"]
+    cross = [sc["DIV2K"]["comparisons"][ds]["ratio-jpeg"] for ds in ("AMI", "EarVN1.0", "AWEx")]
+    if not all(c["lo"] > 0 for c in cross):
+        print("CHÚ Ý: luật tỉ số không còn hơn luật mức JPEG có ý nghĩa trên mọi bộ ảnh tai; sửa đoạn ở mục 4.3")
+    put("SelCrossMin", num(min(c["point"] for c in cross)))
+    put("SelCrossMax", num(max(c["point"] for c in cross)))
+    e = sc["AMI"]["comparisons"]["AMI"]["ratio-jpeg"]
+    put("SelSame", f"{num(e['point'], 3, True)} [{num(e['lo'], 3)}, {num(e['hi'], 3)}]")
+    e = sc["AMI"]["comparisons"]["DIV2K"]["ratio-jpeg"]
+    put("SelBack", num(e["point"]))
+    put("SelGainMax", num(max(c["ratio-model"]["point"] for s_ in sc.values() for c in s_["comparisons"].values())))
+    put("SelLevelsDiv", ", ".join(str(q) for q in sc["DIV2K"]["jpeg_levels_model"] if q < 93))
+
+
 # ------------------------------------------------------------------ hình
 def figures(pub: dict, tr: dict, fig: Path) -> None:
     import matplotlib
@@ -1159,6 +1185,7 @@ def main(argv=None) -> None:
     error_ratio(res, out, fig)
     headroom(res)
     review(res, out)
+    selector(res)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")
