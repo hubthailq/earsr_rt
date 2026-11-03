@@ -3,6 +3,12 @@
 
   .venv-coreml/bin/python scripts/export_coreml.py                       # các mốc mặc định, trọng số công bố
   .venv-coreml/bin/python scripts/export_coreml.py --runs runs/N2_span-zero+xearvn_pub_rand_x4_hrall_est_f2
+  .venv-coreml/bin/python scripts/export_coreml.py --models fbcnn_span_ch48 fbcnn_bicubic   # khử nén rồi phóng
+
+Với --precision fp32, tên file và tên trong results/coreml_export.json mang hậu tố _fp32. FBCNN cần FP32: ở FP16 đầu ra
+lệch xa PyTorch (PSNR giữa hai đầu ra khoảng 30 dB, so với trên 50 dB ở các mô hình khác).
+Tên trong ``CHAINS`` của kho mô hình (khử nén rồi phóng) được xuất thành một mô hình Core ML duy nhất, hai mạng nối nhau,
+không lượng tử hóa ở giữa (``earsr.models.registry.Chain``).
 
 Ảnh vào cố định 68×48 (cao × rộng), lô 1: cỡ ảnh vào lớn nhất của bài ở ×4 (cạnh ngắn 48 px). Mô hình được gộp nhánh
 (dạng deploy) trước khi xuất. Sau khi xuất, đầu ra Core ML được so với PyTorch trên cùng một ảnh, ngay trên máy Mac.
@@ -23,7 +29,7 @@ import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
 from earsr.eval.complexity import count_params  # noqa: E402
-from earsr.models.registry import SPECS, build_model  # noqa: E402
+from earsr.models.registry import CHAINS, SPECS, build_chain, build_model  # noqa: E402
 
 INPUT_HW = (68, 48)
 DEFAULT = ["span_ch48", "disp26", "edsr_baseline", "swinir_light", "rrdb_psnr", "bsrgan"]
@@ -79,13 +85,16 @@ def main(argv=None) -> None:
     ap.add_argument("--target", default="iOS17", help="phiên bản iOS tối thiểu (tên trong coremltools.target)")
     a = ap.parse_args(argv)
     out, index = Path(a.out), []
-    jobs = [(n, "zoo", (lambda n=n: build_model(n))) for n in a.models if SPECS[n].scale == 4]
+    jobs = [(n, "chain", (lambda n=n: build_chain(n))) if n in CHAINS else (n, "zoo", (lambda n=n: build_model(n)))
+            for n in a.models if n in CHAINS or SPECS[n].scale == 4]
     for rd in a.runs:
         from earsr.train.finetune import load_run_model
 
         cfg = json.loads((Path(rd) / "config.json").read_text())
         jobs.append((cfg["run_id"].replace("+", "p"), "trained", (lambda rd=rd: load_run_model(rd)[0])))
+    sfx = "" if a.precision == "fp16" else f"_{a.precision}"     # bản FP32 mang hậu tố, không đè bản FP16 đã đo
     for name, kind, make in jobs:
+        name = name + sfx
         try:
             info = export(make(), out / f"{name}.mlpackage", a.precision, a.target)
         except Exception as e:   # toán tử không chuyển được: ghi lại, không dừng cả lượt

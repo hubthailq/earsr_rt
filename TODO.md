@@ -152,11 +152,19 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   mệnh đề và sửa bốn cụm khác, không bỏ ý nào. Tóm tắt nay 248 từ (đếm từ `abstract.tex` sau khi thay macro).
 - [ ] **L. Chưa đo trên điện thoại** (ghi ngày 08/10; iPhone 12 Pro Max, Xcode 26.3, Core ML FP16, ảnh vào 48×68, đo CPU và
   mọi bộ xử lý như `results/latency_ios.csv`). Đã đo 6 mô hình: SPAN, DISP, EDSR-baseline, SwinIR-light, RRDB, BSRGAN.
-  - [ ] **L1. FBCNN rồi SPAN công bố (`fbcnn_span_ch48`)**: CHƯA ĐO. Đây là số còn thiếu quan trọng nhất, vì bài đang nói
+  - [x] 04/11 **L1 xong, đã vào bài (mục 6.6).** FP32 trên iPhone 12 Pro Max: FBCNN rồi SPAN 93,59 ms CPU, 57,81 ms mọi bộ
+    xử lý (280 trên 284 phép tính chạy trên GPU, không phép nào trên Neural Engine): vượt 33 ms ở cả hai. SPAN FP32: 10,33 ms
+    CPU, 19,43 ms mọi bộ xử lý (GPU chậm hơn CPU ở mô hình nhỏ này). Số ở `results/latency_ios.csv`, ghi chú FP32.
+    Lập luận real-time của bài nay có số: chuỗi khử nén rồi phóng không đạt ngưỡng trên điện thoại này.
+  - [x] **L1. FBCNN rồi SPAN công bố (`fbcnn_span_ch48`)**: người dùng duyệt 04/11. Mã xong 04/11: `export_coreml.py` xuất
+    được tên trong `CHAINS`. FBCNN KHÔNG chuyển đúng sang FP16 (đầu ra lệch, PSNR giữa Core ML và PyTorch 30,0 dB; bản FP32
+    khớp, 120 dB), nên đo bằng FP32: `deploy_ios/models/fbcnn_span_ch48_fp32.mlpackage` (276 MB) và, để so cùng điều kiện,
+    `span_ch48_fp32.mlpackage`. Bốn dòng trống đã thêm vào `results/latency_ios.csv`. Còn: bạn đo bằng Xcode.
+    Ghi chú cũ: CHƯA ĐO. Đây là số còn thiếu quan trọng nhất, vì bài đang nói
     chuỗi này "đắt hơn" chỉ dựa trên GPU máy bàn (3,87 ms, vẫn dưới 33 ms). Việc phải làm trước: `scripts/export_coreml.py`
     hiện chỉ xuất mô hình trong `SPECS`; cần thêm nhánh cho tên trong `CHAINS` (dùng `build_chain`) [Claude]. Sau đó bạn xuất
     bằng `.venv-coreml/bin/python`, đo bằng Xcode, chụp hai màn hình (CPU Only và All) như lần trước.
-  - [ ] **L2. FBCNN rồi bicubic (`fbcnn_bicubic`)**: chưa đo. Ít quan trọng hơn; đo cùng lượt với L1 nếu tiện.
+  - [ ] **L2. FBCNN rồi bicubic (`fbcnn_bicubic`)**: không xuất được (coremltools chưa có phép `upsample_bicubic2d`); bỏ, không cần cho lập luận.
   - **BSRNet và Real-ESRNet**: không cần đo riêng. Cùng kiến trúc RRDB đã đo (107,91 ms CPU; 15,53 ms mọi bộ xử lý); bài
     phải ghi rõ là số của kiến trúc, không phải của từng bộ trọng số.
   - **RRDB tinh chỉnh (việc J2b)**: không cần đo riêng, cùng kiến trúc RRDB.

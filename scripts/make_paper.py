@@ -879,10 +879,13 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
     sw = d[(d.name == "swinir_light") & (d.compute_units == "all")] if len(d) and "ops_cpu" in d.columns else []
     put("PhoneSwinOpsCpu", int(sw.ops_cpu.iloc[0]) if len(sw) else None, why)
     put("PhoneSwinOps", int(sw.ops_cpu.iloc[0] + sw.ops_gpu.iloc[0] + sw.ops_ne.iloc[0]) if len(sw) else None, why)
-    put("PhoneNModels", len({k[0] for k in v}))
+    put("PhoneNModels", len({k[0] for k in v if not k[0].endswith("_fp32")}))   # bản FP32: chỉ để so với FBCNN (mục 6.6)
+    for name, tag in (("span_ch48_fp32", "SpanF"), ("fbcnn_span_ch48_fp32", "Fb")):
+        for cu, t2 in (("cpu", "Cpu"), ("all", "All")):
+            put(f"LatPhone{tag}{t2}", num(v[(name, cu)], 1) if (name, cu) in v else None, why)
     ex = res / "coreml_export.json"   # scripts/export_coreml.py: phép so đầu ra Core ML với PyTorch
     ce = {x["name"]: x for x in json.loads(ex.read_text())} if ex.exists() else {}
-    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp")):
+    for name, tag in (("span_ch48", "Span"), ("disp26", "Disp"), ("fbcnn_span_ch48", "FbHalf")):
         put("CoremlPsnr" + tag, num(ce[name]["psnr_vs_torch_db"], 1) if name in ce and "psnr_vs_torch_db" in ce[name] else None, why)
     for cu, t2 in (("cpu", "Cpu"), ("all", "All")):   # BSRGAN chậm hơn SPAN bao nhiêu lần trên điện thoại
         ok = ("span_ch48", cu) in v and ("bsrgan", cu) in v

@@ -33,3 +33,7 @@ dscf26,cpu,,,,,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 dscf26,all,,,,,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 errn26,cpu,,,,,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
 errn26,all,,,,,,,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,,
+span_ch48_fp32,cpu,10.33,27.73,103.91,63,0,0,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-11-04,FP32 (FBCNN không chuyển đúng sang FP16); số đọc từ ảnh chụp màn hình báo cáo Performance
+span_ch48_fp32,all,19.43,34.69,110.66,3,60,0,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-11-04,FP32 (FBCNN không chuyển đúng sang FP16); số đọc từ ảnh chụp màn hình báo cáo Performance
+fbcnn_span_ch48_fp32,cpu,93.59,68.19,274.18,284,0,0,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-11-04,FP32 (FBCNN không chuyển đúng sang FP16); số đọc từ ảnh chụp màn hình báo cáo Performance
+fbcnn_span_ch48_fp32,all,57.81,200.38,277.17,4,280,0,iPhone 12 Pro Max,A14 Bionic,18.7.8,26.3,2026-11-04,FP32 (FBCNN không chuyển đúng sang FP16); số đọc từ ảnh chụp màn hình báo cáo Performance

@@ -321,5 +321,67 @@
   ],
   "name": "errn26",
   "kind": "zoo"
+ },
+ {
+  "path": "deploy_ios/models/fbcnn_span_ch48.mlpackage",
+  "precision": "fp16",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 72348084,
+  "checked": true,
+  "max_abs_diff": 0.6001915335655212,
+  "psnr_vs_torch_db": 29.597990526892495,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "fbcnn_span_ch48",
+  "kind": "chain"
+ },
+ {
+  "error": "NotImplementedError: PyTorch convert function for op 'upsample_bicubic2d' not implemented.",
+  "name": "fbcnn_bicubic",
+  "kind": "chain"
+ },
+ {
+  "path": "deploy_ios/models/fbcnn_span_ch48_fp32.mlpackage",
+  "precision": "fp32",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 72348084,
+  "checked": true,
+  "max_abs_diff": 2.562999725341797e-06,
+  "psnr_vs_torch_db": 120.0,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "fbcnn_span_ch48_fp32",
+  "kind": "chain"
+ },
+ {
+  "path": "deploy_ios/models/span_ch48_fp32.mlpackage",
+  "precision": "fp32",
+  "target": "iOS17",
+  "input_h": 68,
+  "input_w": 48,
+  "params": 426288,
+  "checked": true,
+  "max_abs_diff": 2.0265579223632812e-06,
+  "psnr_vs_torch_db": 120.0,
+  "out_shape": [
+   1,
+   3,
+   272,
+   192
+  ],
+  "name": "span_ch48_fp32",
+  "kind": "zoo"
  }
 ]

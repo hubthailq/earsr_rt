@@ -49,6 +49,16 @@ cả 16 mô hình (bảng 1 của bài đã có độ trễ GPU cho cả 16). N�
    biết các phép tính chạy trên đâu (Neural Engine, GPU hay CPU).
 7. Đợi khoảng một phút cho máy nguội, rồi sang mô hình kế tiếp.
 
+## 3b. Khử nén rồi phóng (thêm ngày 04/11/2026)
+
+```bash
+.venv-coreml/bin/python scripts/export_coreml.py --models fbcnn_span_ch48 span_ch48 --precision fp32
+```
+
+FBCNN không chuyển đúng sang FP16, nên chuỗi này được đo ở FP32 (`fbcnn_span_ch48_fp32.mlpackage`, 276 MB); SPAN được xuất
+thêm ở FP32 (`span_ch48_fp32.mlpackage`) để so cùng độ chính xác. Đo cả hai như mục 3, CPU Only và All. Mô hình lớn: chờ
+Xcode biên dịch xong rồi mới chạy, và để máy nguội giữa hai lần đo.
+
 ## 4. Ghi số vào results/latency_ios.csv
 
 File đã có sẵn các dòng; điền cột `median_ms` (và `load_ms`, `note` nếu có). Dòng nào không đo thì để trống. Ví dụ:
