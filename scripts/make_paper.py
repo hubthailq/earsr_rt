@@ -47,6 +47,9 @@ TODO: list[str] = []
 
 
 # ------------------------------------------------------------------ định dạng
+WORDS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"}
+
+
 def num(x, nd: int = 2, sign: bool = False) -> str | None:
     if x is None or not np.isfinite(x):
         return None
@@ -175,7 +178,8 @@ def published(res: Path, out: Path) -> dict:
     put("BicQLowPsnr", num(bic["bicjpeg75"].psnr_y))
     put("BicQLowLpips", num(bic["bicjpeg75"].lpips, 3))
     put("SpanQLowLpips", num(main["bicjpeg75"].lpips["span_ch48"], 3))
-    put("LpipsQLowBetter", int((main["bicjpeg75"].lpips < bic["bicjpeg75"].lpips).sum()))
+    nb = int((main["bicjpeg75"].lpips < bic["bicjpeg75"].lpips).sum())
+    put("LpipsQLowBetter", f"all {len(main['bicjpeg75'])}" if nb == len(main["bicjpeg75"]) else f"{nb} of the {len(main['bicjpeg75'])}")
     g = cell(q, 144, "bicjpeg75", GAN)
     put("BsrganQLowGap", num(-g.gain["bsrgan"]))
     put("BsrganQLowLpips", num(g.lpips["bsrgan"], 3))
@@ -464,6 +468,8 @@ def recognition(res: Path, out: Path) -> None:
         r = t.loc[(arm_, base)]
         return f"{num(r[col], 1, True)} [{num(r[col + '_lo'], 1)}, {num(r[col + '_hi'], 1)}]"
 
+    g1, g2 = r1("resnet18", "bsrgan (published)"), r1("resnet18", "realesrgan (published)")
+    put("RecGanPair", (f"both reach {g1}\\%" if g1 == g2 else f"reach {g1}\\% and {g2}\\%") if g1 and g2 else None, why)
     names = (("ref_large", "Ref"), ("direct", "Direct"), ("bicubic", "Bic"), (PUB, "Pub"), ("span/bic", "Bict"),
              ("span/est", "Est"), ("span/generic", "Gen"), ("span/bicjpeg75", "Jpg"), ("span/jpegmix", "Mix"),
              ("span/jpegu", "Uni"), ("bsrgan (published)", "Bsrgan"), ("realesrgan (published)", "Realesrgan"),
@@ -879,7 +885,8 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
     sw = d[(d.name == "swinir_light") & (d.compute_units == "all")] if len(d) and "ops_cpu" in d.columns else []
     put("PhoneSwinOpsCpu", int(sw.ops_cpu.iloc[0]) if len(sw) else None, why)
     put("PhoneSwinOps", int(sw.ops_cpu.iloc[0] + sw.ops_gpu.iloc[0] + sw.ops_ne.iloc[0]) if len(sw) else None, why)
-    put("PhoneNModels", len({k[0] for k in v if not k[0].endswith("_fp32")}))   # bản FP32: chỉ để so với FBCNN (mục 6.6)
+    nm = len({k[0] for k in v if not k[0].endswith("_fp32")})
+    put("PhoneNModels", WORDS.get(nm, str(nm)))   # bản FP32: chỉ để so với FBCNN (mục 6.6)
     for name, tag in (("span_ch48_fp32", "SpanF"), ("fbcnn_span_ch48_fp32", "Fb")):
         for cu, t2 in (("cpu", "Cpu"), ("all", "All")):
             put(f"LatPhone{tag}{t2}", num(v[(name, cu)], 1) if (name, cu) in v else None, why)
@@ -949,12 +956,12 @@ def review(res: Path, out: Path) -> None:
     span_of("RevBsrVsBic", BSR, "bicubic", ("ami",) + wild, REV_COMP, sign=True)
     span_of("RevBsrVsEst", BSR, EST, ("ami",) + wild, REV_COMP, magnitude=True)
     if P["ami"] is not None and "rrdb/est" in set(P["ami"].arm):       # RRDB tinh chỉnh với công thức của SPAN nhánh est
-        e = span_of("RevRrdbVsEst", "rrdb/est", EST, ("ami",) + wild, REV_COMP, sign=True)
+        e = span_of("RevRrdbVsEst", "rrdb/est", EST, ("ami",) + wild, REV_COMP)
         span_of("RevRrdbVsEstClean", "rrdb/est", EST, ("ami",) + wild, ("bic",), sign=True)
         # cùng ba ô như DegEff (AMI 36 px, EarVN1.0 và AWEx 24 px), ảnh vào JPEG 75: tác dụng của kiến trúc khi cùng
         # công thức huấn luyện, và tác dụng của công thức trên từng thân (so với trọng số công bố của chính thân đó)
         q75 = [("ami", 144), ("earvn", 96), ("awex", 96)]
-        rng_put("RevRrdbVsEstQ", [diff(n_, "rrdb/est", EST, t, "bicjpeg75") for n_, t in q75], sign=True)
+        rng_put("RevRrdbVsEstQ", [diff(n_, "rrdb/est", EST, t, "bicjpeg75") for n_, t in q75])
         rng_put("RevRrdbGainQ", [diff(n_, "rrdb/est", "rrdb_psnr (published)", t, "bicjpeg75") for n_, t in q75])
         rng_put("RevSpanGainQ", [diff(n_, EST, PUB, t, "bicjpeg75") for n_, t in q75])
         if e and not all(x is not None and x.lo > 0 for x in e):
@@ -1061,7 +1068,8 @@ def selector(res: Path) -> None:
     e = sc["AMI"]["comparisons"]["DIV2K"]["ratio-jpeg"]
     put("SelBack", num(e["point"]))
     put("SelGainMax", num(max(c["ratio-model"]["point"] for s_ in sc.values() for c in s_["comparisons"].values())))
-    put("SelLevelsDiv", ", ".join(str(q) for q in sc["DIV2K"]["jpeg_levels_model"] if q < 93))
+    lv = [str(q) for q in sc["DIV2K"]["jpeg_levels_model"] if q < 93]
+    put("SelLevelsDiv", ", ".join(lv[:-1]) + " and " + lv[-1] if len(lv) > 1 else (lv[0] if lv else "none"))
 
 
 # ------------------------------------------------------------------ hình

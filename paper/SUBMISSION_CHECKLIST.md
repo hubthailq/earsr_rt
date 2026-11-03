@@ -4,13 +4,13 @@ Cập nhật 08/10/2026. Bản thảo `main.pdf` không còn ô trống; các m�
 
 ## Phải bổ sung vào bài hoặc hệ thống nộp bài
 
-- [ ] **Đơn vị công tác:** `main.tex` đang ghi cả hai tác giả thuộc "Ho Chi Minh City Open University". Kiểm đơn vị của Thai Le Quang
+- [x] 05/11 Thai Le Quang: (a) Ho Chi Minh City Open University, (b) Ho Chi Minh University of Banking; Vinh Truong Hoang: (a). **Đơn vị công tác:** `main.tex` đang ghi cả hai tác giả thuộc "Ho Chi Minh City Open University". Kiểm đơn vị của Thai Le Quang
       và thêm tên khoa nếu tạp chí yêu cầu.
-- [ ] **Declaration of competing interest** (Elsevier bắt buộc). Chưa có trong bài vì chỉ tác giả mới tuyên bố được. Câu mẫu của
+- [x] 05/11 Đã điền vào `main.tex` theo bản người dùng gửi. **Declaration of competing interest** (Elsevier bắt buộc). Chưa có trong bài vì chỉ tác giả mới tuyên bố được. Câu mẫu của
       Elsevier khi không có xung đột: "The authors declare that they have no known competing financial interests or personal
       relationships that could have appeared to influence the work reported in this paper."
-- [ ] **CRediT authorship contribution statement:** vai trò của từng tác giả.
-- [ ] **Funding / Acknowledgements:** nguồn tài trợ, hoặc câu "This research did not receive any specific grant ...".
+- [x] 05/11 **CRediT authorship contribution statement:** đã điền; đã thêm "Formal analysis" cho Thai Le Quang và "Resources" cho Vinh Truong Hoang (tác giả bộ EarVN1.0), người dùng cần xác nhận.
+- [x] 05/11 **Funding:** đã điền câu không có tài trợ. Acknowledgements: đã điền 05/11 theo câu người dùng gửi (sửa chính tả "instituonal"). Ghi chú cũ: nguồn tài trợ, hoặc câu "This research did not receive any specific grant ...".
 - [ ] **Highlights:** đã soạn ở `highlights.txt` (5 dòng, mỗi dòng dưới 85 ký tự); đọc lại.
 - [ ] **Nơi công bố mã và dữ liệu:** bài viết "will be made publicly available upon publication". Nếu muốn có đường dẫn thì thêm.
 

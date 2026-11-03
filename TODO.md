@@ -150,6 +150,15 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   upscaling gives a comparable PSNR with 170 times the parameters, and a large published model trained with synthetic
   degradations gives a higher rank-1 rate with one of two recognisers." Để giữ dưới 250 từ, rút gọn câu về AWEx thành một
   mệnh đề và sửa bốn cụm khác, không bỏ ý nào. Tóm tắt nay 248 từ (đếm từ `abstract.tex` sau khi thay macro).
+- [x] 05/11 **G8. Rà văn phong (người dùng hỏi có dấu hiệu máy viết không):** bỏ hai trong ba câu mở "It is known that"
+  (giữ ở mở bài); đổi khuôn "For the first/second/third question" và "The first/second is"; bớt "therefore" (12 còn 5) và
+  "in our experiments"; xóa chú thích tiếng Việt và lệnh `\draftnote` trong `main.tex` (giữ `\todo` vì `make_paper.py` dùng
+  khi thiếu số). Sửa nội dung một câu ở 6.7 đã sai sau khi có RRDB tinh chỉnh ("advantage of the small network ... lies
+  in fidelity"). Gỡ một chỗ ghi tên trợ lý trong `paper/SUBMISSION_CHECKLIST.md`.
+- [x] 05/11 **G9. Đọc soát câu chữ toàn bài** (người dùng yêu cầu: tránh câu cụt, lủng củng): sửa khoảng 25 câu ở tóm tắt,
+  mở bài, tài liệu liên quan, benchmark, mục 4, 5, 6, thảo luận. Sinh chữ thay số khi cần ("all 16", "six", "both reach
+  27.7%", "75 and 85"); bỏ dấu + ở các khoảng luôn dương. Thêm tài liệu Luo, Mu, Zhang, CCBR 2014 (đã kiểm trên Crossref),
+  vì câu "the one study of SR for ear images that we found" không còn đúng. Tóm tắt 248 từ.
 - [ ] **L. Chưa đo trên điện thoại** (ghi ngày 08/10; iPhone 12 Pro Max, Xcode 26.3, Core ML FP16, ảnh vào 48×68, đo CPU và
   mọi bộ xử lý như `results/latency_ios.csv`). Đã đo 6 mô hình: SPAN, DISP, EDSR-baseline, SwinIR-light, RRDB, BSRGAN.
   - [x] 04/11 **L1 xong, đã vào bài (mục 6.6).** FP32 trên iPhone 12 Pro Max: FBCNN rồi SPAN 93,59 ms CPU, 57,81 ms mọi bộ
@@ -225,6 +234,11 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     là ảnh tổng hợp. Ghi chú thêm: SPAN công bố không đổi hạng 1 trên AWEx dù ảnh ở đó không thấy khối JPEG, nên khoảng trống
     gần bằng không có thể là lý do chính; đây là phỏng đoán, phép thử trên sẽ kiểm được.
   - **Chuẩn nén khác JPEG** (WebP, HEIC, khung hình video): hiện chỉ trả lời bằng phần giới hạn.
+  - **Ý tăng novelty từ khảo sát ngày 04/11 (chưa duyệt; khảo sát bằng tìm kiếm web, không có hệ thống):**
+    (a) SPAN điều kiện theo mức JPEG đọc từ file (ý từ FBCNN, DASR); (b) loss giữ danh tính cho SR thời gian thực của tai
+    (ý từ SR mặt: SICNN, MERL 2019); (c) gộp điểm nhận dạng của nhiều cách phóng theo mức JPEG (ý từ mống mắt). (a) và (b) cần
+    huấn luyện mới; (c) chỉ phân tích. Bài SR cho tai đã kiểm trên Crossref: Markićević, Peer, Emeršič, IWSSIP 2023 (đã trích);
+    Luo, Mu, Zhang, CCBR 2014, LNCS, doi 10.1007/978-3-319-12484-1_50 (SR phân biệt cho nhận dạng tai, chưa trích).
   - **So với phương pháp phóng ảnh dành riêng cho tai hoặc mặt:** hiện chỉ trả lời bằng phần tài liệu liên quan.
   - Các mục còn lại ở `docs/story-imavis.md` mục 5 (thêm seed, thứ tự suy giảm, hệ số ×2, bộ dữ liệu thứ ba).
 - [ ] **Đang chờ: người dùng đọc soát `paper/main.pdf`**, ổn thì gửi thầy; sau khi thầy đồng ý mới dọn mã nguồn (việc I).
