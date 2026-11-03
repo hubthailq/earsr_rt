@@ -893,6 +893,135 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
     put("PhoneOs", first["ios"] if first is not None else "18.7.8")
 
 
+# ------------------------------------------------------------------ mốc thêm: khử nén rồi phóng, RRDB học có nén
+REV_ROWS = [("bicubic", "Bicubic", None), (PUB, "SPAN-S, published", "span_ch48"),
+            ("rrdb_psnr (published)", "RRDB, published", "rrdb_psnr"), ("bsrnet (published)", "BSRNet", "bsrnet"),
+            ("realesrnet (published)", "Real-ESRNet", None),
+            ("fbcnn_bicubic (published)", "FBCNN, then bicubic", "fbcnn_bicubic"),
+            ("fbcnn_span_ch48 (published)", "FBCNN, then SPAN-S published", "fbcnn_span_ch48"),
+            ("span/est", "SPAN-S, measured (ours)", "span_ch48"), ("rrdb/est", "RRDB, measured", "rrdb_psnr")]
+REV_SETS = (("ami", "rev", (96, 144, 192)), ("earvn", "rev_earvn", (96,)), ("awex", "rev_awex", (96, 144)))
+REV_COMP = ("bicjpeg93", "bicjpeg85", "bicjpeg75", "est")        # các kiểu ảnh vào có nén
+
+
+def review(res: Path, out: Path) -> None:
+    """Mốc cho vòng phản biện (scripts/run_review.sh): FBCNN rồi phóng; BSRNet, Real-ESRNet; RRDB tinh chỉnh (nếu đã có).
+
+    Mọi phép so ghép cặp tính trên các ảnh mà cả hai phương pháp đều có (mô hình tự huấn luyện trên AMI chỉ có ảnh của
+    người test các fold đã chạy)."""
+    why = "review"   # chưa có kết quả của scripts/run_review.sh
+    P = {}
+    for name, sub, _ in REV_SETS:
+        d = load_dir(res / sub)
+        P[name] = None if d is None else d.groupby(["arm", "tier", "degrade", "key", "subject"], as_index=False)[
+            [c for c in METRICS if c in d.columns]].mean()
+    have = all(v is not None for v in P.values())
+
+    def cellp(name, arm_, tier, kind):
+        p_ = P[name]
+        return p_[(p_.arm == arm_) & (p_.tier == tier) & (p_.degrade == kind)].set_index("key") if p_ is not None else None
+
+    def diff(name, a_, b_, tier, kind):
+        A, B = cellp(name, a_, tier, kind), cellp(name, b_, tier, kind)
+        if A is None or A.empty or B.empty:
+            return None
+        k = A.index.intersection(B.index)
+        return paired_diff(A.loc[k, "psnr_y"].to_numpy(), B.loc[k, "psnr_y"].to_numpy(), A.loc[k, "subject"].to_numpy(),
+                           n_boot=2000) if len(k) else None
+
+    def span_of(prefix, a_, b_, sets, kinds, **kw):
+        es = [diff(n_, a_, b_, t, k) for n_, _, tiers in REV_SETS if n_ in sets for t in tiers for k in kinds
+              if P[n_] is not None and k in set(P[n_].degrade)] if have else []
+        rng_put(prefix, es, why=why, **kw)
+        return es
+
+    FB, BSR, RESR, EST = "fbcnn_span_ch48 (published)", "bsrnet (published)", "realesrnet (published)", "span/est"
+    wild = ("earvn", "awex")
+    span_of("RevFbVsEstAmi", FB, EST, ("ami",), REV_COMP, sign=True)                   # có nén, AMI
+    span_of("RevFbVsEstWildJpeg", FB, EST, wild, ("bicjpeg93", "bicjpeg75"), sign=True)  # chỉ nén JPEG, ngoài thực tế
+    span_of("RevFbVsEstWildEst", FB, EST, wild, ("est",), sign=True)                   # suy giảm đo được, ngoài thực tế
+    span_of("RevFbVsEstCleanWild", FB, EST, wild, ("bic",), sign=True)
+    span_of("RevFbVsEstCleanAmi", FB, EST, ("ami",), ("bic",), sign=True)
+    span_of("RevFbVsBic", FB, "bicubic", ("ami",) + wild, REV_COMP, sign=True)
+    span_of("RevBsrVsBic", BSR, "bicubic", ("ami",) + wild, REV_COMP, sign=True)
+    span_of("RevBsrVsEst", BSR, EST, ("ami",) + wild, REV_COMP, magnitude=True)
+    e = span_of("RevResrVsBic", RESR, "bicubic", ("ami",) + wild, REV_COMP, magnitude=True)
+    if e and not all(x is not None and x.point < 0 for x in e):
+        print("CHÚ Ý: Real-ESRNet không còn kém bicubic ở mọi ô có nén; sửa câu trong experiments.tex (mục các mốc thêm)")
+
+    # nhận dạng trên ảnh nhỏ thật của EarVN1.0 (hai mạng nhận dạng) và AWEx
+    S, Pd = {}, {}
+    for tag in ("resnet18", "resnet50", "awex_resnet18", "awex_resnet50"):
+        f = res / "recog" / f"rev_{tag}_summary" / "summary.csv"
+        if f.exists():
+            S[tag] = pd.read_csv(f).set_index("arm")
+            Pd[tag] = pd.read_csv(f.with_name("paired.csv")).set_index(["arm", "minus"])
+
+    def r1(tag, arm_):
+        return num(S[tag].loc[arm_, "rank1"], 1) if tag in S and arm_ in S[tag].index else None
+
+    def gap(tag, arm_, base):
+        if tag not in Pd or (arm_, base) not in Pd[tag].index:
+            return None
+        r = Pd[tag].loc[(arm_, base)]
+        return f"{num(r['d_rank1'], 1, True)} [{num(r['d_rank1_lo'], 1)}, {num(r['d_rank1_hi'], 1)}]"
+
+    for arm_, nm in ((FB, "Fb"), ("fbcnn_bicubic (published)", "Fbb"), (BSR, "Bsr"), (RESR, "Resr"), (EST, "Est"),
+                     ("rrdb/est", "Rrdb")):
+        for tag, sfx in (("resnet18", ""), ("resnet50", "Rf")):
+            if arm_ == "rrdb/est" and not (tag in S and arm_ in S[tag].index):
+                continue                                  # RRDB tinh chỉnh: chỉ có macro khi đã có kết quả
+            put(f"RevRank{nm}{sfx}", r1(tag, arm_), why)
+            if arm_ != EST:
+                put(f"Rev{nm}VsEstRank{sfx}", gap(tag, arm_, EST), why)
+                put(f"Rev{nm}VsBicRank{sfx}", gap(tag, arm_, "bicubic"), why)
+    for arm_ in (BSR, RESR):                              # câu "both large models give a higher identification rate" (ResNet-50)
+        r = Pd["resnet50"].loc[(arm_, EST)] if "resnet50" in Pd and (arm_, EST) in Pd["resnet50"].index else None
+        if r is not None and not r["d_rank1_lo"] > 0:
+            print(f"CHÚ Ý: {arm_} không còn hơn SPAN nhánh est có ý nghĩa với ResNet-50; sửa câu trong experiments.tex")
+    sig = [(tag, a_) for tag in ("awex_resnet18", "awex_resnet50") if tag in Pd for (a_, m_), r in Pd[tag].iterrows()
+           if m_ == "bicubic" and a_ not in ("direct", "ref_large") and (r["d_rank1_lo"] > 0 or r["d_rank1_hi"] < 0)]
+    if sig:
+        print(f"CHÚ Ý: trên AWEx có phương pháp đổi hạng 1 có ý nghĩa so với bicubic: {sig}; sửa câu trong experiments.tex")
+
+    # chi phí: tham số và độ trễ trên GPU của máy chấm (cùng một lượt đo)
+    lat = pd.read_csv(res / "latency_review.csv").set_index("name") if (res / "latency_review.csv").is_file() else None
+
+    def cost(key, col):
+        return float(lat.loc[key, col]) if lat is not None and key in lat.index and pd.notna(lat.loc[key, col]) else None
+
+    fp, sp = cost("fbcnn_span_ch48", "params"), cost("span_ch48", "params")
+    fl, sl, bl = cost("fbcnn_span_ch48", "median_ms"), cost("span_ch48", "median_ms"), cost("bsrnet", "median_ms")
+    put("RevFbParams", num(fp / 1e6, 1) if fp else None, why)
+    put("RevFbParamsRatio", int(round(fp / sp)) if fp and sp else None, why)
+    put("RevFbLat", num(fl, 2) if fl else None, why)
+    put("RevSpanLat", num(sl, 2) if sl else None, why)
+    put("RevFbLatRatio", num(fl / sl, 1) if fl and sl else None, why)
+    put("RevBsrLat", num(bl, 1) if bl else None, why)
+    put("RevBsrLatRatio", int(round(bl / sl)) if bl and sl else None, why)
+    put("RevFbcnnParams", num((fp - sp) / 1e6, 1) if fp and sp else None, why)
+
+    rows = []
+    for arm_, label, key in REV_ROWS:
+        # RRDB tinh chỉnh chỉ vào bảng khi đã đủ fold như SPAN nhánh est (trung bình trên cùng tập ảnh của AMI)
+        if arm_ == "rrdb/est" and (not have or len(cellp("ami", arm_, 144, "bic")) != len(cellp("ami", EST, 144, "bic"))):
+            continue
+        par = cost(key, "params") if key else None
+        if arm_ == "realesrnet (published)":
+            par = cost("bsrnet", "params")               # cùng kiến trúc RRDB với BSRNet (số tham số đã kiểm khi nạp)
+        ms = cost(key, "median_ms") if key else (cost("bicubic", "median_ms") if arm_ == "bicubic" else None)
+        cells = [num(par / 1e6, 2) if par else "--", num(ms, 2) if ms else "--"]
+        for name, tier, kind in (("ami", 144, "bic"), ("ami", 144, "bicjpeg93"), ("ami", 144, "bicjpeg75"),
+                                 ("earvn", 96, "bicjpeg75"), ("awex", 96, "bicjpeg75")):
+            c = cellp(name, arm_, tier, kind) if have else None
+            cells.append(num(float(c.psnr_y.mean())) if c is not None and len(c) else "\\todo{--}")
+        cells += [r1("resnet18", arm_) or "\\todo{--}", r1("resnet50", arm_) or "\\todo{--}"]
+        rows.append(f"{label} & " + " & ".join(cells) + " \\\\")
+        if arm_ in ("rrdb_psnr (published)", "realesrnet (published)", "fbcnn_span_ch48 (published)"):
+            rows.append("\\midrule")
+    write(out / "tab_review.tex", "\n".join(rows) + "\n")
+
+
 # ------------------------------------------------------------------ hình
 def figures(pub: dict, tr: dict, fig: Path) -> None:
     import matplotlib
@@ -1013,6 +1142,7 @@ def main(argv=None) -> None:
     natural_control(res, out, pub["q"])
     error_ratio(res, out, fig)
     headroom(res)
+    review(res, out)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")

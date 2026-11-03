@@ -201,12 +201,17 @@ Hai vòng phản biện thử trên bản thảo hoàn chỉnh đều nêu cùng
 
 | Việc | Lỗ hổng nó đóng | Loại | Trạng thái |
 |---|---|---|---|
-| J1. FBCNN rồi bicubic, FBCNN rồi SPAN công bố, kèm độ trễ | "Sao không khử nén trước rồi mới phóng?" | Chỉ chấm | Mã xong, chờ chạy |
-| J2a. BSRNet, Real-ESRNet | "16 mô hình công bố đều học bằng bicubic; mạng lớn học có nén thì sao?" | Chỉ chấm | Mã xong, chờ chạy |
+| J1. FBCNN rồi bicubic, FBCNN rồi SPAN công bố, kèm độ trễ | "Sao không khử nén trước rồi mới phóng?" | Chỉ chấm | Xong 08/10, đã vào bài (mục 6.6) |
+| J2a. BSRNet, Real-ESRNet | "16 mô hình công bố đều học bằng bicubic; mạng lớn học có nén thì sao?" | Chỉ chấm | Xong 08/10, đã vào bài (mục 6.6) |
 | J2b. RRDB tinh chỉnh với công thức của SPAN nhánh est, 5 fold | Câu "suy giảm có tác dụng lớn hơn kiến trúc" thiếu đối chứng cùng điều kiện | 5 lần huấn luyện | Mã xong, chờ chạy |
 
 Quy tắc: mỗi việc một cấu hình chốt trước; kết quả nào cũng đưa vào bài; sau ba việc này danh sách đóng lại. Việc tách hai
 điều kiện của phần nhận dạng KHÔNG được duyệt (xem `TODO.md` mục 0, việc K). Lệnh chạy: `docs/RUNBOOK.md` mục 6.
+
+Kết quả J1 và J2a (số ở `TODO.md` việc J) đổi hai điều trong câu chuyện. Một: khử nén rồi phóng cho PSNR ngang mô hình của
+ta trên ảnh ngoài thực tế, nên phần huấn luyện là "cách rẻ nhất", không phải "cách tốt nhất". Hai: BSRNet có PSNR ngang
+bicubic nhưng nhận dạng cao bằng hoặc hơn ta, nên bài nói thẳng là không giành hạng nhất về nhận dạng, và ghi nhận PSNR với
+nhận dạng xếp hạng khác nhau. Phần lõi (16 mô hình học bằng bicubic, tỉ số sai số, đối chứng DIV2K) không đổi.
 
 ## 6. Rủi ro còn lại, nói thẳng
 

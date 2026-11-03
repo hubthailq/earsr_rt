@@ -106,14 +106,28 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     Phép thử nối dây trên 10 ảnh AMI ở 36 px, JPEG 75 (KHÔNG phải kết quả): bicubic 33,96; SPAN công bố 33,52; BSRNet 33,67;
     Real-ESRNet 32,49; FBCNN rồi bicubic 34,39; FBCNN rồi SPAN 34,72 dB. Chuỗi FBCNN rồi SPAN chậm hơn SPAN khoảng 6,5 lần
     trên CPU máy Mac (35 so với 5,5 ms).
-  - [ ] **[Bạn, máy Mac]** commit và push (lệnh ở cuối câu trả lời ngày 08/10).
-  - [ ] **[Bạn, labai217] Bước 1:** tải ba bộ trọng số mới, rồi `nohup bash scripts/run_review.sh > review.log 2>&1 &`
+  - [x] 08/10 **[Bạn, máy Mac]** commit và push (commit `8b91bbe`).
+  - [x] 08/10 **[Bạn, labai217] Bước 1** (commit `fb4e1b7`, đã pull về Mac)**:** tải ba bộ trọng số mới, rồi `nohup bash scripts/run_review.sh > review.log 2>&1 &`
     (J1 và J2a; chấm độ trung thực trên ba bộ, nhận dạng với ba mạng, độ trễ trên GPU). Xong thì commit `results/` và push.
     Lệnh đầy đủ: `docs/RUNBOOK.md` mục 6.
+  - [x] 08/10 **Kết quả J1 và J2a, đã đưa vào bài** (mục 6.6 mới "Compression removal before upscaling and large models
+    trained with compression", bảng 14 `tab_review.tex`, 52 macro `Rev*`; sửa câu ở mở bài, thảo luận, kết luận; gỡ câu giới
+    hạn "We did not compare with a pipeline..." và thay bằng kết quả). Bài thành 37 trang.
+    - FBCNN rồi SPAN công bố so với SPAN nhánh est, PSNR: AMI có nén −0,93 đến +0,16 dB; EarVN1.0 và AWEx chỉ nén JPEG
+      +0,09 đến +0,48; có nhiễu và mờ (est) −0,24 đến −0,10; ảnh sạch ngoài thực tế +0,81 đến +0,93. Hạng 1 trên EarVN1.0:
+      21,1% (ResNet-18) và 24,5% (ResNet-50), kém ta 3,9 [1,7; 6,9] và 2,6 [0,8; 4,5] điểm, hơn bicubic 7,9 và 6,9 điểm.
+      Chi phí: 72,3 triệu tham số (170 lần SPAN), 3,87 so với 0,57 ms trên RTX 3080. Chưa đo trên iPhone.
+    - BSRNet: PSNR trong khoảng −0,72 đến +0,76 dB so với bicubic khi có nén, kém ta 0,90 đến 2,32 dB. Hạng 1: 27,1% và
+      32,9%; so với ta +2,1 [−0,5; 5,2] (không có ý nghĩa) và +5,9 [2,6; 9,5] (có ý nghĩa). Real-ESRNet: PSNR kém bicubic ở mọi
+      ô có nén; hạng 1 25,0% và 30,5% (+0,0 và +3,4 [0,2; 7,0]). Cả hai: 39 lần tham số, 24 lần độ trễ.
+    - AWEx: không mốc mới nào đổi hạng 1 có ý nghĩa so với bicubic.
+    - Hệ quả cho câu chữ (đã viết): bài KHÔNG nói mô hình của ta cho nhận dạng cao nhất; nói nó có chi phí thấp nhất trong các
+      phương pháp cải thiện cả PSNR lẫn nhận dạng. PSNR và nhận dạng xếp hạng các phương pháp khác nhau (BSRNet).
+    - Chưa làm: đo FBCNN rồi SPAN trên iPhone (cần xuất Core ML và đo bằng Xcode; chỉ làm nếu người dùng muốn).
   - [ ] **[Bạn, labai217] Bước 2:** `bash scripts/make_rrdb_jobs.sh` rồi chạy hàng đợi (fold 2, 3, 4). Xem dòng
     "phép thử ảnh sáng" của ba lần chạy. Cả ba ỔN ĐỊNH thì `FINAL_RUN=1 FOLDS="1 5" bash scripts/make_rrdb_jobs.sh jobs/rrdb_final.txt`
     và chạy tiếp. Sau đó gọi lại `bash scripts/run_review.sh` (file đã có được bỏ qua), commit và push.
-  - [ ] **[Claude, máy Mac] Bước 3, sau khi pull kết quả:** đọc `results/rev_summary/summary.md`; thêm vào `make_paper.py`
+  - [ ] **[Claude, máy Mac] Bước 3 (phần J1, J2a xong 08/10; còn phần RRDB tinh chỉnh), sau khi pull kết quả:** đọc `results/rev_summary/summary.md`; thêm vào `make_paper.py`
     một bảng (các mốc mới cạnh bicubic, SPAN công bố, SPAN nhánh est: PSNR ở ảnh vào sạch, JPEG 93, 75, suy giảm ước lượng;
     hạng 1 trên EarVN1.0; tham số; độ trễ) và các macro; viết một mục con ở mục 6 và sửa các câu liên quan. Quy tắc câu chữ:
     - FBCNN rồi SPAN ngang hoặc hơn SPAN nhánh est: phần huấn luyện viết thành "lựa chọn rẻ nhất lúc chạy", bỏ ý "tốt nhất";
@@ -124,6 +138,53 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
       dụng lớn hơn kiến trúc" chỉ giữ nếu mức chênh nhỏ hơn tác dụng của suy giảm trên cùng thân. Gỡ câu "We did not train a
       larger network with compression" ở phần thảo luận và câu giới hạn về khử nén (thêm ở G4), thay bằng kết quả.
     - Sau đó đóng lại danh sách trong `docs/story-imavis.md`.
+- [x] 08/10 **G7. Tóm tắt có hai mốc mới** (góp ý phản biện thử, người dùng dán): thêm câu cuối "Compression removal before
+  upscaling gives a comparable PSNR with 170 times the parameters, and a large published model trained with synthetic
+  degradations gives a higher rank-1 rate with one of two recognisers." Để giữ dưới 250 từ, rút gọn câu về AWEx thành một
+  mệnh đề và sửa bốn cụm khác, không bỏ ý nào. Tóm tắt nay 248 từ (đếm từ `abstract.tex` sau khi thay macro).
+- [ ] **L. Chưa đo trên điện thoại** (ghi ngày 08/10; iPhone 12 Pro Max, Xcode 26.3, Core ML FP16, ảnh vào 48×68, đo CPU và
+  mọi bộ xử lý như `results/latency_ios.csv`). Đã đo 6 mô hình: SPAN, DISP, EDSR-baseline, SwinIR-light, RRDB, BSRGAN.
+  - [ ] **L1. FBCNN rồi SPAN công bố (`fbcnn_span_ch48`)**: CHƯA ĐO. Đây là số còn thiếu quan trọng nhất, vì bài đang nói
+    chuỗi này "đắt hơn" chỉ dựa trên GPU máy bàn (3,87 ms, vẫn dưới 33 ms). Việc phải làm trước: `scripts/export_coreml.py`
+    hiện chỉ xuất mô hình trong `SPECS`; cần thêm nhánh cho tên trong `CHAINS` (dùng `build_chain`) [Claude]. Sau đó bạn xuất
+    bằng `.venv-coreml/bin/python`, đo bằng Xcode, chụp hai màn hình (CPU Only và All) như lần trước.
+  - [ ] **L2. FBCNN rồi bicubic (`fbcnn_bicubic`)**: chưa đo. Ít quan trọng hơn; đo cùng lượt với L1 nếu tiện.
+  - **BSRNet và Real-ESRNet**: không cần đo riêng. Cùng kiến trúc RRDB đã đo (107,91 ms CPU; 15,53 ms mọi bộ xử lý); bài
+    phải ghi rõ là số của kiến trúc, không phải của từng bộ trọng số.
+  - **RRDB tinh chỉnh (việc J2b)**: không cần đo riêng, cùng kiến trúc RRDB.
+  - 10 mô hình hiệu quả còn lại (MSRResNet, RLFN, EFDN, SAFMN++, SMFANet, SPAN 28 và 26 kênh, PDS, PKDSR, DSCF, ERRN): đã
+    xuất Core ML nhưng chưa đo; không cần cho lập luận của bài, chỉ đo nếu phản biện yêu cầu.
+- [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
+  "đề xuất" là chưa duyệt).
+  - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR
+    trên ảnh ngoài thực tế và giữ được chất lượng trên ảnh sạch).
+    - [ ] Chạy xong J2b (RRDB tinh chỉnh với công thức của ta). Nó tách "do mạng lớn" khỏi "do kiểu suy giảm" trong kết quả
+      của BSRNet: RRDB nhánh est hơn BSRNet thì công thức của ta có giá trị cả trên mạng lớn; ngang hoặc kém thì ghi thẳng.
+    - [ ] Sau J2b: viết lại đoạn cuối mục 6.6 và câu khuyến nghị ở phần thảo luận thành một bảng đánh đổi rõ ràng (ngân sách
+      CPU thì SPAN tinh chỉnh; có bộ xử lý thần kinh và cần nhận dạng cao nhất thì mạng lớn học có nén).
+    - Câu chữ hiện tại đã đúng mức ("lowest cost among the methods that improved both PSNR and identification"); không hạ thêm.
+  - **M2. Phản biện có thể nói "dùng đồ có sẵn là đủ"** (BSRNet, FBCNN là trọng số công bố từ 2021).
+    - [ ] Làm L1 để lập luận chi phí có số trên điện thoại, rồi thêm cột "CPU điện thoại (ms)" vào bảng 14.
+    - [ ] Đề xuất, chưa duyệt: một hình đánh đổi (trục ngang độ trễ CPU điện thoại, trục dọc hạng 1 trên EarVN1.0, mỗi điểm
+      một phương pháp), sinh PNG bằng `make_paper.py`. Không cần chạy gì mới ngoài L1.
+    - [ ] Viết một câu ở 6.6 nói rõ điều bài thêm so với đồ có sẵn: với cùng thân SPAN, tinh chỉnh có nén cho hạng 1 cao hơn
+      khử nén rồi phóng (25,0% so với 21,1%) mà không thêm mạng thứ hai. Số đã có trong bảng 14.
+  - **M3. Lập luận real-time có chỗ hở** (RRDB chạy 15,53 ms trên iPhone khi dùng mọi bộ xử lý, dưới ngưỡng 33 ms của bài;
+    chỉ tách được ở CPU: 4,72 so với 107,91 ms).
+    - [ ] Làm L1. Nếu chuỗi FBCNN rồi SPAN cũng dưới 33 ms trên CPU thì bài phải nói thẳng, và lợi thế còn lại là số tham
+      số và bộ nhớ.
+    - [ ] Mục 6.7 (Efficiency): thêm một câu nói rõ kiến trúc RRDB (BSRNet, Real-ESRNet) đạt ngưỡng khi có bộ xử lý thần kinh
+      và không đạt trên CPU, và rằng định nghĩa real-time của bài tính trên CPU. Hiện mục này chỉ nói vậy cho BSRGAN.
+    - [ ] Sau L1, quyết định có giữ chữ "Real-Time" trong tiêu đề hay đổi thành cách nói hẹp hơn (việc này cũng nằm trong
+      `paper/SUBMISSION_CHECKLIST.md`, mục quyết định về tiêu đề).
+  - **M4. PSNR bị đặt dấu hỏi** (BSRNet: PSNR ngang bicubic nhưng hạng 1 cao nhất).
+    - [ ] Thêm một câu giới hạn ở phần thảo luận: phần phân tích tỉ số sai số nói về độ trung thực; PSNR không dự đoán được
+      thứ hạng nhận dạng giữa các phương pháp học bằng suy giảm khác nhau.
+    - [ ] Đề xuất, chưa duyệt, chỉ tính từ số đã có: tương quan hạng giữa PSNR (ảnh vào `est` của EarVN1.0) và hạng 1 trên
+      mọi phương pháp của bảng 10 và bảng 14; và xem LPIPS, DISTS (đã có trong `results/rev*`) có đi cùng hạng 1 hơn PSNR
+      không. Nếu có thì thêm một câu và một cột; nếu không thì chỉ ghi câu giới hạn ở trên.
+    - Không làm: đổi số đo chính của bài sang nhận dạng. Phần lõi (16 mô hình, tỉ số sai số, DIV2K) là kết quả về độ trung
+      thực và vẫn đứng; với mô hình học bằng bicubic, PSNR và nhận dạng cho cùng kết luận.
 - [ ] **K. Ý để dành, CHƯA duyệt, không làm trước khi phản biện thật yêu cầu** (ghi ngày 08/10 để nhớ):
   - **Tách hai điều kiện của phần nhận dạng.** Không huấn luyện lại bộ nhận dạng trên AWEx (gallery trung vị 2 ảnh mỗi người
     nên khoảng trống khó xuất hiện; chỉ thử được một chiều). Cách rẻ hơn, chỉ chấm: trên EarVN1.0, thu nhỏ ảnh lớn của người
