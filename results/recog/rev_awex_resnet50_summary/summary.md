@@ -4,6 +4,7 @@ Mạng nhận dạng: `runs/RECOG_resnet50/ckpt.pt`. Khoảng tin cậy 95%, boo
 
 | Nhánh | Số mô hình | Rank-1 | Rank-5 | EER | TAR ở FAR 1% |
 |---|---|---|---|---|---|
+| rrdb/est | 5 | 41.68 [32.10; 49.48] | 70.51 | 14.96 [12.67; 18.89] | 41.36 |
 | ref_large | 1 | 41.42 [34.97; 47.15] | 68.34 | 15.96 [13.71; 19.06] | 41.42 |
 | bsrnet (published) | 1 | 41.36 [30.16; 50.96] | 71.96 | 14.95 [12.33; 18.83] | 43.22 |
 | realesrnet (published) | 1 | 40.42 [30.18; 48.84] | 70.33 | 15.18 [12.56; 19.27] | 43.93 |
@@ -19,6 +20,7 @@ Mạng nhận dạng: `runs/RECOG_resnet50/ckpt.pt`. Khoảng tin cậy 95%, boo
 
 | Nhánh | Rank-1 | EER |
 |---|---|---|
+| rrdb/est | +3.60 [-0.58; +7.91] | +0.08 [-1.40; +2.26] |
 | bsrnet (published) | +3.27 [-4.05; +11.16] | +0.07 [-2.14; +2.49] |
 | realesrnet (published) | +2.34 [-4.70; +9.01] | +0.30 [-1.81; +2.94] |
 | span/est | +1.87 [-2.70; +6.42] | +0.16 [-1.49; +1.97] |
@@ -32,6 +34,7 @@ Mạng nhận dạng: `runs/RECOG_resnet50/ckpt.pt`. Khoảng tin cậy 95%, boo
 
 | Nhánh | Rank-1 | EER |
 |---|---|---|
+| rrdb/est | +3.83 [-0.35; +8.19] | -0.21 [-1.51; +2.20] |
 | bsrnet (published) | +3.50 [-3.74; +11.40] | -0.22 [-2.22; +2.46] |
 | realesrnet (published) | +2.57 [-4.56; +9.24] | +0.01 [-1.88; +2.75] |
 | span/est | +2.10 [-2.46; +6.56] | -0.13 [-1.56; +1.86] |
@@ -45,6 +48,7 @@ Mạng nhận dạng: `runs/RECOG_resnet50/ckpt.pt`. Khoảng tin cậy 95%, boo
 
 | Nhánh | Rank-1 | EER |
 |---|---|---|
+| rrdb/est | +4.07 [-0.38; +8.70] | -0.41 [-2.04; +1.81] |
 | bsrnet (published) | +3.74 [-3.00; +10.58] | -0.42 [-2.80; +1.94] |
 | realesrnet (published) | +2.80 [-4.07; +8.83] | -0.19 [-2.31; +2.32] |
 | span/est | +2.34 [-2.75; +6.63] | -0.33 [-2.18; +1.62] |
@@ -58,6 +62,7 @@ Mạng nhận dạng: `runs/RECOG_resnet50/ckpt.pt`. Khoảng tin cậy 95%, boo
 
 | Nhánh | Rank-1 | EER |
 |---|---|---|
+| rrdb/est | +1.73 [-1.04; +5.00] | -0.08 [-0.86; +0.93] |
 | bsrnet (published) | +1.40 [-3.14; +5.60] | -0.09 [-1.39; +1.30] |
 | realesrnet (published) | +0.47 [-3.49; +3.87] | +0.14 [-0.99; +1.62] |
 | fbcnn_span_ch48 (published) | -0.47 [-2.64; +1.58] | +0.51 [-1.18; +1.51] |

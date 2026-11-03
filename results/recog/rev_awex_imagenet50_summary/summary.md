@@ -6,6 +6,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|---|---|---|
 | ref_large | 1 | 16.57 [12.16; 21.24] | 34.02 | 34.97 [31.79; 37.81] | 10.06 |
 | realesrnet (published) | 1 | 13.32 [8.13; 19.24] | 32.71 | 32.23 [27.61; 37.37] | 9.58 |
+| rrdb/est | 5 | 11.87 [8.62; 14.88] | 33.60 | 31.31 [27.01; 36.22] | 8.55 |
 | bsrnet (published) | 1 | 11.68 [5.83; 18.28] | 33.88 | 32.53 [27.55; 37.82] | 11.45 |
 | fbcnn_span_ch48 (published) | 1 | 11.68 [7.94; 15.20] | 32.71 | 32.47 [28.05; 36.93] | 8.41 |
 | fbcnn_bicubic (published) | 1 | 11.45 [6.34; 15.71] | 29.21 | 31.45 [27.72; 35.70] | 7.24 |
@@ -20,6 +21,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | realesrnet (published) | +4.21 [-2.49; +11.11] | +1.13 [-2.52; +4.56] |
+| rrdb/est | +2.76 [-2.56; +7.41] | +0.21 [-4.33; +3.45] |
 | bsrnet (published) | +2.57 [-4.78; +9.86] | +1.42 [-2.44; +4.87] |
 | fbcnn_span_ch48 (published) | +2.57 [-0.26; +5.64] | +1.37 [-1.86; +3.72] |
 | fbcnn_bicubic (published) | +2.34 [+0.00; +5.01] | +0.35 [-2.00; +2.43] |
@@ -33,6 +35,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | realesrnet (published) | +3.97 [-2.72; +11.02] | +1.22 [-2.20; +4.51] |
+| rrdb/est | +2.52 [-2.62; +7.29] | +0.31 [-4.00; +3.46] |
 | bsrnet (published) | +2.34 [-4.96; +9.62] | +1.52 [-2.20; +5.04] |
 | fbcnn_span_ch48 (published) | +2.34 [-0.70; +5.96] | +1.47 [-1.53; +3.88] |
 | fbcnn_bicubic (published) | +2.10 [-0.25; +5.23] | +0.44 [-1.88; +2.49] |
@@ -46,6 +49,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | realesrnet (published) | +2.34 [-5.67; +11.11] | -1.19 [-4.51; +2.50] |
+| rrdb/est | +0.89 [-5.51; +7.16] | -2.10 [-5.85; +1.40] |
 | bsrnet (published) | +0.70 [-8.05; +9.81] | -0.89 [-4.44; +2.71] |
 | fbcnn_span_ch48 (published) | +0.70 [-2.91; +5.02] | -0.94 [-3.49; +1.43] |
 | fbcnn_bicubic (published) | +0.47 [-3.91; +4.95] | -1.97 [-4.17; +0.45] |
@@ -59,6 +63,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | realesrnet (published) | +2.06 [-2.32; +7.58] | +0.74 [-1.65; +3.13] |
+| rrdb/est | +0.61 [-1.10; +2.45] | -0.17 [-1.77; +1.45] |
 | bsrnet (published) | +0.42 [-4.64; +7.09] | +1.04 [-1.50; +3.42] |
 | fbcnn_span_ch48 (published) | +0.42 [-3.25; +3.75] | +0.98 [-1.36; +2.89] |
 | fbcnn_bicubic (published) | +0.19 [-4.56; +4.44] | -0.04 [-2.91; +2.77] |

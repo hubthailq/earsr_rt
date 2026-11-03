@@ -6,6 +6,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 |---|---|---|---|---|---|
 | ref_large | 1 | 60.20 [56.79; 63.76] | 87.33 | 11.81 [10.78; 12.95] | 50.29 |
 | bsrnet (published) | 1 | 27.15 [19.98; 35.55] | 53.85 | 25.13 [21.38; 29.16] | 21.59 |
+| rrdb/est | 5 | 25.36 [19.12; 32.14] | 52.41 | 26.30 [22.05; 30.03] | 20.16 |
 | span/est | 5 | 25.03 [19.27; 31.10] | 50.91 | 26.82 [23.03; 30.51] | 19.41 |
 | realesrnet (published) | 1 | 25.01 [18.53; 32.69] | 52.61 | 26.58 [22.55; 30.18] | 21.29 |
 | fbcnn_span_ch48 (published) | 1 | 21.09 [15.69; 26.39] | 47.94 | 27.86 [25.13; 30.68] | 16.03 |
@@ -20,6 +21,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | bsrnet (published) | +13.95 [+7.66; +21.31]* | -6.09 [-9.59; -2.79]* |
+| rrdb/est | +12.16 [+6.95; +18.13]* | -4.93 [-8.69; -1.98]* |
 | span/est | +11.83 [+7.34; +16.89]* | -4.41 [-7.68; -1.58]* |
 | realesrnet (published) | +11.81 [+5.94; +18.70]* | -4.64 [-8.43; -1.58]* |
 | fbcnn_span_ch48 (published) | +7.89 [+4.30; +11.71]* | -3.36 [-5.40; -1.63]* |
@@ -33,6 +35,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | bsrnet (published) | +14.09 [+7.81; +21.45]* | -6.15 [-9.68; -2.73]* |
+| rrdb/est | +12.31 [+7.09; +18.20]* | -4.99 [-8.73; -1.95]* |
 | span/est | +11.98 [+7.39; +16.99]* | -4.47 [-7.74; -1.50]* |
 | realesrnet (published) | +11.96 [+6.19; +18.90]* | -4.70 [-8.49; -1.62]* |
 | fbcnn_span_ch48 (published) | +8.04 [+4.42; +11.88]* | -3.43 [-5.47; -1.63]* |
@@ -46,6 +49,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | bsrnet (published) | +13.15 [+7.32; +19.85]* | -6.99 [-9.54; -3.79]* |
+| rrdb/est | +11.36 [+6.43; +16.92]* | -5.82 [-8.73; -3.06]* |
 | span/est | +11.04 [+6.76; +15.73]* | -5.30 [-7.80; -2.70]* |
 | realesrnet (published) | +11.02 [+5.61; +17.38]* | -5.54 [-8.61; -2.71]* |
 | fbcnn_span_ch48 (published) | +7.10 [+3.67; +10.59]* | -4.26 [-5.52; -2.61]* |
@@ -59,6 +63,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 | Nhánh | Rank-1 | EER |
 |---|---|---|
 | bsrnet (published) | +2.11 [-0.45; +5.15] | -1.68 [-2.52; -0.52]* |
+| rrdb/est | +0.33 [-0.88; +1.65] | -0.52 [-1.33; +0.03] |
 | realesrnet (published) | -0.02 [-2.38; +2.74] | -0.23 [-1.57; +0.83] |
 | fbcnn_span_ch48 (published) | -3.94 [-6.90; -1.69]* | +1.05 [-0.12; +2.50] |
 | fbcnn_bicubic (published) | -6.32 [-10.01; -3.42]* | +1.47 [-0.38; +3.42] |
@@ -73,6 +78,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 |---|---|---|
 | span/est | 23.58 | +9.25 [+4.30; +14.79]* |
 | bsrnet (published) | 23.06 | +8.74 [+2.41; +16.04]* |
+| rrdb/est | 22.77 | +8.44 [+2.90; +14.42]* |
 | fbcnn_span_ch48 (published) | 22.71 | +8.39 [+3.61; +13.64]* |
 | realesrnet (published) | 21.38 | +7.06 [+1.10; +14.42]* |
 | fbcnn_bicubic (published) | 20.48 | +6.15 [+2.34; +10.26]* |
@@ -87,6 +93,7 @@ Mạng nhận dạng: `runs/RECOG_resnet18/ckpt.pt`. Khoảng tin cậy 95%, boo
 |---|---|---|
 | bsrnet (published) | 37.80 | +27.18 [+15.95; +38.53]* |
 | realesrnet (published) | 34.49 | +23.87 [+13.89; +34.54]* |
+| rrdb/est | 32.26 | +21.64 [+11.29; +32.32]* |
 | span/est | 29.09 | +18.47 [+10.63; +26.69]* |
 | fbcnn_span_ch48 (published) | 17.42 | +6.79 [+3.91; +9.91]* |
 | fbcnn_bicubic (published) | 14.63 | +4.01 [+0.82; +7.72]* |

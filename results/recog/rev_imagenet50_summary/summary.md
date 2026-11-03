@@ -7,6 +7,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | ref_large | 1 | 24.59 [20.93; 28.52] | 59.67 | 33.25 [31.56; 34.60] | 7.84 |
 | bsrnet (published) | 1 | 8.39 [5.15; 12.23] | 23.23 | 46.64 [42.32; 50.95] | 2.28 |
 | realesrnet (published) | 1 | 8.19 [4.86; 12.39] | 21.94 | 48.09 [43.94; 52.09] | 2.13 |
+| rrdb/est | 5 | 7.79 [4.94; 11.05] | 21.65 | 47.51 [44.17; 51.32] | 1.88 |
 | span/est | 5 | 7.16 [4.35; 10.29] | 20.45 | 48.90 [45.49; 52.19] | 2.01 |
 | fbcnn_span_ch48 (published) | 1 | 5.56 [3.02; 8.96] | 15.14 | 50.10 [46.86; 53.16] | 1.44 |
 | fbcnn_bicubic (published) | 1 | 4.67 [2.52; 7.78] | 11.66 | 51.42 [47.90; 54.44] | 0.74 |
@@ -21,6 +22,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|
 | bsrnet (published) | +5.46 [+1.43; +9.38]* | -5.87 [-9.14; -2.58]* |
 | realesrnet (published) | +5.26 [+1.03; +9.57]* | -4.41 [-7.66; -1.31]* |
+| rrdb/est | +4.86 [+2.30; +7.78]* | -4.99 [-7.81; -2.00]* |
 | span/est | +4.23 [+1.79; +6.92]* | -3.61 [-6.22; -0.67]* |
 | fbcnn_span_ch48 (published) | +2.63 [+0.96; +4.59]* | -2.41 [-4.02; -0.49]* |
 | fbcnn_bicubic (published) | +1.74 [+0.40; +3.26]* | -1.09 [-2.75; +0.81] |
@@ -34,6 +36,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|
 | bsrnet (published) | +5.36 [+1.27; +9.27]* | -5.78 [-9.19; -2.66]* |
 | realesrnet (published) | +5.16 [+0.82; +9.47]* | -4.33 [-7.70; -1.40]* |
+| rrdb/est | +4.76 [+2.14; +7.73]* | -4.91 [-7.89; -2.07]* |
 | span/est | +4.13 [+1.67; +6.84]* | -3.52 [-6.28; -0.63]* |
 | fbcnn_span_ch48 (published) | +2.53 [+0.84; +4.52]* | -2.32 [-4.06; -0.55]* |
 | fbcnn_bicubic (published) | +1.64 [+0.25; +3.13]* | -1.00 [-2.75; +0.81] |
@@ -47,6 +50,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|
 | bsrnet (published) | +4.47 [+0.51; +8.57]* | -5.24 [-9.33; -1.72]* |
 | realesrnet (published) | +4.27 [+0.00; +8.50] | -3.78 [-7.69; -0.58]* |
+| rrdb/est | +3.87 [+0.96; +6.92]* | -4.36 [-8.06; -1.06]* |
 | span/est | +3.24 [+0.45; +5.98]* | -2.97 [-6.31; +0.42] |
 | fbcnn_span_ch48 (published) | +1.64 [-0.27; +3.64] | -1.77 [-4.18; +0.40] |
 | fbcnn_bicubic (published) | +0.74 [-1.12; +2.37] | -0.45 [-2.93; +1.89] |
@@ -60,6 +64,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|
 | bsrnet (published) | +1.23 [-1.17; +3.78] | -2.26 [-5.09; +0.94] |
 | realesrnet (published) | +1.03 [-1.57; +3.80] | -0.81 [-3.71; +2.24] |
+| rrdb/est | +0.64 [-0.37; +1.69] | -1.39 [-2.55; -0.08]* |
 | fbcnn_span_ch48 (published) | -1.60 [-2.84; -0.38]* | +1.20 [-0.30; +2.68] |
 | fbcnn_bicubic (published) | -2.49 [-4.06; -0.99]* | +2.52 [+0.84; +3.91]* |
 | rrdb_psnr (published) | -3.19 [-5.90; -0.39]* | +3.24 [-0.36; +6.49] |
@@ -73,6 +78,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 |---|---|---|
 | realesrnet (published) | 9.71 | +6.43 [+0.76; +12.04]* |
 | bsrnet (published) | 9.50 | +6.22 [+0.88; +11.48]* |
+| rrdb/est | 9.17 | +5.88 [+2.18; +10.06]* |
 | span/est | 8.39 | +5.10 [+1.73; +9.25]* |
 | fbcnn_span_ch48 (published) | 7.13 | +3.84 [+1.70; +6.63]* |
 | fbcnn_bicubic (published) | 6.01 | +2.73 [+0.99; +4.91]* |
@@ -86,6 +92,7 @@ Mạng nhận dạng: `imagenet-resnet50`. Khoảng tin cậy 95%, bootstrap the
 | Nhánh | Rank-1 | So với bicubic |
 |---|---|---|
 | bsrnet (published) | 5.40 | +3.31 [+0.54; +6.03]* |
+| rrdb/est | 4.46 | +2.37 [+0.61; +4.63]* |
 | span/est | 4.22 | +2.13 [+0.47; +4.15]* |
 | realesrnet (published) | 4.01 | +1.92 [+0.15; +3.98]* |
 | rrdb_psnr (published) | 2.61 | +0.52 [-0.26; +1.67] |

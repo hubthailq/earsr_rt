@@ -67,3 +67,8 @@ N2_span-zero+xearvn_pub_rand_x4_hrall_jpegmix_f1,done,,2026-10-07 16:19:24,2026-
 N2_span-zero+xearvn_pub_rand_x4_hrall_jpegu_f1,done,,2026-10-07 16:44:11,2026-10-07 17:08:48,,labai217,N2,1,l1,35.556153621405386,20000,20000,1474.1,max,True,31.434,30.02,1.8,0.0,0
 N2_span-zero+xearvn_pub_rand_x4_hrall_jpegmix_f5,done,,2026-10-07 17:08:49,2026-10-07 17:33:36,,labai217,N2,5,l1,35.79169559379922,19000,20000,1484.3,max,True,31.712,30.25,1.8,0.0,0
 N2_span-zero+xearvn_pub_rand_x4_hrall_jpegu_f5,done,,2026-10-07 17:33:38,2026-10-07 17:58:13,,labai217,N2,5,l1,35.319270325980305,20000,20000,1472.0,max,True,31.188,29.964,1.8,0.0,0
+REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f2,done,,2026-10-08 12:03:57,2026-10-08 13:18:37,,labai217,REV,2,l1,35.85187056003464,6000,20000,4469.7,max,True,31.959,29.966,1.8,0.0,0
+REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f3,done,,2026-10-08 13:18:39,2026-10-08 14:33:14,,labai217,REV,3,l1,35.87169129937227,5000,20000,4465.5,max,True,31.866,29.991,1.8,0.019,0
+REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f4,done,,2026-10-08 14:33:16,2026-10-08 15:52:31,,labai217,REV,4,l1,36.165851150717735,5000,20000,4742.5,max,True,32.087,30.181,1.8,0.0,0
+REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f1,done,,2026-10-08 16:50:13,2026-10-08 18:05:09,,labai217,REV,1,l1,35.66840418028867,5000,20000,4485.4,max,True,31.65,29.928,1.8,0.0,0
+REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f5,done,,2026-10-08 18:05:11,2026-10-08 19:19:48,,labai217,REV,5,l1,35.56200825104697,5000,20000,4466.7,max,True,31.533,29.87,1.8,0.036,0
