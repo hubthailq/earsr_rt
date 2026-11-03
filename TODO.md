@@ -124,10 +124,18 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     - Hệ quả cho câu chữ (đã viết): bài KHÔNG nói mô hình của ta cho nhận dạng cao nhất; nói nó có chi phí thấp nhất trong các
       phương pháp cải thiện cả PSNR lẫn nhận dạng. PSNR và nhận dạng xếp hạng các phương pháp khác nhau (BSRNet).
     - Chưa làm: đo FBCNN rồi SPAN trên iPhone (cần xuất Core ML và đo bằng Xcode; chỉ làm nếu người dùng muốn).
-  - [ ] **[Bạn, labai217] Bước 2:** `bash scripts/make_rrdb_jobs.sh` rồi chạy hàng đợi (fold 2, 3, 4). Xem dòng
+  - [x] 04/11 **Kết quả J2b (RRDB tinh chỉnh, 5 fold, commit `e547752`), đã đưa vào bài:** cả 5 lần qua phép thử ảnh sáng
+    (khoảng cách tới bicubic tụt nhiều nhất 0,04 dB, 0 ảnh hỏng). JPEG 75, ba ô như DegEff: tinh chỉnh tăng PSNR của RRDB
+    1,79 đến 2,15 dB so với trọng số công bố (SPAN: 1,62 đến 1,90); RRDB tinh chỉnh hơn SPAN tinh chỉnh 0,14 đến 0,22 dB
+    (mọi ô có nén: 0,08 đến 0,34; đều có ý nghĩa). Hạng 1 trên EarVN1.0: 25,4% và 29,5%; so với SPAN của ta +0,3 [−0,9; 1,7]
+    và +2,4 [1,1; 3,9]; vẫn thấp hơn BSRNet với ResNet-50 (32,9%). Câu "suy giảm quan trọng hơn kiến trúc" nay có đối chứng
+    cùng điều kiện. Đã viết: đoạn mới ở 6.6, hàng mới ở bảng 14, câu ở mở bài, thảo luận, kết luận; gỡ câu "We did not train
+    a larger network with compression". Bài 38 trang. Độ trễ trên GPU đo lại ở lượt chấm này (SPAN 0,50 ms), nên các tỉ số
+    độ trễ trong 6.6 đổi nhẹ (FBCNN rồi SPAN 7,6 lần, RRDB 27 lần).
+  - [x] (xong) **[Bạn, labai217] Bước 2:** `bash scripts/make_rrdb_jobs.sh` rồi chạy hàng đợi (fold 2, 3, 4). Xem dòng
     "phép thử ảnh sáng" của ba lần chạy. Cả ba ỔN ĐỊNH thì `FINAL_RUN=1 FOLDS="1 5" bash scripts/make_rrdb_jobs.sh jobs/rrdb_final.txt`
     và chạy tiếp. Sau đó gọi lại `bash scripts/run_review.sh` (file đã có được bỏ qua), commit và push.
-  - [ ] **[Claude, máy Mac] Bước 3 (phần J1, J2a xong 08/10; còn phần RRDB tinh chỉnh), sau khi pull kết quả:** đọc `results/rev_summary/summary.md`; thêm vào `make_paper.py`
+  - [x] 04/11 **[Claude, máy Mac] Bước 3 (J1, J2a ngày 08/10; J2b ngày 04/11), sau khi pull kết quả:** đọc `results/rev_summary/summary.md`; thêm vào `make_paper.py`
     một bảng (các mốc mới cạnh bicubic, SPAN công bố, SPAN nhánh est: PSNR ở ảnh vào sạch, JPEG 93, 75, suy giảm ước lượng;
     hạng 1 trên EarVN1.0; tham số; độ trễ) và các macro; viết một mục con ở mục 6 và sửa các câu liên quan. Quy tắc câu chữ:
     - FBCNN rồi SPAN ngang hoặc hơn SPAN nhánh est: phần huấn luyện viết thành "lựa chọn rẻ nhất lúc chạy", bỏ ý "tốt nhất";
@@ -158,7 +166,7 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR
     trên ảnh ngoài thực tế và giữ được chất lượng trên ảnh sạch).
-    - [ ] Chạy xong J2b (RRDB tinh chỉnh với công thức của ta). Nó tách "do mạng lớn" khỏi "do kiểu suy giảm" trong kết quả
+    - [x] 04/11 Chạy xong J2b (RRDB tinh chỉnh với công thức của ta); kết quả ở việc J. Nó tách "do mạng lớn" khỏi "do kiểu suy giảm" trong kết quả
       của BSRNet: RRDB nhánh est hơn BSRNet thì công thức của ta có giá trị cả trên mạng lớn; ngang hoặc kém thì ghi thẳng.
     - [ ] Sau J2b: viết lại đoạn cuối mục 6.6 và câu khuyến nghị ở phần thảo luận thành một bảng đánh đổi rõ ràng (ngân sách
       CPU thì SPAN tinh chỉnh; có bộ xử lý thần kinh và cần nhận dạng cao nhất thì mạng lớn học có nén).

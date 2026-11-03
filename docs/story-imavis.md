@@ -203,7 +203,7 @@ Hai vòng phản biện thử trên bản thảo hoàn chỉnh đều nêu cùng
 |---|---|---|---|
 | J1. FBCNN rồi bicubic, FBCNN rồi SPAN công bố, kèm độ trễ | "Sao không khử nén trước rồi mới phóng?" | Chỉ chấm | Xong 08/10, đã vào bài (mục 6.6) |
 | J2a. BSRNet, Real-ESRNet | "16 mô hình công bố đều học bằng bicubic; mạng lớn học có nén thì sao?" | Chỉ chấm | Xong 08/10, đã vào bài (mục 6.6) |
-| J2b. RRDB tinh chỉnh với công thức của SPAN nhánh est, 5 fold | Câu "suy giảm có tác dụng lớn hơn kiến trúc" thiếu đối chứng cùng điều kiện | 5 lần huấn luyện | Mã xong, chờ chạy |
+| J2b. RRDB tinh chỉnh với công thức của SPAN nhánh est, 5 fold | Câu "suy giảm có tác dụng lớn hơn kiến trúc" thiếu đối chứng cùng điều kiện | 5 lần huấn luyện | Xong 04/11, đã vào bài (mục 6.6): RRDB hơn SPAN 0,14 đến 0,22 dB ở JPEG 75, công thức tăng 1,6 đến 2,2 dB trên cả hai thân |
 
 Quy tắc: mỗi việc một cấu hình chốt trước; kết quả nào cũng đưa vào bài; sau ba việc này danh sách đóng lại. Việc tách hai
 điều kiện của phần nhận dạng KHÔNG được duyệt (xem `TODO.md` mục 0, việc K). Lệnh chạy: `docs/RUNBOOK.md` mục 6.

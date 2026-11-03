@@ -945,6 +945,17 @@ def review(res: Path, out: Path) -> None:
     span_of("RevFbVsBic", FB, "bicubic", ("ami",) + wild, REV_COMP, sign=True)
     span_of("RevBsrVsBic", BSR, "bicubic", ("ami",) + wild, REV_COMP, sign=True)
     span_of("RevBsrVsEst", BSR, EST, ("ami",) + wild, REV_COMP, magnitude=True)
+    if P["ami"] is not None and "rrdb/est" in set(P["ami"].arm):       # RRDB tinh chỉnh với công thức của SPAN nhánh est
+        e = span_of("RevRrdbVsEst", "rrdb/est", EST, ("ami",) + wild, REV_COMP, sign=True)
+        span_of("RevRrdbVsEstClean", "rrdb/est", EST, ("ami",) + wild, ("bic",), sign=True)
+        # cùng ba ô như DegEff (AMI 36 px, EarVN1.0 và AWEx 24 px), ảnh vào JPEG 75: tác dụng của kiến trúc khi cùng
+        # công thức huấn luyện, và tác dụng của công thức trên từng thân (so với trọng số công bố của chính thân đó)
+        q75 = [("ami", 144), ("earvn", 96), ("awex", 96)]
+        rng_put("RevRrdbVsEstQ", [diff(n_, "rrdb/est", EST, t, "bicjpeg75") for n_, t in q75], sign=True)
+        rng_put("RevRrdbGainQ", [diff(n_, "rrdb/est", "rrdb_psnr (published)", t, "bicjpeg75") for n_, t in q75])
+        rng_put("RevSpanGainQ", [diff(n_, EST, PUB, t, "bicjpeg75") for n_, t in q75])
+        if e and not all(x is not None and x.lo > 0 for x in e):
+            print("CHÚ Ý: RRDB nhánh est không còn hơn SPAN nhánh est có ý nghĩa ở mọi ô có nén; sửa câu ở mục 6.6")
     e = span_of("RevResrVsBic", RESR, "bicubic", ("ami",) + wild, REV_COMP, magnitude=True)
     if e and not all(x is not None and x.point < 0 for x in e):
         print("CHÚ Ý: Real-ESRNet không còn kém bicubic ở mọi ô có nén; sửa câu trong experiments.tex (mục các mốc thêm)")
@@ -999,6 +1010,8 @@ def review(res: Path, out: Path) -> None:
     put("RevFbLatRatio", num(fl / sl, 1) if fl and sl else None, why)
     put("RevBsrLat", num(bl, 1) if bl else None, why)
     put("RevBsrLatRatio", int(round(bl / sl)) if bl and sl else None, why)
+    rl = cost("rrdb_psnr", "median_ms")
+    put("RevRrdbLatRatio", int(round(rl / sl)) if rl and sl else None, why)
     put("RevFbcnnParams", num((fp - sp) / 1e6, 1) if fp and sp else None, why)
 
     rows = []
