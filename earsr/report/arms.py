@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import re
 
-RUN = re.compile(r"^(?:N2|REV)_(?P<bb>[a-z0-9]+)-zero\+(?P<tag>[a-z]+)_pub_rand_x4_hrall_(?P<kind>[a-z0-9]+)_f(?P<fold>\d)$")
+RUN = re.compile(r"^(?:N2|REV)_(?P<bb>[a-z0-9]+)-zero\+(?P<tag>[a-z]+)(?:\+s(?P<seed>\d+))?_pub_rand_x4_hrall_"
+                 r"(?P<kind>[a-z0-9]+)_f(?P<fold>\d)$")
 AMI_ONLY = " [AMI only]"
 PUBLISHED = " (published)"
 
@@ -17,4 +18,5 @@ def arm_of(model: str) -> tuple[str, int]:
     g = RUN.match(model)
     if not g:
         return (model if model in ("bicubic", "bicubic_sharp", "direct", "ref_large") else model + PUBLISHED), 0
-    return f"{g['bb']}/{g['kind']}" + ("" if g["tag"] == "xearvn" else AMI_ONLY), int(g["fold"])
+    seed = f" [seed {g['seed']}]" if g["seed"] else ""   # lần chạy thêm seed (TODO.md, việc Q3): nhánh riêng
+    return f"{g['bb']}/{g['kind']}" + ("" if g["tag"] == "xearvn" else AMI_ONLY) + seed, int(g["fold"])

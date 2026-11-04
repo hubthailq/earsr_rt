@@ -30,6 +30,26 @@ def jpeg(img: np.ndarray, quality: int, chroma444: bool = False) -> np.ndarray:
     return np.ascontiguousarray(cv2.imdecode(buf, cv2.IMREAD_COLOR)[:, :, ::-1])
 
 
+def _codec(img: np.ndarray, ext: str, flags: list[int], name: str) -> np.ndarray:
+    ok, buf = cv2.imencode(ext, img[:, :, ::-1], flags)
+    if not ok:
+        raise RuntimeError(f"nén {name} thất bại (OpenCV có được dựng kèm bộ mã {name} không?)")
+    out = cv2.imdecode(buf, cv2.IMREAD_COLOR)
+    if out is None or out.shape != img.shape:
+        raise RuntimeError(f"giải nén {name} thất bại hoặc đổi kích thước")
+    return np.ascontiguousarray(out[:, :, ::-1])
+
+
+def webp(img: np.ndarray, quality: int) -> np.ndarray:
+    """Nén rồi giải nén WebP có tổn hao (libwebp qua OpenCV, thang 1..100)."""
+    return _codec(img, ".webp", [cv2.IMWRITE_WEBP_QUALITY, int(quality)], "WebP")
+
+
+def avif(img: np.ndarray, quality: int) -> np.ndarray:
+    """Nén rồi giải nén AVIF (libavif qua OpenCV, thang 0..100; 100 là không tổn hao)."""
+    return _codec(img, ".avif", [cv2.IMWRITE_AVIF_QUALITY, int(quality)], "AVIF")
+
+
 def jpeg_shifted(img: np.ndarray, quality: int, dy: int, dx: int) -> np.ndarray:
     """JPEG với lưới khối lệch so với ảnh: đệm phản chiếu ``dy`` hàng trên và ``dx`` cột trái, nén, rồi cắt lại.
 

@@ -71,6 +71,8 @@ def parse_args(argv=None):
     ap.add_argument("--out", default="runs")
     ap.add_argument("--runs-csv", default="results/runs.csv")
     ap.add_argument("--tag", default="", help="nhãn thêm vào mã lần chạy, ví dụ lr1e-4")
+    ap.add_argument("--seed", type=int, default=None,
+                    help="seed khác số fold (mặc định seed = fold); mã lần chạy có thêm nhãn sN (TODO.md, việc Q3)")
     ap.add_argument("--force", action="store_true", help="chạy lại dù sổ ghi đã có trạng thái 'done'")
     ap.add_argument("--print-run-id", action="store_true", help="chỉ in mã lần chạy rồi thoát")
     # tối ưu
@@ -141,10 +143,11 @@ def main(argv=None) -> dict:
         raise SystemExit("fold 1 và 5 là hai fold giữ kín: các phép thử quyết định và việc dò tốc độ học "
                          "chỉ chạy trên fold 2, 3, 4")
     tags = [t for t in ([] if a.objective == "l1" else [a.objective]) + ([f"x{a.extra_name}"] if a.extra_dir else [])
-            + ([a.tag] if a.tag else []) if t]
+            + ([a.tag] if a.tag else []) + ([f"s{a.seed}"] if a.seed is not None else []) if t]
     variant_id = "+".join([a.variant] + tags)
     tier_tag = "all" if a.protocol == "rand" else str(a.tier)
     rid = RunId(a.exp, a.backbone, variant_id, a.pretrain, a.protocol, a.scale, tier_tag, a.degrade, a.fold)
+    seed = rid.seed if a.seed is None else int(a.seed)
     run_dir = Path(a.out) / str(rid)
     if a.print_run_id:
         print(rid)
@@ -209,7 +212,7 @@ def main(argv=None) -> dict:
     extras = extra_paths(a)
     train_set = make_train_set(a.ami_raw, a.folds, a.fold, a.scale, a.protocol, a.tier, a.patch_lr,
                                degrade_kind=a.degrade, params=rand_params,
-                               seed=rid.seed, extra_paths=extras, extra_min_downscale=a.extra_min_downscale,
+                               seed=seed, extra_paths=extras, extra_min_downscale=a.extra_min_downscale,
                                extra_prob=a.extra_prob, **ds_kw)
     perc = None
     if a.select_metric == "lpips" or not (a.no_test or a.no_perceptual):
@@ -222,7 +225,7 @@ def main(argv=None) -> dict:
     validate = make_validator(a.bench, a.folds, a.fold, a.scale, tuple(val_tiers), a.degrade, a.device,
                               metric=a.select_metric, perceptual=perc)
     cfg = TrainConfig(run_id=str(rid), out_dir=a.out, iters=a.iters, batch_size=a.batch_size, lr=a.lr,
-                      val_every=a.val_every, save_every=a.val_every, num_workers=a.workers, seed=rid.seed,
+                      val_every=a.val_every, save_every=a.val_every, num_workers=a.workers, seed=seed,
                       device=a.device, ema=a.ema, amp=a.amp, select=a.select, log_every=a.log_every,
                       extra={"backbone": a.backbone, "variant": arch_part(a.variant), "scale": a.scale,
                              "model_kind": "n3" if is_n3 else "plain", "objective": a.objective,

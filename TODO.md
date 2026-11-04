@@ -265,6 +265,17 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     rồi thêm hàng AMI 48 vào Bảng 2; trong lúc chờ, câu ở 4.2 nói rõ bằng chứng về cỡ ảnh đến từ DIV2K (đã sửa 04/11).
     Lệnh: `bash scripts/run_ami48.sh` (đã thử trên Mac với 2 ảnh). Bảng 2 và A.1 tự thêm số; `WildEstGain*` đã giới hạn
     cho EarVN1.0 và AWEx. Có số rồi: đọc lại câu 4.2 (cỡ 48 có cùng điểm đổi dấu không) và tóm tắt (\CrossQAmi*).
+- [ ] **Q. Làm mạnh bài sau kiểm toán (05/11; người dùng: "làm 3 cái này trước").** Ba việc, cố định trước khi chạy:
+  - [ ] Q1 Chuẩn nén khác JPEG: 16 mô hình công bố trên AMI 36 px, WebP (và AVIF nếu OpenCV có), vài mức chất lượng.
+    Hỏi: phần dư (b > 1) và điểm đổi dấu có xuất hiện không. Chỉ suy luận.
+  - [ ] Q2 Tách điều kiện nén của phần nhận dạng: EarVN1.0, ảnh lớn của người test thu nhỏ thành ảnh dò, không nén / JPEG 93 /
+    JPEG 75; cùng người, cùng Ear-R18, Ear-R50. Hỏi: SPAN tinh chỉnh chỉ hơn bicubic khi ảnh dò bị nén? Chỉ suy luận.
+  - [ ] Q3 Thêm seed: fold 1, nhánh est, bicjpeg75, bic, seed 1 và 2 (6 lần huấn luyện). Hỏi: dao động do seed so với các
+    chênh lệch ở ablation.
+  - 05/11 Mã xong, đã thử trên Mac (165 kiểm thử qua): `ops.webp`, `ops.avif`, kiểu `bicwebpQ`, `bicavifQ`
+    (`scripts/run_codec.sh`, mức chọn theo E_c/E_i trên 100 ảnh AMI); `recog_eval.py --synth` (`scripts/run_recog_synth.sh`,
+    ảnh dò 36 px từ nửa ảnh lớn); `train.py --seed`, nhãn `+sN`, nhánh `[seed N]` (`scripts/run_seeds.sh`). Chờ chạy trên
+    labai217; phần phân tích trong `make_paper.py` viết sau khi có số.
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

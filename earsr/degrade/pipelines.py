@@ -91,6 +91,8 @@ _BICJPEG444 = re.compile(r"^bicjpeg(\d{1,3})c444$")          # như bicjpegQ nh�
 _SHIFTJPEG = re.compile(r"^shiftjpeg(\d{1,3})$")             # lưới khối lệch 1..7 px so với ảnh
 _DBLJPEG = re.compile(r"^dbljpeg(\d{1,3})to(\d{1,3})$")      # nén Q1 lệch lưới, rồi nén lại Q2 thẳng lưới
 _JPEGBIC = re.compile(r"^jpeg(\d{1,3})bic$")                 # nén ảnh lớn trước, thu nhỏ sau
+_BICWEBP = re.compile(r"^bicwebp(\d{1,3})$")                # chuẩn nén khác JPEG (phản biện; TODO Q1), chỉ để chấm
+_BICAVIF = re.compile(r"^bicavif(\d{1,3})$")
 SHIFT_RANGE = (1, 7)
 
 
@@ -125,6 +127,12 @@ def degrade(hr: np.ndarray, scale: int, kind: str, seed: int = 0, key: str = "",
     m = _JPEGBIC.match(kind)
     if m:
         return ops.bicubic_down(ops.jpeg(hr, int(m.group(1))), scale)
+    m = _BICWEBP.match(kind)
+    if m:
+        return ops.webp(ops.bicubic_down(hr, scale), int(m.group(1)))
+    m = _BICAVIF.match(kind)
+    if m:
+        return ops.avif(ops.bicubic_down(hr, scale), int(m.group(1)))
     if kind == "generic":
         return random_degrade(hr, scale, params or DegradeParams(), rng_for(seed, key))
     if kind == "est":

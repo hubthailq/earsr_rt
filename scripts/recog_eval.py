@@ -9,6 +9,9 @@ Giao thức: với mỗi người của nhóm chấm (chưa từng dùng để h
 ảnh đăng ký, mẫu của người đó là trung bình đặc trưng. Ảnh dò là ảnh nhỏ thật (cạnh ngắn trong --probe-short), phóng ×4
 bằng từng phương pháp rồi đưa về cỡ vào của mạng nhận dạng bằng cùng một phép thu phóng. Phương pháp ``direct`` bỏ
 bước phóng; ``ref_large`` dùng nửa ảnh lớn còn lại làm ảnh dò, cho biết mạng nhận dạng làm được tới đâu.
+Với --synth KIỂU (kiểm toán 04/11; TODO.md, việc Q2): ảnh dò là nửa ảnh lớn không dùng làm ảnh đăng ký, thu về cạnh ngắn
+4×--synth-short như khi dựng benchmark (scripts/build_wild.py), rồi suy giảm bằng earsr.degrade (bic, bicjpeg93, ...). Cùng
+người, cùng ảnh, chỉ đổi kiểu suy giảm: tách được tác dụng của mức nén khỏi mọi khác biệt khác giữa ảnh nhỏ thật và ảnh lớn.
 Mỗi phương pháp ghi <tên>.csv (theo ảnh dò, cùng thứ tự với probes.csv) và <tên>.npy (điểm với mẫu của mọi người;
 không đưa vào git). Tổng hợp: summarize_recog.py.
 """
@@ -36,7 +39,7 @@ from earsr.recog.model import load_recognizer  # noqa: E402
 
 @torch.no_grad()
 def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_dir: Path | None = None,
-          save_n: int = 0, batch: int = 128) -> np.ndarray:
+          save_n: int = 0, batch: int = 128, prep=None) -> np.ndarray:
     out, buf = [], []
     # ảnh lưu làm minh họa được rải đều trên danh sách ảnh dò (tức trên nhiều người), không lấy các ảnh đầu
     keep = set(np.linspace(0, len(rows) - 1, min(save_n, len(rows))).round().astype(int).tolist()) if save_n else set()
@@ -48,6 +51,8 @@ def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_d
 
     for i, r in enumerate(rows):
         img = imread_rgb(root / r["path"])
+        if prep is not None:   # ảnh dò tổng hợp: ảnh lớn thu nhỏ rồi suy giảm
+            img = prep(img, r)
         if upscale is not None:
             img = upscale(img)
             if save_dir is not None and i in keep:
@@ -57,6 +62,22 @@ def embed(model, root: Path, rows: list[dict], device: str, upscale=None, save_d
             flush()
     flush()
     return np.concatenate(out)
+
+
+def synth_prep(kind: str, short: int, scale: int, params=None):
+    """Hàm dựng ảnh dò nhỏ từ ảnh lớn: thu về cạnh ngắn ``short*scale`` (cắt cho chia hết), rồi ``degrade``."""
+    from earsr.data.resize import imresize
+    from earsr.data.resize import center_crop_to_multiple
+    from earsr.degrade.pipelines import degrade
+
+    t = short * scale
+
+    def prep(img, r):
+        h, w = img.shape[:2]
+        size = (int(round(h * t / w)), t) if h >= w else (t, int(round(w * t / h)))
+        hr = center_crop_to_multiple(imresize(img, out_size=size), scale)
+        return degrade(hr, scale, kind, key=r["path"], params=params)
+    return prep
 
 
 def main(argv=None) -> None:
@@ -79,6 +100,9 @@ def main(argv=None) -> None:
     ap.add_argument("--save-n", type=int, default=16)
     ap.add_argument("--save-match", default=None, help="chỉ lưu ảnh của phương pháp có tên khớp biểu thức này")
     ap.add_argument("--limit", type=int, default=None, help="chỉ lấy N ảnh dò đầu của mỗi người (để thử)")
+    ap.add_argument("--synth", default=None, help="ảnh dò tổng hợp từ nửa ảnh lớn, kiểu suy giảm này (bic, bicjpeg75, ...)")
+    ap.add_argument("--synth-short", type=int, default=36, help="cạnh ngắn của ảnh dò tổng hợp")
+    ap.add_argument("--degrade-params", default=None, help="file tham số cho --synth est")
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args(argv)
@@ -92,6 +116,13 @@ def main(argv=None) -> None:
     if leak:
         raise SystemExit(f"DỪNG: mạng nhận dạng đã học trên {len(leak)} người của nhóm chấm (ví dụ {sorted(leak)[:3]})")
     sp = split_gallery_probe(rows, tuple(a.probe_short), a.gallery_min_short)
+    prep = None
+    if a.synth:
+        from earsr.degrade.pipelines import DegradeParams
+
+        params = DegradeParams.load(a.degrade_params) if a.degrade_params else None
+        prep = synth_prep(a.synth, a.synth_short, a.scale, params)
+        sp["probe"] = list(sp["ref"])   # cùng người, cùng ảnh với ref_large; chỉ khác bước thu nhỏ và suy giảm
     if a.limit:
         cnt, keep = {}, []
         for r in sp["probe"]:
@@ -104,12 +135,13 @@ def main(argv=None) -> None:
     g_subj = np.array([r["subject"] for r in sp["gallery"]])
     uniq, temp = templates(embed(model, root, sp["gallery"], a.device), g_subj)
     for r in sp["probe"]:   # mức nén JPEG của chính file ảnh dò (None nếu không phải JPEG), để tách kết quả theo mức nén
-        r["jpeg_q"] = jpeg_quality_from_file(root / r["path"])
+        r["jpeg_q"] = None if a.synth else jpeg_quality_from_file(root / r["path"])
     meta = {"root": str(a.root), "role": a.role if a.roles else ["all"], "recognizer": a.recognizer, "recognizer_cfg": ck["cfg"], "subjects": uniq.tolist(),
             "n_gallery": len(sp["gallery"]), "n_ref": len(sp["ref"]), "n_probe": len(sp["probe"]),
             "dropped_subjects": sp["dropped"], "gallery_only_subjects": sp["gallery_only"],
             "n_probe_subjects": len({r["subject"] for r in sp["probe"]}), "probe_short": a.probe_short, "gallery_min_short": a.gallery_min_short,
-            "scale": a.scale, "input_hw": list(INPUT_HW), "limit": a.limit}
+            "scale": a.scale, "input_hw": list(INPUT_HW), "limit": a.limit,
+            "synth": a.synth, "synth_short": a.synth_short if a.synth else None}
     (out / "meta.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False))
     for nm in ("probe", "ref", "gallery"):
         with open(out / f"{nm}s.csv" if nm != "gallery" else out / "gallery.csv", "w", newline="") as fh:
@@ -134,7 +166,8 @@ def main(argv=None) -> None:
         up = make() if make else None
         save = Path(a.save_sr) / name if (a.save_sr and up is not None and
                                           (not a.save_match or re.search(a.save_match, name))) else None
-        emb = embed(model, root, probes, a.device, upscale=up, save_dir=save, save_n=a.save_n)
+        emb = embed(model, root, probes, a.device, upscale=up, save_dir=save, save_n=a.save_n,
+                    prep=prep if name != "ref_large" else None)
         s = score_probes(emb, np.array([r["subject"] for r in probes]), uniq, temp)
         np.save(out / f"{name}.npy", s["scores"].astype(np.float32))
         with open(f, "w", newline="") as fh:
