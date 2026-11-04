@@ -239,6 +239,13 @@ def published(res: Path, out: Path) -> dict:
     put("AwexMQLowSig", below[("AWEx", 144, "bicjpeg75")][1])
     put("AmiQLowSig", min(below[("AMI", t, "bicjpeg75")][1] for t in (96, 144, 192)))
     put("AllQHighBelow", sum(v[0] for k, v in below.items() if k[2] == "bicjpeg93"))   # mọi bộ ảnh tai, mọi cỡ
+    put("AllQHighSig", sum(v[1] for k, v in below.items() if k[2] == "bicjpeg93"))
+    put("AllQHighCells", sum(16 for k in below if k[2] == "bicjpeg93"))
+    ae = [v for k, v in below.items() if k[0] == "AMI" and k[2] == "est"]   # suy giảm đo được trên AMI (05/11; TODO P6)
+    put("AmiEstSig", min(v[1] for v in ae) if ae else None, "ami-est")
+    me = [cell(q, t, "est").gain.median() for t in (96, 144, 192) if len(cell(q, t, "est")) == 16]
+    put("AmiEstMedMin", num(-max(me), 2) if me else None, "ami-est")
+    put("AmiEstMedMax", num(-min(me), 2) if me else None, "ami-est")
     put("WildEstGainMin", num(min(v[2] for k, v in below.items() if k[2] == "est" and k[0] != "AMI"), 2, True))
     put("WildEstGainMax", num(max(v[3] for k, v in below.items() if k[2] == "est" and k[0] != "AMI"), 2, True))
     put("WildCleanGainMin", num(min(v[2] for k, v in below.items() if k[2] == "bic" and k[0] != "AMI")))
@@ -813,6 +820,16 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         if tag != "All":
             put(f"CrossQ{tag}Min", int(round(X[sel].q.min())))
             put(f"CrossQ{tag}Max", int(round(X[sel].q.max())))
+    # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn (thêm cỡ 48 px ngày 05/11; TODO P6)
+    A = X[X.set == "AMI"].sort_values("px")
+    if not (np.all(np.diff(A.q) > 0) and np.all(np.diff(A.ratio) < 0)):
+        print("CHÚ Ý: điểm đổi dấu trên AMI không còn dời đều theo cỡ ảnh; sửa câu ở mục 4.2 và phần mở đầu")
+    put("CrossQAmiSmallPx", int(A.px.iloc[0]))
+    put("CrossQAmiLargePx", int(A.px.iloc[-1]))
+    put("CrossQAmiSmall", int(round(A.q.iloc[0])))
+    put("CrossQAmiLarge", int(round(A.q.iloc[-1])))
+    put("CrossAmiSmall", num(A.ratio.iloc[0], 2))
+    put("CrossAmiLarge", num(A.ratio.iloc[-1], 2))
     rows = []
     for r in X.to_dict("records"):
         kind = "Natural" if r["set"] == "DIV2K" else "Ear"
