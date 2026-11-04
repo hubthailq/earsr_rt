@@ -16,12 +16,29 @@ def bicubic_down(hr: np.ndarray, scale: int) -> np.ndarray:
     return imresize(hr, out_size=(h // scale, w // scale))
 
 
-def jpeg(img: np.ndarray, quality: int) -> np.ndarray:
-    """Nén rồi giải nén JPEG ở mức ``quality`` (thang 1..100 của libjpeg)."""
-    ok, buf = cv2.imencode(".jpg", img[:, :, ::-1], [cv2.IMWRITE_JPEG_QUALITY, int(quality)])
+def jpeg(img: np.ndarray, quality: int, chroma444: bool = False) -> np.ndarray:
+    """Nén rồi giải nén JPEG ở mức ``quality`` (thang 1..100 của libjpeg).
+
+    Mặc định của OpenCV là lấy mẫu màu 4:2:0 (Y 2×2, Cb và Cr 1×1); ``chroma444`` giữ đủ kênh màu.
+    """
+    flags = [cv2.IMWRITE_JPEG_QUALITY, int(quality)]
+    if chroma444:
+        flags += [cv2.IMWRITE_JPEG_SAMPLING_FACTOR, cv2.IMWRITE_JPEG_SAMPLING_FACTOR_444]
+    ok, buf = cv2.imencode(".jpg", img[:, :, ::-1], flags)
     if not ok:
         raise RuntimeError("nén JPEG thất bại")
     return np.ascontiguousarray(cv2.imdecode(buf, cv2.IMREAD_COLOR)[:, :, ::-1])
+
+
+def jpeg_shifted(img: np.ndarray, quality: int, dy: int, dx: int) -> np.ndarray:
+    """JPEG với lưới khối lệch so với ảnh: đệm phản chiếu ``dy`` hàng trên và ``dx`` cột trái, nén, rồi cắt lại.
+
+    Mô phỏng ảnh tai được cắt từ một ảnh đã nén, nên lưới 8×8 không bắt đầu ở góc ảnh cắt. Kích thước giữ nguyên.
+    """
+    if dy == 0 and dx == 0:
+        return jpeg(img, quality)
+    pad = np.pad(img, ((dy, 0), (dx, 0), (0, 0)), mode="reflect")
+    return np.ascontiguousarray(jpeg(pad, quality)[dy:, dx:])
 
 
 def gaussian_blur(img: np.ndarray, sigma: float) -> np.ndarray:

@@ -44,7 +44,7 @@ class TrainSet(torch.utils.data.Dataset):
 
     def __getitem__(self, i):
         r = self.rows[i]
-        img = imread_rgb(self.root / r["path"])
+        img = r["arr"] if "arr" in r else imread_rgb(self.root / r["path"])
         x = self.aug(Image.fromarray(img)) if self.train else to_input(img, self.hw)
         return x, self.label_of[r["subject"]]
 
@@ -76,15 +76,24 @@ def main(argv=None) -> dict:
     ap.add_argument("--out", default="runs/RECOG_resnet18")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--limit", type=int, default=None, help="chỉ dùng N ảnh đầu của mỗi người (để thử)")
+    # Bộ nhận dạng học trên ảnh đã phóng (phản biện 04/11; TODO.md, việc O4): thêm ảnh NHỎ THẬT của chính những người
+    # học, đã phóng ×4 bằng đúng phương pháp sẽ được chấm. Tập người và ảnh theo dõi giữ nguyên như bản chỉ học ảnh lớn.
+    ap.add_argument("--sr-model", default=None, help="phương pháp phóng ảnh nhỏ lúc học (bicubic, span_ch48, ...)")
+    ap.add_argument("--sr-run", nargs="+", default=None,
+                    help="hoặc thư mục lần chạy của train.py; nhiều lần chạy (các fold) thì ảnh thứ i dùng lần chạy i mod n")
+    ap.add_argument("--small-short", type=int, nargs=2, default=[24, 48])
+    ap.add_argument("--scale", type=int, default=4)
     a = ap.parse_args(argv)
+    if a.sr_model and a.sr_run:
+        ap.error("chỉ một trong --sr-model và --sr-run")
     bad = set(a.train_roles) & set(EVAL_ROLES)
     if bad:
         raise SystemExit(f"DỪNG: vai {sorted(bad)} là nhóm được chấm, không được dùng để huấn luyện mạng nhận dạng")
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     torch.manual_seed(a.seed)
-    rows = [r for r in list_images(a.root, a.roles, tuple(a.train_roles), cache=out / "scan.csv")
-            if r["short"] >= a.min_short]
+    all_rows = list_images(a.root, a.roles, tuple(a.train_roles), cache=out / "scan.csv")
+    rows = [r for r in all_rows if r["short"] >= a.min_short]
     by = {}
     for r in rows:
         by.setdefault(r["subject"], []).append(r)
@@ -98,6 +107,23 @@ def main(argv=None) -> dict:
         n_val = max(1, len(order) // 10)
         va += [by[s][i] for i in order[:n_val]]
         tr += [by[s][i] for i in order[n_val:]]
+    sr_name, n_small = None, 0
+    if a.sr_model or a.sr_run:
+        from earsr.eval.infer import make_predictor
+        from earsr.train.finetune import predictor_from_run
+
+        ups = [make_predictor(a.sr_model, a.scale, a.device)] if a.sr_model else \
+            [predictor_from_run(r, a.device) for r in a.sr_run]
+        sr_name = a.sr_model or ",".join(Path(r).name for r in a.sr_run)
+        lo, hi = a.small_short
+        small = [r for r in all_rows if lo <= r["short"] <= hi and r["subject"] in label_of]
+        if a.limit:
+            small = small[: a.limit * len(subjects)]
+        for i, r in enumerate(small):   # phóng một lần trước khi học; ảnh đã phóng nhỏ, giữ trong bộ nhớ
+            tr.append(dict(r, arr=ups[i % len(ups)](imread_rgb(Path(a.root) / r["path"]))))
+        n_small = len(small)
+        del ups
+        print(f"thêm {n_small} ảnh nhỏ thật của người học, phóng ×{a.scale} bằng {sr_name}", flush=True)
     print(f"mạng nhận dạng: {len(subjects)} người, {len(tr)} ảnh học, {len(va)} ảnh theo dõi "
           f"(vai {a.train_roles}, cạnh ngắn >= {a.min_short}); thiết bị {a.device}", flush=True)
     dl = torch.utils.data.DataLoader(TrainSet(a.root, tr, label_of, True), batch_size=a.batch_size, shuffle=True,
@@ -124,7 +150,8 @@ def main(argv=None) -> dict:
         print(f"epoch {ep}/{a.epochs}  loss {tot / max(n, 1):.4f}  val_acc {acc:.4f}", flush=True)
     info = {"subjects": subjects, "train_roles": a.train_roles, "min_short": a.min_short, "n_train": len(tr),
             "n_val": len(va), "val_acc": log[-1]["val_acc"] if log else None, "init": a.init, "epochs": a.epochs,
-            "seed": a.seed, "input_hw": list(INPUT_HW), "elapsed_s": round(time.time() - t0, 1)}
+            "seed": a.seed, "input_hw": list(INPUT_HW), "elapsed_s": round(time.time() - t0, 1),
+            "sr_train": sr_name, "n_small_upscaled": n_small}
     save_embedder(model.cpu(), out / "ckpt.pt", extra=info)
     (out / "train_log.json").write_text(json.dumps({"info": info, "log": log}, indent=1, ensure_ascii=False))
     print(f"đã lưu {out / 'ckpt.pt'} (val_acc {info['val_acc']})")

@@ -169,6 +169,29 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   Luo 2014 đọc 2 trang đầu (từ điển LC-KSVD, nhắm vào nhận dạng). Thêm Zarachoff, Sheikh-Akbari, Monekosso, IST 2018
   (doi 10.1109/IST.2018.8577134; đã đọc đủ 06/11: lọc thông thấp rồi thu nhỏ, không có nén, nhận dạng bằng trị riêng PCA). Sửa câu ở mở bài và tài liệu liên quan, có rào
   "as far as we could determine" vì hai bài chưa đọc đủ. Danh mục 46 mục.
+- [x] 06/11 **G12. Viết gọn toàn bài** (người dùng: thầy chê dài dòng; Q1 cần súc tích, có câu chuyện, điểm mạnh lên trước):
+  phần chính từ khoảng 10.100 xuống 5.800 từ (mở bài 1.380 xuống 710; thực nghiệm 3.640 xuống 1.840; thảo luận và kết luận
+  1.240 xuống 610). Mở bài nay đi theo mạch: vấn đề, khoảng trống, phát hiện chính (phân rã sai số), hai hệ quả, bốn đóng
+  góp. Không bỏ số liệu hay bảng nào; giữ mọi câu rào đón đã thống nhất với phản biện thử (AWEx, hai điều kiện, BSRNet).
+  Phần chính kết thúc trang 22 (trước: 31); tổng 32 trang. Bản trước khi cắt lưu ở scratchpad `sections_before_trim/`.
+- [x] 06/11 **G13. Sửa theo phản biện IMAVIS (người dùng dán, đồng ý làm bước 1 đến 5):**
+  (1) phân rã sai số: thêm phương trình; mô hình kém bicubic khi phần dư (b−1)E_c vượt phần tiết kiệm (1−a)E_i; phần dư tăng
+  theo mức nén ở 10/10 nhóm, nên câu "khuếch đại mạnh nhất khi nén nhẹ" chỉ là hiệu ứng mẫu số (đã bỏ); hình mới
+  `fig_excess.png`. (2) tóm tắt viết lại theo một câu dẫn (243 từ); đóng góp 1 là quy tắc tỉ số; đóng góp 4 là hệ quả kèm
+  quy tắc chọn theo ngân sách. (3) câu dùng chung: dưới nén kiến trúc gần như không đổi PSNR; nhận dạng xếp hạng khác và
+  PSNR không dự đoán được. (4) từ khóa đổi thứ tự; AWEx "không thấy mức tăng cỡ EarVN1.0"; giới hạn mới: nén rồi cắt,
+  4:2:0, đáp án chỉ sạch tương đối (EarVN1.0 nguồn JPEG 71 đến 93, trung vị 75; AMI 90), bộ nhận dạng chưa học trên ảnh
+  đã phóng; bỏ câu "tìm không hệ thống, chưa thấy"; cách đọc mức JPEG; một seed mỗi fold; GPU chậm hơn CPU ở FP32; bảng
+  theo bộ ảnh xuống phụ lục B. Bài 34 trang.
+  (5) KẾT QUẢ, chưa đưa vào bài (chờ người dùng): trên 23 phương pháp, LPIPS trên ảnh EarVN1.0 mô phỏng đi cùng hạng 1 trên
+  ảnh dò thật (Spearman −0,81 đến −0,87, p < 0,001, cả hai bộ nhận dạng), PSNR thì không (+0,15 đến +0,18, không ý nghĩa);
+  DISTS ở giữa (−0,54 đến −0,60). Hình đánh đổi nháp ở scratchpad `tradeoff.png`: dưới ngưỡng 33 ms trên CPU điện thoại chỉ
+  có SPAN và DISP học có nén là tăng nhận dạng; mọi phương pháp cao hơn đều quanh 100 ms.
+  Để dành nếu phản biện đòi: học lại bộ nhận dạng trên ảnh bicubic-phóng (một ResNet-18, chấm lại mọi cách phóng).
+  - [x] 06/11 Người dùng đồng ý đưa (5) vào bài: đoạn "Fidelity and identification" và bảng `tab_fidrecog` ở 6.6 (thêm kiểm theo
+    họ: chỉ mô hình L1 do bài tinh chỉnh thì PSNR cũng đi cùng hạng 1, +0,82 và +0,76; nên câu viết hẹp: PSNR xếp đúng trong một
+    họ mục tiêu, LPIPS xếp đúng qua các họ); hình `fig_tradeoff.png` ở 6.7; sửa câu PSNR ở tóm tắt (249 từ), mở bài, thảo luận,
+    kết luận. Gọi là mô tả, làm sau khi có kết quả. Bài 35 trang, phần chính hết trang 26.
   mọi bộ xử lý như `results/latency_ios.csv`). Đã đo 6 mô hình: SPAN, DISP, EDSR-baseline, SwinIR-light, RRDB, BSRGAN.
   - [x] 04/11 **L1 xong, đã vào bài (mục 6.6).** FP32 trên iPhone 12 Pro Max: FBCNN rồi SPAN 93,59 ms CPU, 57,81 ms mọi bộ
     xử lý (280 trên 284 phép tính chạy trên GPU, không phép nào trên Neural Engine): vượt 33 ms ở cả hai. SPAN FP32: 10,33 ms
@@ -188,6 +211,42 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   - **RRDB tinh chỉnh (việc J2b)**: không cần đo riêng, cùng kiến trúc RRDB.
   - 10 mô hình hiệu quả còn lại (MSRResNet, RLFN, EFDN, SAFMN++, SMFANet, SPAN 28 và 26 kênh, PDS, PKDSR, DSCF, ERRN): đã
     xuất Core ML nhưng chưa đo; không cần cho lập luận của bài, chỉ đo nếu phản biện yêu cầu.
+- [x] 06/11 **G14. Sửa theo phản biện vòng 2 (minor revision; người dùng đồng ý):** (1) tóm tắt, mở bài, đóng góp 1 dẫn bằng
+  phần đo được (phần dư luôn dương và tăng theo nén; phần tiết kiệm tính trên ảnh sạch nên chỉ phụ thuộc ảnh và cỡ ảnh), bỏ
+  chữ "governed" và dải 0,13 đến 0,36 khỏi câu dẫn; mục 4.2 nói rõ bất đẳng thức chỉ là cách viết lại phép so MSE (PSNR).
+  (2) câu LPIPS: "PSNR mất liên hệ khi có mô hình GAN" (không còn "chỉ trong một mục tiêu"); bảng thêm cột DISTS; ghi tên
+  LPIPS thay "a perceptual metric". (3) benchmark: AMI "near-clean" (gốc JPEG 90, thu 2,6 đến 5 lần), EarVN1.0 đáp án còn
+  nén (71 đến 93, trung vị 75), AWEx PNG không rõ lịch sử nén; AMI là bộ gánh các câu độ trung thực. (4) mở bài khớp phạm vi
+  phần tài liệu liên quan; câu Markićević trỏ sang nhóm ảnh dò JPEG ≥ 90 (+3,0 điểm). Highlights viết lại. Tóm tắt 247 từ.
+- [x] 06/11 **G15. Sửa theo phản biện vòng 3 (minor):** thảo luận và kết luận không còn dẫn bằng bất đẳng thức (chỉ một mệnh đề);
+  dẫn bằng phần đo được và tỉ số 0,69 so với 0,10 ở JPEG 75. Bỏ chữ "only" (phần tiết kiệm phụ thuộc mô hình qua a; chỉ không
+  đổi theo mức nén). Kiểm thêm: phần dư tăng theo nén ở 160/160 cặp mô hình × nhóm, nên "every model" đúng (macro
+  ExcessMonoModels). "Near-clean" chỉ gắn với AMI; câu AMI hạ thành "we treat ... as near-clean". Bỏ ước lượng tỉ số khỏi
+  đóng góp 1. Câu LPIPS gắn "on EarVN1.0" và mệnh đề đáp án còn nén. Sửa câu đứt "; Across". Sửa "BSRNet ... the highest
+  rank-1 rate" (chỉ đúng với ResNet-50; với ResNet-18 BSRGAN và Real-ESRGAN cao hơn). Highlights dòng 5 có điều kiện.
+  Tóm tắt 248 từ; bài 36 trang.
+- [x] 06/11 **G16. Hai câu cuối theo phản biện (trước khi lên khuôn):** mục 4.2 bỏ mệnh đề "loses its advantage when this excess
+  exceeds..." (phần đo được dừng ở b > 1 và phần dư tăng); thảo luận bỏ "LPIPS is the better proxy...", dừng ở phạm vi EarVN1.0.
+- [ ] **O. Phản biện thứ tư (04/11; người dùng: "làm hết đi").** Thứ tự B (tính ngắn trên Mac), C (labai217), rồi A (chữ),
+  vì câu chữ phụ thuộc kết quả. Phát hiện khi đối chiếu: mã nén (`cv2.imencode`, mặc định) đã lấy mẫu màu 4:2:0 (Y 2×2,
+  màu 1×1), nên câu "chưa kiểm 4:2:0" ở phần giới hạn là SAI, phải sửa.
+  - [x] 04/11 O1 Hình cơ chế (`scripts/analyze_blocks.py`, chạy trên Mac, `results/mechanism/`; hình `fig_mechanism.png`,
+    macro `Mech*`, đoạn "Where the excess lies" ở mục 4.2). Kết quả: ở JPEG 75 trên AMI phần dư mỗi điểm ảnh sát biên khối
+    gấp 1,45 lần chỗ khác (52% phần dư trên 42% điểm ảnh); ở JPEG 93 và trên DIV2K gần đều (1,07; 1,08). Theo tần số: 84%
+    phần dư nằm trong 0,6 đến 1,4 lần Nyquist của ảnh vào, 57% ở trên Nyquist (sai số nén của bicubic: 15%). Tức phần dư
+    chủ yếu là chi tiết mạng dựng ở dải quanh Nyquist, biên khối chỉ góp một phần. Mô tả, không phải phép thử nhân quả.
+  - [ ] O2 [labai217] Thứ tự suy giảm, chỉ chấm (`scripts/run_order_control.sh`, kiểu mới `shiftjpegQ`, `dbljpegQ1toQ2`,
+    `jpegQbic`, `bicjpegQc444` trong `earsr/degrade/pipelines.py`; kiểu cũ giữ nguyên từng bit). Mã xong 04/11; bảng
+    `tab:order` (phụ lục B), macro `Ord*`. Còn: chạy trên labai217, rồi viết câu ở mục 4.1 và phần giới hạn theo kết quả.
+  - [x] 04/11 O3 Độ khối của đáp án AMI: ảnh gốc 1,34; đáp án 144 px 1,00, 96 px 1,01 (`results/gt_quality.json`, macro
+    `BlockAmi*`; câu ở mục 3.1 của benchmark). Thu nhỏ hệ số không nguyên đã xóa lưới.
+  - [ ] O4 [labai217] Bộ nhận dạng học thêm 3.415 ảnh nhỏ thật của người học, phóng bằng đúng phương pháp được chấm
+    (`train_recognizer.py --sr-model/--sr-run`, `scripts/run_recog_upscaled.sh`): bicubic, SPAN công bố, SPAN tinh chỉnh
+    (5 fold, gộp như bài). Công thức giữ nguyên ResNet-18 của bài. Mã xong 04/11; bảng `tab:recogup`, macro `RecUp*`.
+    Còn: chạy, rồi viết đoạn ở mục 6.4 và phần giới hạn theo kết quả.
+  - [ ] O5 [Claude] Chữ: câu 4:2:0; viết lại mục 3 (lõi là mức JPEG đọc từ file; noise, blur chuyển phụ lục); còn 3 đóng
+    góp, nhận dạng và LPIPS thành kết quả có điều kiện, rời khỏi tóm tắt và kết luận; cắt lặp số ở thảo luận và kết luận;
+    câu nội suy và bootstrap của điểm đổi dấu (in một số lẻ); câu về một seed; hình đánh đổi tách FP32; tiêu đề.
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

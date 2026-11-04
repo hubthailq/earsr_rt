@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from earsr.report.arms import arm_of  # noqa: E402
+from earsr.report.arms import PUBLISHED, arm_of  # noqa: E402
 from earsr.stats.bootstrap import paired_diff  # noqa: E402
 
 # 16 mô hình tối ưu PSNR, khác nhau về trọng số (span26 trùng span_ch28; span_ch48_t44 là bản phụ của SPAN 48 kênh)
@@ -711,8 +711,12 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
                 amp_b += b_.tolist()
                 psnr = -10 * np.log10(J)
                 g = psnr[:, 1:].mean(0) - psnr[:, 0].mean()
+                # sai số dư tuyệt đối do nén, (b-1)E_c, và phần sai số nội suy mô hình tiết kiệm được, (1-a)E_i; cả hai chia
+                # cho E_i. Mô hình hơn bicubic khi và chỉ khi phần dư nhỏ hơn phần tiết kiệm.
                 cells.append({"set": name, "px": t // 4, "q": q, "ratio": Ec / Ei, "gain": float(np.median(g)),
-                              "below": int((g < 0).sum()), "b_median": float(np.median(b_)), "b_min": float(b_.min())})
+                              "below": int((g < 0).sum()), "b_median": float(np.median(b_)), "b_min": float(b_.min()),
+                              "excess": float(np.median((b_ - 1) * Ec / Ei)), "saving": float(np.median(1 - a_)),
+                              **{f"ex_{m_}": float((b_[k_] - 1) * Ec / Ei) for k_, m_ in enumerate(PSNR16)}})
             if len(pts) < 2:
                 continue
             qs = sorted(pts, reverse=True)
@@ -762,6 +766,27 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     put("RatioAmiQHigh", one("AMI", 36, 93))
     put("RatioDivQLow", one("DIV2K", 36, 75))
     put("RatioDivQVLow", one("DIV2K", 36, 60))
+    # phần dư tuyệt đối có tăng dần khi nén nặng hơn trong mọi nhóm (bộ ảnh, cỡ ảnh) có ít nhất hai mức không
+    grp = [g.sort_values("q", ascending=False).excess.to_numpy() for _, g in R.groupby(["set", "px"]) if len(g) > 1]
+    mono = sum(bool(np.all(np.diff(e) > 0)) for e in grp)
+    put("ExcessMono", mono)
+    # cùng phép kiểm cho từng mô hình riêng (không chỉ mô hình trung vị)
+    per = [(m_, g.sort_values("q", ascending=False)[f"ex_{m_}"].to_numpy()) for _, g in R.groupby(["set", "px"]) if len(g) > 1
+           for m_ in PSNR16]
+    put("ExcessMonoModels", sum(bool(np.all(np.diff(e) > 0)) for _, e in per))
+    put("ExcessModelGroups", len(per))
+    put("ExcessGroups", len(grp))
+    if mono != len(grp):
+        print("CHÚ Ý: phần dư (b-1)E_c không tăng đều theo mức nén ở mọi nhóm; sửa câu ở mục 4.2")
+
+    def cellv(st, px, qq, col_):
+        x = R[(R.set == st) & (R.px == px) & (R.q == qq)]
+        return float(x[col_].iloc[0]) if len(x) else None
+
+    for st, tg in (("AMI", "Ami"), ("DIV2K", "Div")):
+        put(f"Excess{tg}High", num(cellv(st, 36, 93, "excess"), 2))
+        put(f"Excess{tg}Low", num(cellv(st, 36, 60, "excess"), 2))
+        put(f"Saving{tg}", num(cellv(st, 36, 75, "saving"), 2))
     put("AmpMin", num(min(amp_b), 1))
     put("AmpMax", num(max(amp_b), 1))
     put("ReduceMin", num(min(amp_a), 2))
@@ -776,8 +801,8 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     rows = []
     for r in X.to_dict("records"):
         kind = "Natural" if r["set"] == "DIV2K" else "Ear"
-        rows.append(f"{kind} ({r['set']}) & {r['px']} & {r['levels']} & {r['q']:.0f} {{\\scriptsize[{min(r['q_lo'], r['q_hi']):.0f}, "
-                    f"{max(r['q_lo'], r['q_hi']):.0f}]}} & {num(r['ratio'], 2)} {{\\scriptsize[{num(r['ratio_lo'], 2)}, "
+        rows.append(f"{kind} ({r['set']}) & {r['px']} & {r['levels']} & {r['q']:.1f} {{\\scriptsize[{min(r['q_lo'], r['q_hi']):.1f}, "
+                    f"{max(r['q_lo'], r['q_hi']):.1f}]}} & {num(r['ratio'], 2)} {{\\scriptsize[{num(r['ratio_lo'], 2)}, "
                     f"{num(r['ratio_hi'], 2)}]}} \\\\")
     write(out / "tab_crossover.tex", "\n".join(rows) + "\n")
     # ô ×2 duy nhất có sẵn: SwinIR-light ×2 trên AMI (đáp án 144 px, ảnh vào 72 px)
@@ -814,6 +839,25 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     ax.legend(handles=h1 + h2, frameon=False, fontsize=6.5, ncol=2, loc="upper right")
     f.tight_layout()
     f.savefig(fig / "fig_ratio.png", dpi=600)
+    plt.close(f)
+
+    # phần dư tuyệt đối (b-1)E_c theo mức nén, cùng phần tiết kiệm (1-a)E_i (đường ngang), đều chia cho E_i
+    f, ax = plt.subplots(figsize=(5.2, 2.8))
+    show = (("AMI", 36, "ear: AMI, 36 px"), ("EarVN1.0", 24, "ear: EarVN1.0, 24 px"), ("AWEx", 24, "ear: AWEx, 24 px"),
+            ("DIV2K", 36, "natural: DIV2K, 36 px"))
+    for st, px, lab in show:
+        g = R[(R.set == st) & (R.px == px)].sort_values("q", ascending=False)
+        if g.empty:
+            continue
+        xs = [str(q) for q in g.q]
+        ax.plot(xs, g.excess, color=col[st], marker="o", ms=3.5, lw=1.4, label=lab)
+        ax.axhline(float(g.saving.median()), color=col[st], lw=0.9, ls="--")
+    ax.set_xlabel("JPEG quality of the input")
+    ax.set_ylabel("Error relative to $E_i$")
+    ax.text(0.01, 0.97, "solid: excess $(b-1)E_c$; dashed: saving $(1-a)E_i$", transform=ax.transAxes, fontsize=6.5, va="top")
+    ax.legend(frameon=False, fontsize=6.5, loc="lower right")
+    f.tight_layout()
+    f.savefig(fig / "fig_excess.png", dpi=600)
     plt.close(f)
 
 
@@ -1045,6 +1089,321 @@ def review(res: Path, out: Path) -> None:
     write(out / "tab_review.tex", "\n".join(rows) + "\n")
 
 
+def fid_recog(res: Path, out: Path, fig: Path) -> None:
+    """Độ trung thực trên ảnh EarVN1.0 mô phỏng (ảnh vào 'est', 24 px) so với hạng 1 trên ảnh dò thật, mọi phương pháp có cả
+    hai số: tương quan hạng theo ba nhóm (tất cả; bỏ GAN; chỉ các mô hình L1 do bài tinh chỉnh). Kèm hình đánh đổi độ trễ CPU
+    điện thoại và hạng 1. Phân tích làm sau khi có kết quả (phản biện gợi ý), nên trong bài gọi là mô tả."""
+    from scipy.stats import spearmanr
+
+    why = "fidrecog"
+    dirs = [res / d for d in ("t2_earvn", "n2_earvn", "rev_earvn")]
+    fs = [f for d in dirs if d.is_dir() for f in d.glob("*__hr96_x4_est.csv")]
+    S = {}
+    for tag in ("resnet18", "resnet50"):
+        parts = [res / "recog" / f"{p_}{tag}_summary" / "summary.csv" for p_ in ("", "rev_")]
+        if all(x.exists() for x in parts):
+            a_, b_ = (pd.read_csv(x).set_index("arm").rank1 for x in parts)
+            S[tag] = pd.concat([a_, b_[~b_.index.isin(a_.index)]])
+    keys = [f"Corr{m}{g}{r}" for m in ("Psnr", "Lpips", "Dists") for g in ("All", "Nogan", "Lone") for r in ("", "Rf")] + \
+           ["CorrNAll", "CorrNNogan", "CorrNLone"]
+    if not fs or len(S) < 2:
+        for k in keys:
+            put(k, None, why)
+        write(out / "tab_fidrecog.tex", "\\todo{--} \\\\\n")
+        return
+    d = pd.concat([pd.read_csv(f, dtype={"subject": str}) for f in fs], ignore_index=True)
+    d["arm"] = d.model.map(lambda m_: arm_of(m_)[0])
+    F = d.groupby(["arm", "key"])[["psnr_y", "lpips", "dists"]].mean().groupby("arm").mean()
+    arms = [a_ for a_ in F.index if all(a_ in S[t].index for t in S) and a_ not in ("ref_large", "direct")]
+    gan = {"bsrgan (published)", "realesrgan (published)", "esrgan (published)", "realesr_compact (published)"}
+    groups = (("All", "All methods", arms), ("Nogan", "Without GAN-trained models", [a_ for a_ in arms if a_ not in gan]),
+              ("Lone", "L1-trained models fine-tuned in this study", [a_ for a_ in arms if "/" in a_]))
+    rows = []
+    for g, label, sel in groups:
+        put(f"CorrN{g}", len(sel))
+        cells = []
+        for m, col in (("Psnr", "psnr_y"), ("Lpips", "lpips"), ("Dists", "dists")):
+            for r, tag in (("", "resnet18"), ("Rf", "resnet50")):
+                t = spearmanr(F.loc[sel, col], S[tag].loc[sel])
+                put(f"Corr{m}{g}{r}", num(t.statistic, 2, True))
+                cells.append(f"{num(t.statistic, 2, True)} {{\\scriptsize({'$<$0.001' if t.pvalue < 0.001 else f'{t.pvalue:.3f}'})}}")
+        rows.append(f"{label} & {len(sel)} & " + " & ".join(cells) + " \\\\")
+    write(out / "tab_fidrecog.tex", "\n".join(rows) + "\n")
+
+    # hình đánh đổi: độ trễ CPU điện thoại (16 bit; FBCNN rồi SPAN ở 32 bit) và hạng 1, hai bộ nhận dạng
+    lf = res / "latency_ios.csv"
+    if not lf.exists():
+        return
+    L = pd.read_csv(lf)
+    L = L[(L.compute_units == "cpu") & pd.to_numeric(L.median_ms, errors="coerce").notna()].set_index("name").median_ms.astype(float)
+    # mỗi phương pháp một ký hiệu riêng (màu theo nhóm), chú giải chung bên dưới thay cho nhãn cạnh điểm
+    pts = [("SPAN-S, published", PUB, "span_ch48", "0.55", "o"), ("DISP, published", "disp26 (published)", "disp26", "0.55", "s"),
+           ("RRDB, published", "rrdb_psnr (published)", "rrdb_psnr", "0.55", "D"),
+           ("SPAN-S, ours", "span/est", "span_ch48", "C3", "o"), ("DISP, ours", "disp26/est", "disp26", "C3", "s"),
+           ("RRDB, our training", "rrdb/est", "rrdb_psnr", "C3", "D"),
+           ("BSRNet", "bsrnet (published)", "rrdb_psnr", "C0", "^"), ("Real-ESRNet", "realesrnet (published)", "rrdb_psnr", "C0", "v"),
+           ("BSRGAN", "bsrgan (published)", "bsrgan", "C2", "P"),
+           ("FBCNN + SPAN-S (32-bit)", "fbcnn_span_ch48 (published)", "fbcnn_span_ch48_fp32", "C1", "X")]
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    f, axes = plt.subplots(1, 2, figsize=(6.6, 3.3), sharey=True)
+    for ax, tag, title in zip(axes, ("resnet18", "resnet50"), ("ResNet-18 recogniser", "ResNet-50 recogniser")):
+        for lab, arm_, key, c, mk in pts:
+            if arm_ not in S[tag].index or key not in L.index:
+                continue
+            if key.endswith("_fp32"):   # 32 bit: ký hiệu rỗng và ghi ngay cạnh điểm (các điểm khác là 16 bit)
+                ax.scatter(L[key], S[tag][arm_], s=30, marker=mk, zorder=3, label=lab, facecolors="none",
+                           edgecolors=c, linewidths=1.0)
+                ax.annotate("32-bit", (L[key], S[tag][arm_]), xytext=(4, -2), textcoords="offset points",
+                            fontsize=5.5, color=c, va="top")
+            else:
+                ax.scatter(L[key], S[tag][arm_], s=30, color=c, marker=mk, zorder=3, label=lab, edgecolors="none")
+        ax.axhline(S[tag]["bicubic"], color="0.3", lw=0.8, ls=":")
+        ax.axvline(33, color="0.3", lw=0.8, ls="--")
+        ax.text(33, ax.get_ylim()[1] if False else 0.98, " 33 ms", transform=ax.get_xaxis_transform(), fontsize=6, va="top")
+        ax.text(1.6, S[tag]["bicubic"], "bicubic", fontsize=6, va="bottom", color="0.3")
+        ax.set_xscale("log")
+        ax.set_xlim(1.5, 250)
+        ax.set_xlabel("CPU latency on the smartphone (ms)")
+        ax.set_title(title, fontsize=8)
+    axes[0].set_ylabel("Rank-1 on real EarVN1.0 probes (%)")
+    h, lab_ = axes[0].get_legend_handles_labels()
+    f.legend(h, lab_, loc="lower center", ncol=5, frameon=False, fontsize=6.2)
+    f.tight_layout(rect=(0, 0.13, 1, 1))
+    f.savefig(fig / "fig_tradeoff.png", dpi=600)
+    plt.close(f)
+
+
+def gt_quality(res: Path, bench: Path = Path("data/bench"), raw: Path = Path("data/raw/EarVN1.0")) -> None:
+    """Mức JPEG còn lại trong ảnh gốc dùng làm đáp án của EarVN1.0 (phần giới hạn). Tính một lần từ ảnh gốc rồi lưu ở
+    results/gt_quality.json, để máy không có dữ liệu vẫn dựng được bài."""
+    f = res / "gt_quality.json"
+    if not f.exists() and (bench / "earvn" / "manifest.csv").exists():
+        import csv
+        from earsr.degrade.fit_estimated import jpeg_quality_from_file
+        rows = [r for r in csv.DictReader(open(bench / "earvn" / "manifest.csv")) if r["tier"] == "96"]
+        q = [jpeg_quality_from_file(raw / r["src"]) for r in rows]
+        q = [x for x in q if x]
+        f.write_text(json.dumps({"earvn_gt_sources": {"n": len(q), "min": min(q), "max": max(q), "median": float(np.median(q))}}, indent=1))
+    d = json.loads(f.read_text())["earvn_gt_sources"] if f.exists() else None
+    put("GtEarvnQMin", d["min"] if d else None, "gt")
+    put("GtEarvnQMax", d["max"] if d else None, "gt")
+    put("GtEarvnQMed", int(d["median"]) if d else None, "gt")
+    # độ khối 8×8 còn sót ở đáp án AMI (phản biện 04/11): ảnh gốc JPEG 90 là đối chứng dương
+    b = json.loads(f.read_text()).get("ami_blockiness") if f.exists() else None
+    for key, mac in (("ami_originals_jpeg90", "BlockAmiRaw"), ("ami_gt_hr96", "BlockAmiGtS"),
+                     ("ami_gt_hr144", "BlockAmiGtM"), ("ami_lr36_bicjpeg75", "BlockAmiLrQLow"),
+                     ("ami_lr36_bic", "BlockAmiLrClean")):
+        put(mac, num(b[key]["median"], 2) if b else None, "gt")
+
+
+def mechanism(res: Path, fig: Path) -> None:
+    """Phần dư nén theo vị trí trong khối 8×8 và theo tần số (scripts/analyze_blocks.py; TODO.md, việc O1)."""
+    why = "mechanism"
+    keys = ["MechBoundQLow", "MechBoundQHigh", "MechBoundShare", "MechBoundFrac", "MechBoundDivQLow",
+            "MechNearNyq", "MechAboveNyq", "MechAboveNyqEc", "MechNearNyqDiv", "MechAboveNyqDiv"]
+    F = {st: res / "mechanism" / f"blocks_{st}_hr144.json" for st in ("ami", "div2k")}
+    if not all(f.exists() for f in F.values()):
+        for k in keys:
+            put(k, None, why)
+        return
+    out = {}
+    for st, f in F.items():
+        d = json.loads(f.read_text())
+        frac, E = np.array(d["pos_frac"]), np.array(d["freq_edges"])
+        B = d["models"]["bicubic"]
+        r = {"frac": frac, "edges": E}
+        for q in ("bicjpeg93", "bicjpeg75"):
+            ec_pos = np.array(B[q]["pos"]) - np.array(B["bic"]["pos"])
+            ec_f = np.array(B[q]["freq"]) - np.array(B["bic"]["freq"])
+            pos, frq = [], []
+            for m in PSNR16:
+                M = d["models"][m]
+                ex_pos = np.array(M[q]["pos"]) - np.array(M["bic"]["pos"]) - ec_pos
+                ex_f = np.array(M[q]["freq"]) - np.array(M["bic"]["freq"]) - ec_f
+                tot = ex_f.sum()
+                pos.append((ex_pos / frac) / tot)       # phần dư mỗi điểm ảnh, chia cho trung bình toàn ảnh
+                frq.append(ex_f / tot)                  # tỉ lệ phần dư trong từng vành
+            r[q] = {"pos": np.array(pos), "freq": np.array(frq), "ec_freq": ec_f / ec_f.sum()}
+        out[st] = r
+    nyq = 0.125   # tần số Nyquist của ảnh vào ×4, theo chu kỳ trên điểm ảnh HR
+    E = out["ami"]["edges"]
+    lo_e, hi_e = E[:-1], E[1:]
+    near = (lo_e >= 0.6 * nyq - 1e-9) & (hi_e <= 1.4 * nyq + 1e-9)
+    above = lo_e >= nyq - 1e-9
+
+    def bound(st, q):   # tỉ số phần dư mỗi điểm ảnh: sát biên khối so với phần còn lại, trung vị qua mô hình
+        r = out[st]
+        p = r[q]["pos"] * r["frac"]
+        return np.median(p[:, 0] / r["frac"][0] / (p[:, 1:].sum(1) / r["frac"][1:].sum()))
+    a75 = out["ami"]["bicjpeg75"]
+    put("MechBoundQLow", num(bound("ami", "bicjpeg75"), 2))
+    put("MechBoundQHigh", num(bound("ami", "bicjpeg93"), 2))
+    put("MechBoundDivQLow", num(bound("div2k", "bicjpeg75"), 2))
+    put("MechBoundShare", int(round(100 * np.median(a75["pos"][:, 0] * out["ami"]["frac"][0]))))
+    put("MechBoundFrac", int(round(100 * out["ami"]["frac"][0])))
+    put("MechNearNyq", int(round(100 * np.median(a75["freq"][:, near].sum(1)))))
+    put("MechAboveNyq", int(round(100 * np.median(a75["freq"][:, above].sum(1)))))
+    put("MechAboveNyqEc", int(round(100 * a75["ec_freq"][above].sum())))
+    d75 = out["div2k"]["bicjpeg75"]
+    put("MechNearNyqDiv", int(round(100 * np.median(d75["freq"][:, near].sum(1)))))
+    put("MechAboveNyqDiv", int(round(100 * np.median(d75["freq"][:, above].sum(1)))))
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    col = {"ami": "C3", "div2k": "0.35"}
+    lab = {"ami": "AMI", "div2k": "DIV2K"}
+    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.6, 2.7))
+    for st in ("ami", "div2k"):
+        for q, ls in (("bicjpeg75", "-"), ("bicjpeg93", "--")):
+            y = np.median(out[st][q]["pos"], 0)
+            ax1.plot(range(4), y, color=col[st], ls=ls, lw=1.4, marker="o", ms=3.5,
+                     label=f"{lab[st]}, JPEG {q[-2:]}")
+    ax1.axhline(1, color="0.6", lw=0.7, ls=":")
+    ax1.set_xticks(range(4))
+    ax1.set_xticklabels(["0\n(edge)", "1", "2", "3\n(centre)"])
+    ax1.set_xlabel("Distance to the nearest block boundary (input px)", fontsize=7)
+    ax1.set_ylabel("Excess per pixel / image mean", fontsize=7)
+    ax1.legend(fontsize=6, frameon=False, handlelength=3)
+    ax1.set_title("(a) Position in the 8$\\times$8 block", fontsize=8)
+    c = (lo_e + hi_e) / 2 / nyq
+    w = (hi_e - lo_e) / nyq
+    for st in ("ami", "div2k"):
+        ax2.plot(c, np.median(out[st]["bicjpeg75"]["freq"], 0) / w, color=col[st], lw=1.4, label=f"{lab[st]}: model excess")
+    ax2.plot(c, a75["ec_freq"] / w, color=col["ami"], lw=0.9, ls=":", label="AMI: compression error\nof interpolation")
+    ax2.axvline(1, color="0.3", lw=0.8, ls="--")
+    ax2.text(1.02, 0.97, "input Nyquist", transform=ax2.get_xaxis_transform(), fontsize=6, va="top")
+    ax2.set_xlim(0, 3)
+    ax2.set_xlabel("Spatial frequency / Nyquist frequency of the input", fontsize=7)
+    ax2.set_ylabel("Share of the error per unit frequency", fontsize=7)
+    ax2.legend(fontsize=6, frameon=False, loc="upper right", bbox_to_anchor=(1.0, 0.88))
+    ax2.set_title("(b) Frequency, JPEG 75", fontsize=8)
+    for ax in (ax1, ax2):
+        ax.tick_params(labelsize=6.5)
+        ax.spines[["top", "right"]].set_visible(False)
+    f.tight_layout()
+    f.savefig(fig / "fig_mechanism.png", dpi=600)
+    plt.close(f)
+
+
+UP_EST = [f"N2_span-zero+xearvn_pub_rand_x4_hrall_est_f{k}" for k in range(1, 6)]
+
+
+def recog_upscaled(res: Path, out: Path) -> None:
+    """Bộ nhận dạng học thêm ảnh nhỏ thật đã phóng bằng đúng phương pháp được chấm (scripts/run_recog_upscaled.sh;
+    TODO.md, việc O4). So với ResNet-18 chỉ học ảnh lớn, trên cùng ảnh dò, cùng lần chạy SPAN (5 fold, gộp như bài)."""
+    why = "recog-up"
+    meth = (("bicubic", ["bicubic"]), ("span_ch48", ["span_ch48"]), ("est", UP_EST))
+    sets = (("earvn", "resnet18", "Earvn", "EarVN1.0"), ("awex", "awex_resnet18", "Awex", "AWEx"))
+    names = [f"RecUp{t}{k}" for _, _, t, _ in sets for k in ("Bic", "Pub", "Est", "Gain", "GainLo", "GainHi", "Ref",
+                                                             "LgBic", "LgEst", "LgGain")]
+
+    def hits(fs):   # trung bình qua các mô hình fold, theo từng ảnh dò (như summarize_recog.py)
+        ts = [pd.read_csv(f, dtype={"subject": str}) for f in fs]
+        return np.mean([(t["rank"].to_numpy() == 1).astype(float) for t in ts], 0), ts[0]["subject"].to_numpy()
+    rows = []
+    for key, base, tag, label in sets:
+        up = {m: [res / "recog_up" / f"{key}_{m}" / f"{c}.csv" for c in cs] for m, cs in meth}
+        lg = {m: [res / "recog" / base / f"{c}.csv" for c in cs] for m, cs in meth}
+        if not all(f.exists() for fs in list(up.values()) + list(lg.values()) for f in fs):
+            for n_ in names:
+                if n_.startswith(f"RecUp{tag}"):
+                    put(n_, None, why)
+            rows.append(f"{label} & \\todo{{--}} & & & & \\\\")
+            continue
+        H = {("up", m): hits(f) for m, f in up.items()} | {("lg", m): hits(f) for m, f in lg.items()}
+        for kind_, lab_ in (("lg", "large images only"), ("up", "large and upscaled small images")):
+            a, subj = H[(kind_, "est")]
+            b, _ = H[(kind_, "bicubic")]
+            e = paired_diff(100 * a, 100 * b, subj, n_boot=2000)
+            r1 = {m: 100 * H[(kind_, m)][0].mean() for m, _ in meth}
+            rows.append(f"{label} & {lab_} & {r1['bicubic']:.1f} & {r1['span_ch48']:.1f} & {r1['est']:.1f} & "
+                        f"{est_cell(e, 1)} \\\\")
+            if kind_ == "up":
+                put(f"RecUp{tag}Bic", f"{r1['bicubic']:.1f}")
+                put(f"RecUp{tag}Pub", f"{r1['span_ch48']:.1f}")
+                put(f"RecUp{tag}Est", f"{r1['est']:.1f}")
+                put(f"RecUp{tag}Gain", num(e.point, 1, True))
+                put(f"RecUp{tag}GainLo", num(e.lo, 1))
+                put(f"RecUp{tag}GainHi", num(e.hi, 1))
+            else:
+                put(f"RecUp{tag}LgBic", f"{r1['bicubic']:.1f}")
+                put(f"RecUp{tag}LgEst", f"{r1['est']:.1f}")
+                put(f"RecUp{tag}LgGain", num(e.point, 1, True))
+        ref = res / "recog_up" / f"{key}_bicubic" / "ref_large.csv"
+        put(f"RecUp{tag}Ref", f"{100 * hits([ref])[0].mean():.1f}" if ref.exists() else None, why)
+    write(out / "tab_recogup.tex", "\n".join(rows) + "\n")
+
+
+ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
+               ("shiftjpeg75", "Same, block grid offset 1--7 px"), ("dbljpeg93to75", "JPEG 93 with offset grid, then 75"),
+               ("jpeg75bic", "JPEG 75, then downsize"), ("bicjpeg93", "Downsize, then JPEG 93 (as in the paper)"),
+               ("shiftjpeg93", "Same, block grid offset 1--7 px")]
+
+
+def order_control(res: Path, out: Path, folds_path: Path = Path("splits/ami_5fold.json")) -> None:
+    """Đối chứng thứ tự suy giảm (scripts/run_order_control.sh; TODO.md, việc O2): AMI, 36 px."""
+    why = "order"
+    names = ["OrdShiftBelow", "OrdShiftGapMin", "OrdShiftGapMax", "OrdDblBelow", "OrdDblGapMin", "OrdDblGapMax",
+             "OrdChromaMax", "OrdPreGainMin", "OrdPreGainMax", "OrdShiftHighBelow", "OrdEstShiftMin", "OrdEstShiftMax",
+             "OrdShiftDeltaMax", "OrdEstDblVsBic"]
+    d = load_dir(res / "order")
+    if d is None or not {"bicubic"} <= set(d.arm):
+        for n_ in names:
+            put(n_, None, why)
+        write(out / "tab_order.tex", "\\todo{--} \\\\\n")
+        return
+    pubs = [m + PUBLISHED for m in PSNR16]
+    G = {}   # mức lợi so với bicubic của từng mô hình công bố, mọi ảnh
+    for k, _ in ORDER_KINDS:
+        b = d[(d.arm == "bicubic") & (d.degrade == k)].set_index("key").psnr_y
+        G[k] = {m: float((d[(d.arm == m) & (d.degrade == k)].set_index("key").psnr_y - b).mean()) for m in pubs
+                if ((d.arm == m) & (d.degrade == k)).any()}
+    have = all(len(G[k]) == 16 for k, _ in ORDER_KINDS)
+    est = "span/est" in set(d.arm)
+    P = pool(d, folds_path)[0] if est else None
+    rows = []
+    for k, lab in ORDER_KINDS:
+        g = np.array(list(G[k].values()))
+        bic = float(d[(d.arm == "bicubic") & (d.degrade == k)].psnr_y.mean())
+        e1 = paired(P, "span/est", "bicubic", 144, k) if est else None
+        e2 = paired(P, "span/est", PUB, 144, k) if est else None
+        rows.append(f"{lab} & {bic:.2f} & {num(float(np.median(g)), 2, True)} & {int((g < 0).sum())} & "
+                    f"{est_cell(e1)} & {est_cell(e2)} \\\\")
+    write(out / "tab_order.tex", "\n".join(rows) + "\n")
+    if not have:
+        for n_ in names:
+            put(n_, None, why)
+        return
+
+    def gaps(k):
+        return np.array([G[k][m] for m in pubs])
+    put("OrdShiftBelow", int((gaps("shiftjpeg75") < 0).sum()))
+    put("OrdShiftGapMin", num(float(-gaps("shiftjpeg75").max()), 2))
+    put("OrdShiftGapMax", num(float(-gaps("shiftjpeg75").min()), 2))
+    put("OrdDblBelow", int((gaps("dbljpeg93to75") < 0).sum()))
+    put("OrdDblGapMin", num(float(-gaps("dbljpeg93to75").max()), 2))
+    put("OrdDblGapMax", num(float(-gaps("dbljpeg93to75").min()), 2))
+    put("OrdChromaMax", num(float(np.abs(gaps("bicjpeg75c444") - gaps("bicjpeg75")).max()), 2))
+    put("OrdShiftDeltaMax", num(float(np.abs(gaps("shiftjpeg75") - gaps("bicjpeg75")).max()), 2))
+    put("OrdPreGainMin", num(float(gaps("jpeg75bic").min()), 2))
+    put("OrdPreGainMax", num(float(gaps("jpeg75bic").max()), 2))
+    put("OrdShiftHighBelow", int((gaps("shiftjpeg93") < 0).sum()))
+    if est:
+        rng_put("OrdEstShift", [paired(P, "span/est", "bicubic", 144, k) for k in ("shiftjpeg75", "shiftjpeg93")])
+        e = paired(P, "span/est", "bicubic", 144, "dbljpeg93to75")
+        put("OrdEstDblVsBic", num(e.point, 2) if e else None, why)
+    else:
+        for n_ in ("OrdEstShiftMin", "OrdEstShiftMax", "OrdEstDblVsBic"):
+            put(n_, None, why)
+
+
 def selector(res: Path) -> None:
     """Luật chọn lúc chạy giữa bicubic và SPAN công bố (scripts/analyze_selector.py; TODO.md, việc N)."""
     why = "selector"   # chưa chạy scripts/analyze_selector.py
@@ -1194,6 +1553,11 @@ def main(argv=None) -> None:
     headroom(res)
     review(res, out)
     selector(res)
+    gt_quality(res)
+    order_control(res, out)
+    mechanism(res, fig)
+    recog_upscaled(res, out)
+    fid_recog(res, out, fig)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))
           else "\\fbox{\\parbox[c][3cm][c]{0.85\\linewidth}{\\centering\\todo{qualitative figure}}}\n")

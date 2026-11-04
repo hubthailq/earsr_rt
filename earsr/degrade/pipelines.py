@@ -86,6 +86,18 @@ def random_degrade(hr: np.ndarray, scale: int, p: DegradeParams, rng: np.random.
 
 
 _BICJPEG = re.compile(r"^bicjpeg(\d{1,3})$")
+# Đối chứng thứ tự suy giảm (phản biện ngày 04/11); chỉ dùng để chấm, không dùng để huấn luyện.
+_BICJPEG444 = re.compile(r"^bicjpeg(\d{1,3})c444$")          # như bicjpegQ nhưng không lấy mẫu màu (4:4:4)
+_SHIFTJPEG = re.compile(r"^shiftjpeg(\d{1,3})$")             # lưới khối lệch 1..7 px so với ảnh
+_DBLJPEG = re.compile(r"^dbljpeg(\d{1,3})to(\d{1,3})$")      # nén Q1 lệch lưới, rồi nén lại Q2 thẳng lưới
+_JPEGBIC = re.compile(r"^jpeg(\d{1,3})bic$")                 # nén ảnh lớn trước, thu nhỏ sau
+SHIFT_RANGE = (1, 7)
+
+
+def _shift(seed: int, key: str) -> tuple[int, int]:
+    r = rng_for(seed, "shift|" + key)
+    lo, hi = SHIFT_RANGE
+    return int(r.integers(lo, hi + 1)), int(r.integers(lo, hi + 1))
 
 
 def degrade(hr: np.ndarray, scale: int, kind: str, seed: int = 0, key: str = "",
@@ -100,6 +112,19 @@ def degrade(hr: np.ndarray, scale: int, kind: str, seed: int = 0, key: str = "",
     m = _BICJPEG.match(kind)
     if m:
         return ops.jpeg(ops.bicubic_down(hr, scale), int(m.group(1)))
+    m = _BICJPEG444.match(kind)
+    if m:
+        return ops.jpeg(ops.bicubic_down(hr, scale), int(m.group(1)), chroma444=True)
+    m = _SHIFTJPEG.match(kind)
+    if m:
+        return ops.jpeg_shifted(ops.bicubic_down(hr, scale), int(m.group(1)), *_shift(seed, key))
+    m = _DBLJPEG.match(kind)
+    if m:
+        first = ops.jpeg_shifted(ops.bicubic_down(hr, scale), int(m.group(1)), *_shift(seed, key))
+        return ops.jpeg(first, int(m.group(2)))
+    m = _JPEGBIC.match(kind)
+    if m:
+        return ops.bicubic_down(ops.jpeg(hr, int(m.group(1))), scale)
     if kind == "generic":
         return random_degrade(hr, scale, params or DegradeParams(), rng_for(seed, key))
     if kind == "est":
