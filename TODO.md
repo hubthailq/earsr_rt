@@ -159,7 +159,16 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   mở bài, tài liệu liên quan, benchmark, mục 4, 5, 6, thảo luận. Sinh chữ thay số khi cần ("all 16", "six", "both reach
   27.7%", "75 and 85"); bỏ dấu + ở các khoảng luôn dương. Thêm tài liệu Luo, Mu, Zhang, CCBR 2014 (đã kiểm trên Crossref),
   vì câu "the one study of SR for ear images that we found" không còn đúng. Tóm tắt 248 từ.
+- [x] 05/11 **G10. Phụ lục** (người dùng đồng ý): file mới `paper/sections/appendix.tex`, sáu mục A đến F (bảng DIV2K đầy đủ;
+  bộ phân loại độ thật; lỗi tinh chỉnh chỉ trên AMI và phép thử ảnh sáng; bảng mức JPEG cố định; khoảng trống theo người;
+  độ chính xác khi chuyển FBCNN). Phần chính trỏ xuống bằng \ref, giữ các số chính. Phần chính nay kết thúc ở trang 31
+  (trước: 33), phụ lục trang 33 đến 35, tài liệu từ trang 36; tổng 41 trang; phần chính còn 11 bảng. Rà lại cùng ngày:
+  bảng phụ lục đánh số A.1 đến D.1 và giữ đúng chỗ (gói `float`); thêm câu dẫn cho mục C, D, E vốn mở đầu đột ngột.
 - [ ] **L. Chưa đo trên điện thoại** (ghi ngày 08/10; iPhone 12 Pro Max, Xcode 26.3, Core ML FP16, ảnh vào 48×68, đo CPU và
+- [x] 06/11 **G11. Đọc hai bài SR cho tai** (người dùng tải PDF): Markićević 2023 đọc đủ, không nhắc nén, EDSR ×2 +1 điểm hạng 1;
+  Luo 2014 đọc 2 trang đầu (từ điển LC-KSVD, nhắm vào nhận dạng). Thêm Zarachoff, Sheikh-Akbari, Monekosso, IST 2018
+  (doi 10.1109/IST.2018.8577134; đã đọc đủ 06/11: lọc thông thấp rồi thu nhỏ, không có nén, nhận dạng bằng trị riêng PCA). Sửa câu ở mở bài và tài liệu liên quan, có rào
+  "as far as we could determine" vì hai bài chưa đọc đủ. Danh mục 46 mục.
   mọi bộ xử lý như `results/latency_ios.csv`). Đã đo 6 mô hình: SPAN, DISP, EDSR-baseline, SwinIR-light, RRDB, BSRGAN.
   - [x] 04/11 **L1 xong, đã vào bài (mục 6.6).** FP32 trên iPhone 12 Pro Max: FBCNN rồi SPAN 93,59 ms CPU, 57,81 ms mọi bộ
     xử lý (280 trên 284 phép tính chạy trên GPU, không phép nào trên Neural Engine): vượt 33 ms ở cả hai. SPAN FP32: 10,33 ms

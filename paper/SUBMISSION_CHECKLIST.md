@@ -22,7 +22,7 @@ Cập nhật 08/10/2026. Bản thảo `main.pdf` không còn ô trống; các m�
 
 ## Phải kiểm bằng mắt người
 
-- [ ] **Đọc toàn văn** bài của Markićević và cộng sự (IWSSIP 2023). Câu mô tả trong bài chỉ dựa trên tóm tắt.
+- [x] 06/11 **Đã đọc toàn văn** bài Markićević và cộng sự (IWSSIP 2023): không nhắc tới nén JPEG; EDSR ×2 tăng hạng 1 khoảng 1 điểm (57,08 so với 56,07), SwinIR làm giảm. Bài Luo 2014 mới đọc được 2 trang đầu (phương pháp từ điển LC-KSVD, nhắm vào nhận dạng). Đã thêm Zarachoff và cộng sự, IST 2018 và đọc đủ 6 trang (06/11): IIT Delhi II, lọc thông thấp rồi thu nhỏ ×2, ×4, ×8, không có nén; nhận dạng bằng trị riêng PCA; wavelet tốt nhất ở ×4 và ×8. Còn bài Luo 2014: mới đọc 2 trang đầu.
 - [ ] **Tìm tài liệu có hệ thống** (IEEE Xplore, Scopus): SR cho ảnh tai; SR cho ảnh nén; quan hệ giữa sai số nén và sai số nội
       suy. Bài viết "in the literature we searched ... not exhaustive"; nếu tìm thấy bài đã nêu thì phải trích và sửa câu đóng góp.
 - [ ] **Danh mục tham khảo:** 44 mục, đã đối chiếu tên bài, tác giả, nơi đăng, năm, trang với Crossref hoặc trang của nhà xuất

@@ -1,0 +1,86 @@
+\appendix
+\counterwithin{table}{section}
+\renewcommand{\thetable}{\Alph{section}.\arabic{table}}
+
+\section{Control on natural images}
+\label{app:natural}
+Table~\ref{tab:natural} gives the full results of the control on DIV2K summarised in Section~\ref{sec:natural}.
+
+\begin{table}[H]
+\centering
+\caption{Natural images against ear images: median PSNR gain over bicubic interpolation of the \NPub{} published models (dB) by input size and input degradation. In parentheses: number of models with negative mean gain / number significantly below zero.}
+\label{tab:natural}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrccccc@{}}
+\toprule
+Images & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & JPEG 60 \\
+\midrule
+\tabinput{generated/tab_natural}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Realism classifier}
+\label{app:realism}
+To assess how close the simulated images are to real ones, we train a small convolutional classifier to separate $16\times16$ patches of real small ear images from patches of simulated images, which are generated from large images of the same subjects and brought to the same size distribution. Subjects are split between training and testing (\RealTrainSubj{} and \RealTestSubj{} subjects of the classifier group), and the experiment is repeated with three seeds. Table~\ref{tab:realism} gives the balanced accuracy, where 50\% means that the classifier does not separate simulated from real images. The classifier separates bicubic downsampling (\RealBic{}\%) and the generic pipeline (\RealGen{}\%) from real images with similar accuracy, so by this test the generic pipeline is not closer to the real data than bicubic downsampling. The measured pipeline gives \RealEst{}\%. Bicubic downsampling followed by JPEG at quality 75 gives \RealJpg{}\%, which is not significantly different from the measured pipeline. 
+
+\begin{table}[H]
+\centering
+\caption{Balanced accuracy (\%) of a classifier trained to separate real small ear images from simulated ones, on held-out subjects. Closer to 50\% means more realistic. Intervals are 95\% bootstrap intervals.}
+\label{tab:realism}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Simulated with & Accuracy & 95\% CI \\
+\midrule
+\tabinput{generated/tab_realism}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Failure of fine-tuning on laboratory images}
+\label{app:stability}
+When SPAN was fine-tuned with bicubic downsampling on AMI alone (Section~\ref{sec:stable}), \CollapseBroken{} of its \NEarvnImg{} outputs on the EarVN1.0 test images were below 20~dB and contained high-amplitude noise. AMI was acquired under uniform indoor lighting, and the failures occurred mainly on images with bright regions. Our inspection of the network suggests that, after fine-tuning, the activations of the attention blocks grow from block to block for inputs brighter than the training images. Validation on held-out AMI subjects did not reveal the problem.
+
+The stress test brightens the validation images by factors of 1.4 and 1.8 and marks a run as unstable if any output is more than 10~dB below bicubic interpolation or if the margin of the model over bicubic interpolation decreases by more than 1.5~dB. Table~\ref{tab:stability} shows the effect of the two changes of Section~\ref{sec:stable}.
+
+\begin{table}[H]
+\centering
+\caption{Effect of the fine-tuning recipe on clean inputs (PSNR-Y, dB): SPAN fine-tuned with bicubic downsampling. $^\dagger$One run, excluded from all other results.}
+\label{tab:stability}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & AMI & EarVN1.0 & AWEx & AWEx \\
+ & 36 px & 24 px & 24 px & 36 px \\
+\midrule
+\tabinput{generated/tab_stability}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Fixed and measured compression levels}
+\label{app:levels}
+Table~\ref{tab:levels} gives, for both backbones, the paired differences between the models trained with the measured degradation and with fixed JPEG at quality 75 that are summarised in Section~\ref{sec:ablation}.
+
+\begin{table}[H]
+\centering
+\caption{Difference between training with the measured degradation and with fixed JPEG~75, same backbone, by test input (PSNR-Y, dB; 95\% confidence intervals).}
+\label{tab:levels}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Backbone & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+\midrule
+\tabinput{generated/tab_levels}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Headroom of individual subjects}
+\label{app:headroom}
+We define the headroom of a subject as in Section~\ref{sec:recog}, from the rank-1 rates of its large probes and of its bicubically upscaled small probes, and split the subjects of each dataset at the median headroom. Among the \HeadEarvnReSubj{} subjects with at least five small probes, the half with less headroom (\HeadEarvnReLowRoom{} points on average) improves by \HeadEarvnReLowGain{} points and the half with more headroom (\HeadEarvnReHighRoom{}) by \HeadEarvnReHighGain{} points. With the ResNet-50 recogniser the two halves improve by \HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{} points. The rank correlation between headroom and improvement is positive but not significant with this number of subjects (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$). Headroom alone does not appear to be sufficient: the AWEx subjects in the upper half of headroom (\HeadAwexReHighRoom{} points) change by \HeadAwexReHighGain{} and \HeadAwexRfHighGain{} points with the two recognisers, although these per-subject values are based on a median of two probes.
+
+\section{Precision of the converted FBCNN}
+\label{app:coreml}
+The pipeline with FBCNN is measured on the smartphone in 32-bit precision, because the 16-bit Core ML conversion of FBCNN does not reproduce its output: the PSNR between the Core ML and PyTorch outputs is \CoremlPsnrFbHalf{}~dB, compared with more than 50~dB for the other converted models. In 32-bit precision the two outputs agree. SPAN is measured in the same precision for comparison.
