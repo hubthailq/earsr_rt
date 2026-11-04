@@ -1329,16 +1329,18 @@ def recog_upscaled(res: Path, out: Path) -> None:
                 put(f"RecUp{tag}Bic", f"{r1['bicubic']:.1f}")
                 put(f"RecUp{tag}Pub", f"{r1['span_ch48']:.1f}")
                 put(f"RecUp{tag}Est", f"{r1['est']:.1f}")
-                put(f"RecUp{tag}Gain", num(e.point, 1, True))
+                put(f"RecUp{tag}Gain", num(e.point, 1))
                 put(f"RecUp{tag}GainLo", num(e.lo, 1))
                 put(f"RecUp{tag}GainHi", num(e.hi, 1))
             else:
                 put(f"RecUp{tag}LgBic", f"{r1['bicubic']:.1f}")
                 put(f"RecUp{tag}LgEst", f"{r1['est']:.1f}")
-                put(f"RecUp{tag}LgGain", num(e.point, 1, True))
+                put(f"RecUp{tag}LgGain", num(e.point, 1))
         ref = res / "recog_up" / f"{key}_bicubic" / "ref_large.csv"
         put(f"RecUp{tag}Ref", f"{100 * hits([ref])[0].mean():.1f}" if ref.exists() else None, why)
     write(out / "tab_recogup.tex", "\n".join(rows) + "\n")
+    lg_ = res / "recog_up" / "train_log_bicubic.json"
+    put("RecUpNSmall", f"{json.loads(lg_.read_text())['info']['n_small_upscaled']:,}" if lg_.exists() else None, why)
 
 
 ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
@@ -1399,8 +1401,10 @@ def order_control(res: Path, out: Path, folds_path: Path = Path("splits/ami_5fol
         rng_put("OrdEstShift", [paired(P, "span/est", "bicubic", 144, k) for k in ("shiftjpeg75", "shiftjpeg93")])
         e = paired(P, "span/est", "bicubic", 144, "dbljpeg93to75")
         put("OrdEstDblVsBic", num(e.point, 2) if e else None, why)
+        e = paired(P, "span/est", PUB, 144, "jpeg75bic")
+        put("OrdEstPreVsPub", num(-e.point, 2) if e else None, why)   # mức kém SPAN công bố khi ảnh vào gần sạch
     else:
-        for n_ in ("OrdEstShiftMin", "OrdEstShiftMax", "OrdEstDblVsBic"):
+        for n_ in ("OrdEstShiftMin", "OrdEstShiftMax", "OrdEstDblVsBic", "OrdEstPreVsPub"):
             put(n_, None, why)
 
 

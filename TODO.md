@@ -227,7 +227,7 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   Tóm tắt 248 từ; bài 36 trang.
 - [x] 06/11 **G16. Hai câu cuối theo phản biện (trước khi lên khuôn):** mục 4.2 bỏ mệnh đề "loses its advantage when this excess
   exceeds..." (phần đo được dừng ở b > 1 và phần dư tăng); thảo luận bỏ "LPIPS is the better proxy...", dừng ở phạm vi EarVN1.0.
-- [ ] **O. Phản biện thứ tư (04/11; người dùng: "làm hết đi").** Thứ tự B (tính ngắn trên Mac), C (labai217), rồi A (chữ),
+- [x] 04/11 **O. Phản biện thứ tư (04/11; người dùng: "làm hết đi").** Xong cả O1 đến O5. Thứ tự B (tính ngắn trên Mac), C (labai217), rồi A (chữ),
   vì câu chữ phụ thuộc kết quả. Phát hiện khi đối chiếu: mã nén (`cv2.imencode`, mặc định) đã lấy mẫu màu 4:2:0 (Y 2×2,
   màu 1×1), nên câu "chưa kiểm 4:2:0" ở phần giới hạn là SAI, phải sửa.
   - [x] 04/11 O1 Hình cơ chế (`scripts/analyze_blocks.py`, chạy trên Mac, `results/mechanism/`; hình `fig_mechanism.png`,
@@ -235,16 +235,16 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     gấp 1,45 lần chỗ khác (52% phần dư trên 42% điểm ảnh); ở JPEG 93 và trên DIV2K gần đều (1,07; 1,08). Theo tần số: 84%
     phần dư nằm trong 0,6 đến 1,4 lần Nyquist của ảnh vào, 57% ở trên Nyquist (sai số nén của bicubic: 15%). Tức phần dư
     chủ yếu là chi tiết mạng dựng ở dải quanh Nyquist, biên khối chỉ góp một phần. Mô tả, không phải phép thử nhân quả.
-  - [ ] O2 [labai217] Thứ tự suy giảm, chỉ chấm (`scripts/run_order_control.sh`, kiểu mới `shiftjpegQ`, `dbljpegQ1toQ2`,
-    `jpegQbic`, `bicjpegQc444` trong `earsr/degrade/pipelines.py`; kiểu cũ giữ nguyên từng bit). Mã xong 04/11; bảng
-    `tab:order` (phụ lục B), macro `Ord*`. Còn: chạy trên labai217, rồi viết câu ở mục 4.1 và phần giới hạn theo kết quả.
+  - [x] 04/11 O2 Thứ tự suy giảm (`scripts/run_order_control.sh`, `results/order/`, 189 file; bảng B.1, macro `Ord*`).
+    Lưới lệch: 16/16 vẫn dưới bicubic ở JPEG 75 (0,43 đến 0,56 dB; khác bản thẳng lưới tối đa 0,03 dB); nén hai lần 93 rồi
+    75: 16/16 dưới (0,48 đến 0,61); 4:4:4: đổi tối đa 0,18 dB; nén trước thu nhỏ sau: ảnh gần sạch, mọi mô hình trên
+    bicubic. SPAN tinh chỉnh hơn bicubic 1,19 đến 1,33 dB ở mọi biến thể nén. Câu ở 4.1, 6.2, giới hạn; câu fidelity giữ phạm vi.
   - [x] 04/11 O3 Độ khối của đáp án AMI: ảnh gốc 1,34; đáp án 144 px 1,00, 96 px 1,01 (`results/gt_quality.json`, macro
     `BlockAmi*`; câu ở mục 3.1 của benchmark). Thu nhỏ hệ số không nguyên đã xóa lưới.
-  - [ ] O4 [labai217] Bộ nhận dạng học thêm 3.415 ảnh nhỏ thật của người học, phóng bằng đúng phương pháp được chấm
-    (`train_recognizer.py --sr-model/--sr-run`, `scripts/run_recog_upscaled.sh`): bicubic, SPAN công bố, SPAN tinh chỉnh
-    (5 fold, gộp như bài). Công thức giữ nguyên ResNet-18 của bài. Mã xong 04/11; bảng `tab:recogup`, macro `RecUp*`.
-    Còn: chạy, rồi viết đoạn ở mục 6.4 và phần giới hạn theo kết quả.
-  - [ ] O5 [Claude] Chữ: câu 4:2:0; viết lại mục 3 (lõi là mức JPEG đọc từ file; noise, blur chuyển phụ lục); còn 3 đóng
+  - [x] 04/11 O4 Bộ nhận dạng học thêm ảnh đã phóng (`results/recog_up/`; bảng H.1, macro `RecUp*`, đoạn ở 6.4). EarVN1.0:
+    bicubic 13,2% lên 31,3%; mức tăng của SPAN tinh chỉnh so với bicubic co từ 11,8 xuống 5,5 điểm [1,7; 9,3], vẫn dương;
+    SPAN công bố ngang bicubic (32,3%). AWEx: ba phương pháp ngang nhau (36,7 / 36,7 / 36,6%). Đúng mẫu của SR mặt.
+  - [x] 04/11 O5 Chữ (xong; tóm tắt 250 từ, bài 38 trang, 0 macro thiếu, thêm câu UERC ở giới hạn): câu 4:2:0; viết lại mục 3 (lõi là mức JPEG đọc từ file; noise, blur chuyển phụ lục); còn 3 đóng
     góp, nhận dạng và LPIPS thành kết quả có điều kiện, rời khỏi tóm tắt và kết luận; cắt lặp số ở thảo luận và kết luận;
     câu nội suy và bootstrap của điểm đổi dấu (in một số lẻ); câu về một seed; hình đánh đổi tách FP32; tiêu đề.
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
