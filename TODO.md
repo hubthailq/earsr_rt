@@ -247,6 +247,20 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   - [x] 04/11 O5 Chữ (xong; tóm tắt 250 từ, bài 38 trang, 0 macro thiếu, thêm câu UERC ở giới hạn): câu 4:2:0; viết lại mục 3 (lõi là mức JPEG đọc từ file; noise, blur chuyển phụ lục); còn 3 đóng
     góp, nhận dạng và LPIPS thành kết quả có điều kiện, rời khỏi tóm tắt và kết luận; cắt lặp số ở thảo luận và kết luận;
     câu nội suy và bootstrap của điểm đổi dấu (in một số lẻ); câu về một seed; hình đánh đổi tách FP32; tiêu đề.
+- [ ] **P. Kiểm toán bảng biểu (phản biện thứ năm, 04/11; người dùng: "làm").** Đã đối chiếu từng điểm với mã: đúng hết.
+  - [x] 04/11 P1 Độ trễ RRDB lệch giữa Bảng 1/11 (13,39, `latency_local.csv`) và Bảng 9 (13,21, `latency_review.csv`, lượt đo
+    sau). Sửa: mọi mô hình kiến trúc RRDB ở Bảng 9 dùng số của Bảng 1 (như Hình 7); FBCNN ghi rõ lượt đo riêng; điền ô Real-ESRNet. Xong: Bảng 9 in 13,39 cho cả bốn hàng RRDB; chú thích ghi lượt đo riêng của FBCNN.
+  - [x] 04/11 P2 Khoảng tin cậy Bảng 8 và H.1 lệch 0,1: seed vẫn cố định, nhưng `summarize_recog.py` lấy 1000 mẫu còn
+    `recog_upscaled` lấy 2000. Sửa: hàng "large images only" đọc từ `paired.csv`; hàng còn lại cũng 1000 mẫu (khoảng thành [1,6; 9,3]).
+  - [x] 04/11 P3 Trùng lắp: hàng Measured của G.1 = hàng JPEG 75 của Bảng 4 (giữ Bảng 4, chú thích G.1); chú thích Bảng 9, 11 về
+    hàng/cột lặp; gộp A.1 với C.1 (C.1 đã có sẵn hàng Ear (AMI)). Xong: phụ lục C cũ bỏ, A.1 có 6 cột, DIV2K ở nửa dưới.
+  - [x] 04/11 P4 EER: một câu ở 6.4 (bicubic-trained tăng EER 0,7 đến 1,2 điểm, khoảng tin cậy chứa 0); hàng bicubic ở F.1;
+    chú thích Bảng 7 về 10 ảnh dò ngoài hai nhóm (kiểm lại: 3 ảnh mức 65, 7 ảnh mức 81 đến 87, không phải toàn 81 đến 89).
+  - [x] 04/11 P5 Đặt tên: Ear-R18, Ear-R50 (bộ nhận dạng tai), ImageNet-R50 (đối chứng đông lạnh), đồng loạt bảng, thân bài và Hình 7.
+  - [ ] P6 [labai217] AMI 48 px chỉ có sạch và JPEG 75; cột Measured của AMI chưa đo cho 16 mô hình công bố. Chạy suy luận
+    rồi thêm hàng AMI 48 vào Bảng 2; trong lúc chờ, câu ở 4.2 nói rõ bằng chứng về cỡ ảnh đến từ DIV2K (đã sửa 04/11).
+    Lệnh: `bash scripts/run_ami48.sh` (đã thử trên Mac với 2 ảnh). Bảng 2 và A.1 tự thêm số; `WildEstGain*` đã giới hạn
+    cho EarVN1.0 và AWEx. Có số rồi: đọc lại câu 4.2 (cỡ 48 có cùng điểm đổi dấu không) và tóm tắt (\CrossQAmi*).
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

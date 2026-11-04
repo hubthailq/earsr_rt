@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from types import SimpleNamespace
 import sys
 from pathlib import Path
 
@@ -221,7 +222,7 @@ def published(res: Path, out: Path) -> dict:
             ("AWEx", wild["awex"], 96, "24"), ("AWEx", wild["awex"], 144, "36")]
     for ds, df, tier, px in spec:
         cells = []
-        for k in ("bic", "bicjpeg93", "bicjpeg85", "bicjpeg75", "est"):
+        for k in ("bic", "bicjpeg93", "bicjpeg85", "bicjpeg75", "bicjpeg60", "est"):   # cùng cột với các hàng DIV2K
             c = cell(df, tier, k)
             if len(c) != 16:
                 cells.append("--")
@@ -237,9 +238,9 @@ def published(res: Path, out: Path) -> dict:
     put("AwexSQLowSig", below[("AWEx", 96, "bicjpeg75")][1])
     put("AwexMQLowSig", below[("AWEx", 144, "bicjpeg75")][1])
     put("AmiQLowSig", min(below[("AMI", t, "bicjpeg75")][1] for t in (96, 144, 192)))
-    put("AllQHighBelow", sum(v[0] for k, v in below.items() if k[2] == "bicjpeg93"))
-    put("WildEstGainMin", num(min(v[2] for k, v in below.items() if k[2] == "est"), 2, True))
-    put("WildEstGainMax", num(max(v[3] for k, v in below.items() if k[2] == "est"), 2, True))
+    put("AllQHighBelow", sum(v[0] for k, v in below.items() if k[2] == "bicjpeg93"))   # mọi bộ ảnh tai, mọi cỡ
+    put("WildEstGainMin", num(min(v[2] for k, v in below.items() if k[2] == "est" and k[0] != "AMI"), 2, True))
+    put("WildEstGainMax", num(max(v[3] for k, v in below.items() if k[2] == "est" and k[0] != "AMI"), 2, True))
     put("WildCleanGainMin", num(min(v[2] for k, v in below.items() if k[2] == "bic" and k[0] != "AMI")))
     put("WildCleanGainMax", num(max(v[3] for k, v in below.items() if k[2] == "bic" and k[0] != "AMI")))
     for ds, tag in (("EarVN1.0", "Earvn"), ("AWEx", "AwexS")):
@@ -381,7 +382,10 @@ def trained(res: Path, out: Path, folds_path: Path) -> dict:
     put("CollapseBroken", col["collapse"][1])
     put("CollapsePub", num(col["pub"][0]))
     put("CollapseBic", num(col["bic"][0]))
-    rows = [f"Published weights & {num(mean_of(P['ami'], PUB, 144, 'bic'))} & {num(mean_of(P['earvn'], PUB, 96, 'bic'))} & "
+    rows = [f"Bicubic interpolation & {num(mean_of(P['ami'], 'bicubic', 144, 'bic'))} & "   # mốc, để bảng tự đọc được
+            f"{num(mean_of(P['earvn'], 'bicubic', 96, 'bic'))} & {num(mean_of(P['awex'], 'bicubic', 96, 'bic'))} & "
+            f"{num(mean_of(P['awex'], 'bicubic', 144, 'bic'))} \\\\\n\\midrule",
+            f"Published weights & {num(mean_of(P['ami'], PUB, 144, 'bic'))} & {num(mean_of(P['earvn'], PUB, 96, 'bic'))} & "
             f"{num(mean_of(P['awex'], PUB, 96, 'bic'))} & {num(mean_of(P['awex'], PUB, 144, 'bic'))} \\\\",
             f"Fine-tuned on AMI only$^\\dagger$ & -- & {num(col['collapse'][0])} & -- & -- \\\\"]
     for arm_, label in (("span/bic [AMI only]", "\\quad + photometric augmentation"),
@@ -489,6 +493,18 @@ def recognition(res: Path, out: Path) -> None:
                             ("disp26/est", "bicubic", "DispEstVsBic")):
         put("Rec" + tag, gap("resnet18", arm_, base), why)
     put("RecEerEstVsBic", gap("resnet18", "span/est", "bicubic", "d_eer"), why)
+    # EER của ba mô hình học với bicubic so với phóng bicubic (phản biện 04/11, TODO P4): câu ở 6.4 nói khoảng tin cậy chứa 0
+    t = Pd.get("resnet18")
+    bt = [(PUB, "bicubic"), ("rrdb_psnr (published)", "bicubic"), ("span/bic", "bicubic")]
+    if t is not None and all(k in t.index for k in bt):
+        de = t.loc[bt]
+        if not ((de.d_eer_lo < 0) & (de.d_eer_hi > 0)).all():
+            print("CHÚ Ý: EER của mô hình học với bicubic khác bicubic có ý nghĩa; sửa câu EER trong experiments.tex")
+        put("RecEerBicTrMin", num(de.d_eer.min(), 1))
+        put("RecEerBicTrMax", num(de.d_eer.max(), 1))
+    else:
+        put("RecEerBicTrMin", None, why)
+        put("RecEerBicTrMax", None, why)
     put("RecCtlEstVsBic", gap("imagenet50", "span/est", "bicubic"), why)
     put("RecCtlPubVsBic", gap("imagenet50", PUB, "bicubic"), why)
     put("RecCtlGenVsEst", gap("imagenet50", "span/generic", "span/est"), why)
@@ -532,6 +548,8 @@ def recognition_extra(res: Path, out: Path) -> None:
         for arm_, label in rows_spec:
             lo, hi = q.loc[(arm_, "low")], q.loc[(arm_, "high")]
             rows.append(f"{label} & {num(lo['rank1'], 1)} & {ci(lo, 'd_bic')} & {num(hi['rank1'], 1)} & {ci(hi, 'd_bic')} \\\\")
+        # ảnh dò ngoài hai nhóm (3 ảnh mức 65, 7 ảnh mức 81 đến 87): ghi trong chú thích Bảng 7 (phản biện 04/11, TODO P4)
+        put("RecQMidN", int(R["meta"]["n_probe"] - q.loc[("bicubic", "low"), "n_probe"] - q.loc[("bicubic", "high"), "n_probe"]))
         for g, tag in (("low", "QLow"), ("high", "QHigh")):
             b = q.loc[("bicubic", g)]
             put(f"Rec{tag}N", int(b["n_probe"]))
@@ -541,6 +559,7 @@ def recognition_extra(res: Path, out: Path) -> None:
                 put(f"Rec{tag}{t2}", txt(q.loc[(arm_, g)], "d_bic"))
     else:
         rows = ["\\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} & \\todo{--} \\\\"]
+        put("RecQMidN", None, why)
         for tag in ("QLow", "QHigh"):
             for k in ("N", "Subj", "RankBic", "Pub", "Est", "Bsrgan", "Bict"):
                 put(f"Rec{tag}{k}", None, why)
@@ -589,7 +608,7 @@ def recognition_extra(res: Path, out: Path) -> None:
     put("RecRfValAcc", num(100 * json.loads(f.read_text())["info"]["val_acc"], 1) if f.exists() else None, why)
 
 
-def natural_control(res: Path, out: Path, q_ami: pd.DataFrame) -> None:
+def natural_control(res: Path, out: Path) -> None:
     """Đối chứng trên ảnh tự nhiên (scripts/run_div2k_control.sh): cùng 16 mô hình, cùng các mức nén, ảnh vào từ 24 đến
     192 px. Chưa có kết quả thì bảng và macro ra ô TBD."""
     why = "div2k"
@@ -616,14 +635,10 @@ def natural_control(res: Path, out: Path, q_ami: pd.DataFrame) -> None:
             c, st = cells(d, tier)
             stats[int(tier)] = st
             n = int(d[(d.tier == tier) & (d.model == "bicubic")].n.iloc[0])
-            rows.append(f"Natural (DIV2K) & {int(tier) // 4} & {n} & " + " & ".join(c) + " \\\\")
-        rows.append("\\midrule")
+            rows.append(f"DIV2K & {int(tier) // 4} & {n} & " + " & ".join(c) + " & -- \\\\")
     else:
-        rows.append("Natural (DIV2K) & \\todo{--} & \\todo{--} & " + " & ".join(["\\todo{--}"] * 5) + " \\\\\n\\midrule")
-    for tier in (96, 144, 192):
-        c, _ = cells(q_ami, tier)
-        n = int(q_ami[(q_ami.tier == tier) & (q_ami.model == "bicubic")].n.iloc[0])
-        rows.append(f"Ear (AMI) & {tier // 4} & {n} & " + " & ".join(c) + " \\\\")
+        rows.append("DIV2K & \\todo{--} & \\todo{--} & " + " & ".join(["\\todo{--}"] * 6) + " \\\\")
+    # Bảng A.1 gộp ảnh tai và DIV2K (phản biện 04/11, TODO P3): các hàng AMI nằm ở tab_generality, không in lại ở đây
     write(out / "tab_natural.tex", "\n".join(rows) + "\n")
     small, large = stats.get(144), stats.get(max(stats)) if stats else None
     put("NatLargePx", max(stats) // 4 if stats else None, why)
@@ -1055,17 +1070,27 @@ def review(res: Path, out: Path) -> None:
     def cost(key, col):
         return float(lat.loc[key, col]) if lat is not None and key in lat.index and pd.notna(lat.loc[key, col]) else None
 
+    # Độ trễ trong bảng: lấy từ lượt đo của Bảng 1 (latency_local.csv) cho mọi mô hình có ở đó; các mô hình kiến trúc RRDB
+    # (BSRNet, Real-ESRNet) dùng chung số của RRDB như Hình 7. Chỉ FBCNN lấy từ lượt đo sau (latency_review.csv). Hai lượt
+    # cho RRDB 13,39 và 13,21 ms: dao động giữa các lượt, không in hai số cho cùng một kiến trúc (phản biện 04/11, TODO P1).
+    loc = pd.read_csv(res / "latency_local.csv")
+    loc = loc[(loc.input_h == 68) & (loc.input_w == 48) & (loc.device == "cuda")].set_index("name")
+
+    def ms_of(key):
+        k = "rrdb_psnr" if key in ("bsrnet", "realesrnet") else key
+        return float(loc.loc[k, "median_ms"]) if k in loc.index else cost(key, "median_ms")
+
     fp, sp = cost("fbcnn_span_ch48", "params"), cost("span_ch48", "params")
-    fl, sl, bl = cost("fbcnn_span_ch48", "median_ms"), cost("span_ch48", "median_ms"), cost("bsrnet", "median_ms")
+    fl, sl, bl = cost("fbcnn_span_ch48", "median_ms"), cost("span_ch48", "median_ms"), ms_of("bsrnet")
     put("RevFbParams", num(fp / 1e6, 1) if fp else None, why)
     put("RevFbParamsRatio", int(round(fp / sp)) if fp and sp else None, why)
     put("RevFbLat", num(fl, 2) if fl else None, why)
     put("RevSpanLat", num(sl, 2) if sl else None, why)
     put("RevFbLatRatio", num(fl / sl, 1) if fl and sl else None, why)
     put("RevBsrLat", num(bl, 1) if bl else None, why)
-    put("RevBsrLatRatio", int(round(bl / sl)) if bl and sl else None, why)
-    rl = cost("rrdb_psnr", "median_ms")
-    put("RevRrdbLatRatio", int(round(rl / sl)) if rl and sl else None, why)
+    rl, sl1 = ms_of("rrdb_psnr"), ms_of("span_ch48")   # cùng lượt đo với Bảng 1
+    put("RevBsrLatRatio", int(round(rl / sl1)) if rl and sl1 else None, why)
+    put("RevRrdbLatRatio", int(round(rl / sl1)) if rl and sl1 else None, why)
     put("RevFbcnnParams", num((fp - sp) / 1e6, 1) if fp and sp else None, why)
 
     rows = []
@@ -1076,7 +1101,11 @@ def review(res: Path, out: Path) -> None:
         par = cost(key, "params") if key else None
         if arm_ == "realesrnet (published)":
             par = cost("bsrnet", "params")               # cùng kiến trúc RRDB với BSRNet (số tham số đã kiểm khi nạp)
-        ms = cost(key, "median_ms") if key else (cost("bicubic", "median_ms") if arm_ == "bicubic" else None)
+        if arm_ == "realesrnet (published)":
+            key_ms = "realesrnet"
+        else:
+            key_ms = key or ("bicubic" if arm_ == "bicubic" else None)
+        ms = ms_of(key_ms) if key_ms else None
         cells = [num(par / 1e6, 2) if par else "--", num(ms, 2) if ms else "--"]
         for name, tier, kind in (("ami", 144, "bic"), ("ami", 144, "bicjpeg93"), ("ami", 144, "bicjpeg75"),
                                  ("earvn", 96, "bicjpeg75"), ("awex", 96, "bicjpeg75")):
@@ -1150,7 +1179,7 @@ def fid_recog(res: Path, out: Path, fig: Path) -> None:
     import matplotlib.pyplot as plt
 
     f, axes = plt.subplots(1, 2, figsize=(6.6, 3.3), sharey=True)
-    for ax, tag, title in zip(axes, ("resnet18", "resnet50"), ("ResNet-18 recogniser", "ResNet-50 recogniser")):
+    for ax, tag, title in zip(axes, ("resnet18", "resnet50"), ("Ear-R18", "Ear-R50")):
         for lab, arm_, key, c, mk in pts:
             if arm_ not in S[tag].index or key not in L.index:
                 continue
@@ -1321,7 +1350,12 @@ def recog_upscaled(res: Path, out: Path) -> None:
         for kind_, lab_ in (("lg", "large images only"), ("up", "large and upscaled small images")):
             a, subj = H[(kind_, "est")]
             b, _ = H[(kind_, "bicubic")]
-            e = paired_diff(100 * a, 100 * b, subj, n_boot=2000)
+            if kind_ == "lg":   # cùng ước lượng in ở Bảng 8 (summarize_recog.py, 1000 mẫu, seed 0): đọc lại, không tính lại
+                r_ = pd.read_csv(res / "recog" / f"{base}_summary" / "paired.csv").set_index(["arm", "minus"]).loc[
+                    ("span/est", "bicubic")]
+                e = SimpleNamespace(point=r_["d_rank1"], lo=r_["d_rank1_lo"], hi=r_["d_rank1_hi"])
+            else:
+                e = paired_diff(100 * a, 100 * b, subj, n_boot=1000)
             r1 = {m: 100 * H[(kind_, m)][0].mean() for m, _ in meth}
             rows.append(f"{label} & {lab_} & {r1['bicubic']:.1f} & {r1['span_ch48']:.1f} & {r1['est']:.1f} & "
                         f"{est_cell(e, 1)} \\\\")
@@ -1552,7 +1586,7 @@ def main(argv=None) -> None:
     recognition(res, out)
     recognition_extra(res, out)
     latency_ios(res, out, pub["lat"])
-    natural_control(res, out, pub["q"])
+    natural_control(res, out)
     error_ratio(res, out, fig)
     headroom(res)
     review(res, out)

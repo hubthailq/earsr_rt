@@ -17,8 +17,9 @@ Cập nhật 08/10/2026. Bản thảo `main.pdf` không còn ô trống; các m�
 ## Phải quyết định
 
 - [x] 04/11 **Tiêu đề.** Theo phản biện thứ tư (chữ "Real-Time" rộng hơn chứng cứ; trên bộ gia tốc RRDB cũng dưới 33 ms):
-      "When Does Efficient Super-Resolution Help Small Compressed Ear Images? Compression Error, Image Content and Training
-      Degradation". Hai bản trước: "Real-Time Super-Resolution of Small Compressed Ear Images: An Empirical Study of Published
+      "Efficient Super-Resolution of Small Compressed Ear Images: Compression Error, Image Content and Training Degradation"
+      (người dùng: tránh tiêu đề dạng câu hỏi). Các bản trước: "When Does Efficient Super-Resolution Help Small Compressed
+      Ear Images? ..."; "Real-Time Super-Resolution of Small Compressed Ear Images: An Empirical Study of Published
       Models and Training Degradation"; "... Degradation Matters More Than Architecture".
 - [ ] **Hình 4** dùng bốn ảnh tai thật của EarVN1.0 (người nổi tiếng, ảnh lấy từ web). Xác nhận quyền dùng ảnh trong bài.
 
