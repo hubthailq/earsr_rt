@@ -893,6 +893,112 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     plt.close(f)
 
 
+def codec_control(res: Path, out: Path) -> None:
+    """Chuẩn nén khác JPEG (TODO.md, việc Q1): WebP và AVIF trên AMI 36 px, so với JPEG ở cùng ảnh.
+    Với mỗi chuẩn nén và mức chất lượng: E_c/E_i, trung vị phần hơn bicubic, số mô hình kém bicubic, hệ số b (phương trình
+    phân tích sai số); rồi tỉ số và mức chất lượng tại đó phần hơn đổi dấu, kèm khoảng tin cậy bootstrap theo người."""
+    codecs = (("JPEG", "Jpeg", "t2", "bicjpeg", (93, 85, 75, 60)), ("WebP", "Webp", "codec", "bicwebp", (95, 90, 85, 75, 60)),
+              ("AVIF", "Avif", "codec", "bicavif", (90, 85, 80, 70, 60)))
+    keys = ("BMin", "BMax", "Cross", "CrossLo", "CrossHi", "CrossQ")
+
+    def mse(per, m, k):
+        f = res / per / f"{m}__hr144_x4_{k}.csv"
+        if not f.exists():
+            return None
+        d = pd.read_csv(f, dtype={"subject": str}).set_index("key")
+        return 10 ** (-d.psnr_y / 10), d.subject
+
+    base = mse("t2", "bicubic", "bic")
+    need = [mse(per, m, f"{pre}{q}") for _, _, per, pre, qs in codecs for q in qs for m in ["bicubic"] + PSNR16]
+    if base is None or any(v is None for v in need):
+        for _, tg, *_ in codecs:
+            for k in keys:
+                put(f"Codec{tg}{k}", None, "codec")
+        put("CodecLevels", None, "codec")
+        write(out / "tab_codec.tex", "\\todo{--} & & & & & \\\\\n")
+        return
+    ei, subj = base
+    E, sv = ei.to_numpy(), subj.loc[ei.index].to_numpy()
+    us = np.unique(sv)
+    idx = {u: np.where(sv == u)[0] for u in us}
+    a_ = np.array([float(mse("t2", m, "bic")[0].loc[ei.index].mean()) / ei.mean() for m in PSNR16])
+    rng = np.random.default_rng(0)
+    rows, nlev = [], 0
+    for name, tg, per, pre, qs in codecs:
+        pts = {q: np.stack([mse(per, m, f"{pre}{q}")[0].loc[ei.index].to_numpy() for m in ["bicubic"] + PSNR16], 1) for q in qs}
+        bs_all = []
+        for i, q in enumerate(qs):
+            J = pts[q]
+            Ec = J[:, 0].mean() - E.mean()
+            b_ = (J[:, 1:].mean(0) - a_ * E.mean()) / Ec
+            bs_all += b_.tolist()
+            p = -10 * np.log10(J)
+            g = p[:, 1:].mean(0) - p[:, 0].mean()
+            rows.append(f"{name if i == 0 else ''} & {q} & {num(Ec / E.mean(), 2)} & {num(float(np.median(g)), 2, True)} & "
+                        f"{int((g < 0).sum())} & {num(float(np.median(b_)), 2)} \\\\")
+            nlev += 1
+        rows[-1] += "\n\\addlinespace" if tg != "Avif" else ""
+
+        def crossing(rr, qs=qs, pts=pts):
+            e0, r, g = E[rr].mean(), [], []
+            for q in qs:
+                J = pts[q][rr]
+                p = -10 * np.log10(J)
+                r.append((J[:, 0].mean() - e0) / e0)
+                g.append(np.median(p[:, 1:].mean(0) - p[:, 0].mean()))
+            for i in range(len(g) - 1):
+                if g[i] > 0 >= g[i + 1]:
+                    w = g[i] / (g[i] - g[i + 1])
+                    return float(np.exp(np.log(r[i]) + w * (np.log(r[i + 1]) - np.log(r[i])))), qs[i] + w * (qs[i + 1] - qs[i])
+            return np.nan, np.nan
+
+        cr, cq = crossing(np.arange(len(E)))
+        bs = np.array([crossing(np.concatenate([idx[u] for u in rng.choice(us, len(us))])) for _ in range(400)])
+        if min(bs_all) <= 1:
+            print(f"CHÚ Ý: {name}: có mô hình với b <= 1; sửa câu về chuẩn nén khác ở mục 4.2")
+        put(f"Codec{tg}BMin", num(min(bs_all), 1))
+        put(f"Codec{tg}BMax", num(max(bs_all), 1))
+        put(f"Codec{tg}Cross", num(cr, 2))
+        put(f"Codec{tg}CrossLo", num(float(np.nanpercentile(bs[:, 0], 2.5)), 2))
+        put(f"Codec{tg}CrossHi", num(float(np.nanpercentile(bs[:, 0], 97.5)), 2))
+        put(f"Codec{tg}CrossQ", int(round(cq)))
+    put("CodecLevels", nlev)
+    write(out / "tab_codec.tex", "\n".join(rows) + "\n")
+
+
+def seeds(res: Path, folds_path: Path) -> None:
+    """Dao động do seed huấn luyện (TODO.md, việc Q3): fold 1, ba nhánh SPAN, seed 1 (lần chạy cuối), 101 và 102."""
+    keys = ("SeedMaxRange", "SeedMedRange", "SeedCells", "SeedDiffs", "SeedFlips", "SeedMinDiff")
+    sets = ("ami", "earvn", "awex")
+    if not all((res / "seeds" / s).is_dir() for s in sets):
+        for k in keys:
+            put(k, None, "seeds")
+        return
+    ranges, diffs = [], []
+    for s in sets:
+        d = load_dir(res / "seeds" / s)
+        if s == "ami":
+            d = d[d.subject.isin(set(json.loads(folds_path.read_text())["folds"]["1"]["test"]))]
+        d = d[d.arm != "bicubic"].copy()
+        d["base"] = d.arm.str.replace(r" \[seed \d+\]", "", regex=True)
+        d["seed"] = d.arm.str.extract(r"seed (\d+)")[0].fillna("1")
+        t = d.groupby(["base", "seed", "tier", "degrade"]).psnr_y.mean()
+        ranges += t.groupby(["base", "tier", "degrade"]).agg(lambda x: x.max() - x.min()).tolist()
+        for _, g in t.groupby(["tier", "degrade"]):
+            g = g.droplevel(["tier", "degrade"]).unstack("base")
+            for b in ("span/bicjpeg75", "span/bic"):
+                diffs.append((g["span/est"] - g[b]).to_numpy())
+    flips = sum(bool(x.min() < 0 < x.max()) for x in diffs)
+    if flips:
+        print(f"CHÚ Ý: {flips} chênh lệch giữa nhánh đổi dấu theo seed; sửa câu ở mục 5.3")
+    put("SeedMaxRange", num(max(ranges), 2))
+    put("SeedMedRange", num(float(np.median(ranges)), 3))
+    put("SeedCells", len(ranges))
+    put("SeedDiffs", len(diffs))
+    put("SeedFlips", "none" if flips == 0 else flips)
+    put("SeedMinDiff", num(min(float(np.abs(x).min()) for x in diffs), 2))
+
+
 def headroom(res: Path) -> None:
     """Phần tăng nhận dạng theo "dư địa" của từng người: rank-1 trên ảnh dò lớn trừ rank-1 trên ảnh dò nhỏ (bicubic).
     Tính từ các file theo ảnh dò của recog_eval.py; chỉ lấy người có ít nhất 5 ảnh dò nhỏ trên EarVN1.0."""
@@ -1605,6 +1711,8 @@ def main(argv=None) -> None:
     latency_ios(res, out, pub["lat"])
     natural_control(res, out)
     error_ratio(res, out, fig)
+    codec_control(res, out)
+    seeds(res, Path(a.folds))
     headroom(res)
     review(res, out)
     selector(res)

@@ -40,6 +40,23 @@ Input & Bicubic & Median gain & Below & Bicubic & Published SPAN \\
 \end{tabular}}
 \end{table}
 
+\section{Other codecs}
+\label{app:codec}
+Table~\ref{tab:codec} gives the evaluation of Section~\ref{sec:natural} with WebP and AVIF. Inputs are produced as for JPEG (bicubic downscaling, then compression of the 36-pixel input with OpenCV), and the levels were chosen on 100 AMI images before the evaluation so that $E_c/E_i$ spans about 0.1 to 1.1 for each codec.
+
+\begin{table}[H]
+\centering
+\caption{Published fidelity-oriented models on AMI with 36-pixel inputs compressed with three codecs. $E_c/E_i$: compression error of bicubic interpolation relative to its error on the clean input; gain: median PSNR-Y gain of the \NPub{} models over bicubic interpolation (dB); below: number of models with a negative mean gain; $b$: median coefficient of Equation~\ref{eq:decomp}. The JPEG rows repeat the AMI 36-pixel cells of Table~\ref{tab:generality}.}
+\label{tab:codec}
+\begin{tabular}{@{}lrcccc@{}}
+\toprule
+Codec & Quality & $E_c/E_i$ & Gain & Below & $b$ \\
+\midrule
+\tabinput{generated/tab_codec}
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Noise and blur estimates}
 \label{app:noiseblur}
 Both estimates use the \FitSmall{} real small images and \FitLarge{} large images of the \RoleFit{} EarVN1.0 subjects reserved for measuring the degradation. Noise is estimated with the method of Immerk{\ae}r~\cite{immerkaer1996noise}; the 5th to 95th percentile range is \NoiseLo{} to \NoiseHi{} on the 8-bit scale, an underestimate of the noise before compression. Since a blur kernel cannot be identified from such small compressed images, we choose the width range of an isotropic Gaussian for which the sharpness statistics (variance-normalised Laplacian energy) of simulated images best match those of real ones (Kolmogorov--Smirnov distance). The result, $\sigma\in[\BlurLo,\BlurHi]$ input pixels, is a small amount of blur.

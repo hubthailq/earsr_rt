@@ -276,6 +276,23 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     (`scripts/run_codec.sh`, mức chọn theo E_c/E_i trên 100 ảnh AMI); `recog_eval.py --synth` (`scripts/run_recog_synth.sh`,
     ảnh dò 36 px từ nửa ảnh lớn); `train.py --seed`, nhãn `+sN`, nhánh `[seed N]` (`scripts/run_seeds.sh`). Chờ chạy trên
     labai217; phần phân tích trong `make_paper.py` viết sau khi có số.
+  - 05/11 Đã chạy và kéo về (commit 3a1e6c2). Kết quả (tính nhanh trong scratchpad, chưa vào make_paper.py):
+    - Q1: b > 1 cho 16/16 mô hình ở mọi mức của cả ba chuẩn nén (JPEG 1,6 đến 3,0; WebP 1,6 đến 2,6; AVIF 1,5 đến 2,2).
+      Điểm đổi dấu theo E_c/E_i: JPEG 0,26 [0,25; 0,28] (q 89), WebP 0,36 [0,35; 0,37] (q 86), AVIF 0,70 [0,67; 0,73]
+      (q 61). Tỉ số ngưỡng phụ thuộc chuẩn nén; khớp câu "no common threshold", không khớp nếu đọc tỉ số như ngưỡng chung.
+    - Q2: ảnh dò tổng hợp 36 px gần như không mất độ chính xác (bicubic 56,8% so với ảnh lớn 60,2%; ảnh nhỏ thật 13,2%).
+      SPAN est trừ bicubic, Ear-R18 / Ear-R50: sạch −5,5* / −3,3*; JPEG 93 −3,4 / −2,0; JPEG 75 +1,0 / +2,1 (không ý nghĩa).
+      Tăng dần theo mức nén nhưng không tái hiện mức tăng +11,8 trên ảnh dò thật. SPAN công bố: +0,2 / +2,2* sạch.
+    - Q3: dao động giữa ba seed tối đa 0,03 dB (trung vị 0,008) trên 48 ô; 32 chênh lệch giữa nhánh không đổi dấu.
+    - Chờ người dùng chọn cách viết Q2 trước khi đưa vào bài.
+  - [x] 05/11 Q1 vào bài: `codec_control()` trong make_paper.py (macro `Codec*`, `tab_codec.tex`), đoạn "Other codecs" cuối
+    mục 4.2, phụ lục "Other codecs" (Bảng tab:codec), hạn chế: bỏ "other codecs ... not tested", thêm "three codecs".
+  - [x] 05/11 Q3 vào bài: `seeds()` (macro `Seed*`), câu seed ở mục 5.3 thay câu "each fold is trained with one seed",
+    hạn chế: "training variation was measured on one fold".
+  - [ ] Q2b (người dùng đồng ý 05/11): ảnh dò tổng hợp gần ảnh thật hơn, `scripts/run_recog_synth2.sh`: cạnh ngắn 24 và 36,
+    kiểu bic / bicjpeg75 / est, thêm nhánh SPAN tinh chỉnh bic và bicjpeg75 (5 fold). Câu hỏi cố định trong đầu script.
+    Lý do: ảnh dò 36 px của Q2 gần như không mất độ chính xác nên không có dư địa. Chạy xong mới viết Q2 vào bài
+    (đề xuất đã nêu: đoạn ở 6.4, câu ở hạn chế, bảng phụ lục).
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR
