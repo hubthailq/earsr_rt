@@ -22,6 +22,10 @@ Dataset & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & JPEG 60 & 
 \end{tabular}}
 \end{table}
 
+\section{Estimating the error ratio without ground truth}
+\label{app:selector}
+Both terms can be approximated at test time: $E_i$ from the input itself, as the error of bicubic interpolation after downscaling it by two, and $E_c$ from the JPEG quality stored in the file. The estimate has a rank correlation of \SelRhoMin{} to \SelRhoMax{} with the true ratio. Used to choose, per input, between bicubic interpolation and the published SPAN weights, with a threshold selected on DIV2K, it gives a PSNR \SelCrossMin{} to \SelCrossMax{}~dB higher on held-out images of the three ear datasets than a rule based on the quality level alone, which selects the model at quality \SelLevelsDiv{}. Calibrated and tested on the same type of image, the two rules do not differ (\SelSame{}~dB on AMI). The ratio therefore transfers across image types where the quality level does not; the absolute gain is small (at most \SelGainMax{}~dB) and was measured on synthesised inputs.
+
 \section{Order of degradations}
 \label{app:order}
 \begin{table}[H]
@@ -102,7 +106,7 @@ The stress test brightens the validation images by factors of 1.4 and 1.8 and ma
 
 \section{Fixed and measured compression levels}
 \label{app:levels}
-Table~\ref{tab:levels} gives, for both backbones, the paired differences between the models trained with the measured degradation and with fixed JPEG at quality 75 that are summarised in Section~\ref{sec:ablation}.
+Table~\ref{tab:levels} gives, for both backbones, the paired differences between the models trained with the measured degradation and with fixed JPEG at quality 75 that are summarised in Section~\ref{sec:ablation}. Table~\ref{tab:ablation} compares the measured degradation with the two JPEG-only variants.
 
 \begin{table}[H]
 \centering
@@ -114,6 +118,20 @@ Table~\ref{tab:levels} gives, for both backbones, the paired differences between
 Backbone & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
 \midrule
 \tabinput{generated/tab_levels}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Difference between SPAN fine-tuned with the measured degradation and two JPEG-only variants (PSNR-Y, dB; 95\% confidence intervals).}
+\label{tab:ablation}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Comparison & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+\midrule
+\tabinput{generated/tab_ablation}
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -158,6 +176,26 @@ Upscaling & Clean & JPEG 75 & Measured & Clean & JPEG 75 & Measured \\
 \label{app:headroom}
 We define the headroom of a subject as in Section~\ref{sec:recog}, from the rank-1 rates of its large probes and of its bicubically upscaled small probes, and split the subjects of each dataset at the median headroom. Among the \HeadEarvnReSubj{} subjects with at least five small probes, the half with less headroom (\HeadEarvnReLowRoom{} points on average) improves by \HeadEarvnReLowGain{} points and the half with more headroom (\HeadEarvnReHighRoom{}) by \HeadEarvnReHighGain{} points. With Ear-R50 the two halves improve by \HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{} points. The rank correlation between headroom and improvement is positive but not significant with this number of subjects (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$). Headroom alone does not appear to be sufficient: the AWEx subjects in the upper half of headroom (\HeadAwexReHighRoom{} points) change by \HeadAwexReHighGain{} and \HeadAwexRfHighGain{} points with the two recognisers, although these per-subject values are based on a median of two probes.
 
+\section{Fidelity and identification}
+\label{app:fidrecog}
+Across the \CorrNAll{} methods with identification results, the rank-1 rate on real EarVN1.0 probes follows LPIPS measured on synthesised EarVN1.0 inputs (Spearman $\rho=\CorrLpipsAll$ and $\CorrLpipsAllRf$ for the two recognisers), less closely DISTS ($\CorrDistsAll$ and $\CorrDistsAllRf$), and not PSNR ($\CorrPsnrAll$ and $\CorrPsnrAllRf$; Table~\ref{tab:fidrecog}). The two GAN-trained models cause most of the difference: without them PSNR is also related to identification ($\rho=\CorrPsnrNogan$ over \CorrNNogan{} methods), and within the \CorrNLone{} L1-trained models fine-tuned in this study PSNR and LPIPS track it about equally well ($\CorrPsnrLone$ and $\CorrLpipsLone$). The methods are not independent, the fidelity measures are computed on synthesised inputs of partly different subjects and against EarVN1.0 ground truth that is itself compressed (Section~\ref{sec:benchmark}), and the analysis was made after the identification results were known, so these correlations describe this dataset rather than establish a general rule. PSNR thus loses its relation with identification once GAN-trained upscalers are compared, whereas LPIPS keeps it in all three groups. LPIPS relies on ImageNet features~\cite{zhang2018lpips} and the recognisers on ear images, so the agreement is not built into the measures.
+
+\begin{table}[H]
+\centering
+\caption{Spearman correlation between fidelity on synthesised EarVN1.0 inputs (measured degradation, 24-pixel inputs) and the rank-1 rate on real EarVN1.0 probes, across upscaling methods ($p$-values in parentheses). Negative values for LPIPS and DISTS mean that a lower distance goes with a higher rank-1 rate.}
+\label{tab:fidrecog}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrcccccc@{}}
+\toprule
+ & & \multicolumn{2}{c}{PSNR} & \multicolumn{2}{c}{LPIPS} & \multicolumn{2}{c}{DISTS} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(l){7-8}
+Methods & $n$ & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
+\midrule
+\tabinput{generated/tab_fidrecog}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Precision of the converted FBCNN}
 \label{app:coreml}
-The pipeline with FBCNN is measured on the smartphone in 32-bit precision, because the 16-bit Core ML conversion of FBCNN does not reproduce its output: the PSNR between the Core ML and PyTorch outputs is \CoremlPsnrFbHalf{}~dB, compared with more than 50~dB for the other converted models. In 32-bit precision the two outputs agree. SPAN is measured in the same precision for comparison.
+The pipeline with FBCNN is measured on the smartphone in 32-bit precision, because the 16-bit Core ML conversion of FBCNN does not reproduce its output: the PSNR between the Core ML and PyTorch outputs is \CoremlPsnrFbHalf{}~dB, compared with more than 50~dB for the other converted models. In 32-bit precision the two outputs agree. SPAN is measured in the same precision for comparison. At 32-bit precision Core ML runs both networks on the GPU rather than the neural engine, and for a network as small as SPAN the GPU path is slower than the CPU, possibly because of scheduling overhead.

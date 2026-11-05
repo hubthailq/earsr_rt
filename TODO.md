@@ -306,6 +306,14 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     ảnh dò tổng hợp thay câu "two respects that our data cannot separate", đóng góp 1 thêm "and on the codec", đoạn cuối
     phần mở đầu; thảo luận "What the results add" thêm một câu; highlight 5 (Nyquist) thay bằng ảnh dò tổng hợp
     (83 ký tự; ý Nyquist còn ở tóm tắt và đóng góp 1).
+- [x] 05/11 **R. Viết gọn sau Q** (người dùng: "tránh dài dòng, theo các bài IMAVIS"). Phần chính 10.300 → 9.000 từ (đếm cả
+  bảng), bảng/hình phần chính 18 → 16, 41 trang, tóm tắt 248 từ. Không bỏ kết quả nào, chỉ chuyển chỗ và rút gọn:
+  mở đầu (đoạn phát hiện chính và hệ quả viết lại, kiến trúc trước nhận dạng; 4 đóng góp, thêm đóng góp nhận dạng; bỏ câu
+  rào đón lặp ở cuối); 4.1 đoạn độ vững còn 4 câu; 4.2 đoạn ước lượng tỉ số → phụ lục app:selector; 5.3 viết lại, tách
+  đoạn "Training variation", Bảng tab:ablation → phụ lục; 6.4 bỏ câu lặp, đoạn ảnh dò tổng hợp và AWEx rút gọn, AWEx nối với
+  hai điều kiện; 6.5 đoạn tương quan còn 2 câu, phần còn lại và Bảng tab:fidrecog → phụ lục app:fidrecog, chi tiết Core ML →
+  app:coreml; 5.2 bỏ hai ngoặc số; hạn chế nhóm theo 4 ý (Model, Analysis, Identification, Statistics).
+  Bản trước khi sửa: scratchpad before_trim_1105 (và git).
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR
