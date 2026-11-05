@@ -2,4 +2,4 @@ Sixteen efficient SR models are tested on small JPEG-compressed ear images
 Every model adds an excess compression error that grows with compression
 Smooth ear images lose the SR advantage at lighter compression than natural ones
 For fidelity, the training degradation matters more than the architecture
-The excess lies near the Nyquist frequency of the input, only partly at block edges
+On synthesised probes, the SR training that aids identification follows compression

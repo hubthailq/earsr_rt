@@ -265,12 +265,12 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     rồi thêm hàng AMI 48 vào Bảng 2; trong lúc chờ, câu ở 4.2 nói rõ bằng chứng về cỡ ảnh đến từ DIV2K (đã sửa 04/11).
     Lệnh: `bash scripts/run_ami48.sh` (đã thử trên Mac với 2 ảnh). Bảng 2 và A.1 tự thêm số; `WildEstGain*` đã giới hạn
     cho EarVN1.0 và AWEx. Có số rồi: đọc lại câu 4.2 (cỡ 48 có cùng điểm đổi dấu không) và tóm tắt (\CrossQAmi*).
-- [ ] **Q. Làm mạnh bài sau kiểm toán (05/11; người dùng: "làm 3 cái này trước").** Ba việc, cố định trước khi chạy:
-  - [ ] Q1 Chuẩn nén khác JPEG: 16 mô hình công bố trên AMI 36 px, WebP (và AVIF nếu OpenCV có), vài mức chất lượng.
+- [x] 05/11 **Q. Làm mạnh bài sau kiểm toán (05/11; người dùng: "làm 3 cái này trước").** Ba việc, cố định trước khi chạy:
+  - [x] 05/11 Q1 Chuẩn nén khác JPEG: 16 mô hình công bố trên AMI 36 px, WebP (và AVIF nếu OpenCV có), vài mức chất lượng.
     Hỏi: phần dư (b > 1) và điểm đổi dấu có xuất hiện không. Chỉ suy luận.
-  - [ ] Q2 Tách điều kiện nén của phần nhận dạng: EarVN1.0, ảnh lớn của người test thu nhỏ thành ảnh dò, không nén / JPEG 93 /
+  - [x] 05/11 Q2 Tách điều kiện nén của phần nhận dạng: EarVN1.0, ảnh lớn của người test thu nhỏ thành ảnh dò, không nén / JPEG 93 /
     JPEG 75; cùng người, cùng Ear-R18, Ear-R50. Hỏi: SPAN tinh chỉnh chỉ hơn bicubic khi ảnh dò bị nén? Chỉ suy luận.
-  - [ ] Q3 Thêm seed: fold 1, nhánh est, bicjpeg75, bic, seed 1 và 2 (6 lần huấn luyện). Hỏi: dao động do seed so với các
+  - [x] 05/11 Q3 Thêm seed: fold 1, nhánh est, bicjpeg75, bic, seed 1 và 2 (6 lần huấn luyện). Hỏi: dao động do seed so với các
     chênh lệch ở ablation.
   - 05/11 Mã xong, đã thử trên Mac (165 kiểm thử qua): `ops.webp`, `ops.avif`, kiểu `bicwebpQ`, `bicavifQ`
     (`scripts/run_codec.sh`, mức chọn theo E_c/E_i trên 100 ảnh AMI); `recog_eval.py --synth` (`scripts/run_recog_synth.sh`,
@@ -289,10 +289,23 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     mục 4.2, phụ lục "Other codecs" (Bảng tab:codec), hạn chế: bỏ "other codecs ... not tested", thêm "three codecs".
   - [x] 05/11 Q3 vào bài: `seeds()` (macro `Seed*`), câu seed ở mục 5.3 thay câu "each fold is trained with one seed",
     hạn chế: "training variation was measured on one fold".
-  - [ ] Q2b (người dùng đồng ý 05/11): ảnh dò tổng hợp gần ảnh thật hơn, `scripts/run_recog_synth2.sh`: cạnh ngắn 24 và 36,
+  - [x] 05/11 Q2b (người dùng đồng ý 05/11): ảnh dò tổng hợp gần ảnh thật hơn, `scripts/run_recog_synth2.sh`: cạnh ngắn 24 và 36,
     kiểu bic / bicjpeg75 / est, thêm nhánh SPAN tinh chỉnh bic và bicjpeg75 (5 fold). Câu hỏi cố định trong đầu script.
     Lý do: ảnh dò 36 px của Q2 gần như không mất độ chính xác nên không có dư địa. Chạy xong mới viết Q2 vào bài
     (đề xuất đã nêu: đoạn ở 6.4, câu ở hạn chế, bảng phụ lục).
+    Kết quả (05/11, results/recog_synth2): ảnh dò 24 px mở dư địa (bicubic 49,0% sạch, 36,2% suy giảm đo được; ảnh thật
+    13,2%). Ảnh dò sạch: mô hình học bicubic +4,1 đến +5,8 điểm, mô hình học có nén −1,1 đến −5,2; ảnh dò nén: ngược lại,
+    học có nén +4,6 đến +7,4 (6/8 khoảng không chứa 0), học bicubic −2,0 đến −5,4. Mô hình của ta +5,8 / +5,0 trên suy
+    giảm đo được, khoảng nửa mức tăng trên ảnh thật. 36 px: chênh lệch trên ảnh nén nhỏ, không ý nghĩa; trên ảnh sạch mô
+    hình học có nén vẫn kém 3,3 đến 7,2. Trả lời câu hỏi 2: kém trên ảnh sạch là do học có nén (nhánh bic không kém).
+    Đã vào bài: `recog_synth()` (macro `Syn*`, `tab_recog_synth.tex`), đoạn "Synthesised probes" ở 6.4, câu "two
+    conditions" ở 6.4, phụ lục "Synthesised probes", phần thực tiễn (ảnh không nén thì dùng trọng số công bố), hạn chế,
+    kết luận. Kết quả Q2 lần đầu (results/recog_synth, có JPEG 93) không vào bài: ô 36 px trùng với lần sau.
+  - [x] 05/11 Rà toàn bài theo Q1 đến Q2b (người dùng: "viết đi, nhìn lại toàn bài"): tóm tắt thêm câu ảnh dò tổng hợp,
+    bỏ câu lưới khối lệch / nén hai lần (còn ở mở đầu, đóng góp 2) để giữ 248 từ; mở đầu: ngưỡng khác theo chuẩn nén, câu
+    ảnh dò tổng hợp thay câu "two respects that our data cannot separate", đóng góp 1 thêm "and on the codec", đoạn cuối
+    phần mở đầu; thảo luận "What the results add" thêm một câu; highlight 5 (Nyquist) thay bằng ảnh dò tổng hợp
+    (83 ký tự; ý Nyquist còn ở tóm tắt và đóng góp 1).
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

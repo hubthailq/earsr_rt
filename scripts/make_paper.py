@@ -615,6 +615,83 @@ def recognition_extra(res: Path, out: Path) -> None:
     put("RecRfValAcc", num(100 * json.loads(f.read_text())["info"]["val_acc"], 1) if f.exists() else None, why)
 
 
+def recog_synth(res: Path, out: Path) -> None:
+    """Ảnh dò tổng hợp từ ảnh lớn của người test (TODO.md, việc Q2b; scripts/run_recog_synth2.sh): cạnh ngắn 24 và 36 px,
+    sạch / JPEG 75 / suy giảm đo được, hai bộ nhận dạng. Chênh lệch rank-1 so với bicubic, theo nhánh huấn luyện."""
+    base = res / "recog_synth2"
+    recs, shorts, kinds = ("resnet18", "resnet50"), (24, 36), ("bic", "bicjpeg75", "est")
+    bic_tr, cmp_tr = (PUB, "span/bic"), ("span/bicjpeg75", "span/est")
+    keys = ["SynProbes", "SynSubj", "SynBicCleanS", "SynBicEstS", "SynBicEstL", "SynEstEstSRe", "SynEstEstSRf", "SynSigCompS",
+            "SynNCompS"] + [p + s for p in ("SynBicTrCleanS", "SynCmpTrCleanS", "SynCmpTrCompS", "SynBicTrCompS", "SynCmpTrCompL",
+                                            "SynCmpTrCleanL") for s in ("Min", "Max")]
+    D = {}
+    for t in recs:
+        for s in shorts:
+            for k in kinds:
+                d = base / f"{t}_{s}px_{k}_summary"
+                if (d / "summary.csv").exists():
+                    D[t, s, k] = (pd.read_csv(d / "summary.csv").set_index("arm"),
+                                  pd.read_csv(d / "paired.csv").set_index(["arm", "minus"]))
+    if len(D) != len(recs) * len(shorts) * len(kinds):
+        for k in keys:
+            put(k, None, "recog_synth2")
+        write(out / "tab_recog_synth.tex", "\\todo{--} & & & & & & \\\\\n")
+        return
+
+    def d_(t, s, k, arm_):
+        return D[t, s, k][1].loc[(arm_, "bicubic")]
+
+    def ci(r):
+        return f"{num(r['d_rank1'], 1, True)} {{\\scriptsize[{num(r['d_rank1_lo'], 1)}, {num(r['d_rank1_hi'], 1)}]}}"
+
+    def vals(s, ks, arms):
+        return [d_(t, s, k, a_) for t in recs for k in ks for a_ in arms]
+
+    def rng(prefix, rows, magnitude=False):
+        v = [abs(r["d_rank1"]) if magnitude else r["d_rank1"] for r in rows]
+        put(prefix + "Min", num(min(v), 1))
+        put(prefix + "Max", num(max(v), 1))
+
+    rows = []
+    labels = ((PUB, "SPAN-S, published"), ("span/bic", "SPAN-S, fine-tuned bicubic"), ("span/bicjpeg75", "SPAN-S, JPEG 75"),
+              ("span/est", "SPAN-S, measured (ours)"))
+    for t, name in zip(recs, ("Ear-R18", "Ear-R50")):
+        rows.append(f"\\multicolumn{{7}}{{@{{}}l}}{{\\emph{{{name}}}}} \\\\")
+        rows.append("Bicubic $\\times$4 (rank-1, \\%) & " + " & ".join(num(D[t, s, k][0].loc["bicubic", "rank1"], 1)
+                                                                   for s in shorts for k in kinds) + " \\\\")
+        for a_, lab in labels:
+            rows.append(f"{lab} & " + " & ".join(ci(d_(t, s, k, a_)) for s in shorts for k in kinds) + " \\\\")
+        if t != recs[-1]:
+            rows.append("\\midrule")
+    write(out / "tab_recog_synth.tex", "\n".join(rows) + "\n")
+    s0 = D["resnet18", 24, "bic"][0]
+    put("SynProbes", int(s0.loc["bicubic", "n_probe"]))
+    put("SynSubj", int(s0.loc["bicubic", "n_subjects"]))
+    put("SynBicCleanS", num(s0.loc["bicubic", "rank1"], 1))
+    put("SynBicEstS", num(D["resnet18", 24, "est"][0].loc["bicubic", "rank1"], 1))
+    put("SynBicEstL", num(D["resnet18", 36, "est"][0].loc["bicubic", "rank1"], 1))
+    put("SynEstEstSRe", f"{num(d_('resnet18', 24, 'est', 'span/est')['d_rank1'], 1, True)}")
+    put("SynEstEstSRf", f"{num(d_('resnet50', 24, 'est', 'span/est')['d_rank1'], 1, True)}")
+    rng("SynBicTrCleanS", vals(24, ("bic",), bic_tr))
+    rng("SynCmpTrCleanS", vals(24, ("bic",), cmp_tr), magnitude=True)
+    comp = vals(24, ("bicjpeg75", "est"), cmp_tr)
+    rng("SynCmpTrCompS", comp)
+    rng("SynBicTrCompS", vals(24, ("bicjpeg75", "est"), bic_tr), magnitude=True)
+    put("SynSigCompS", sum(int(r["d_rank1_lo"] > 0) for r in comp))
+    put("SynNCompS", len(comp))
+    compL = vals(36, ("bicjpeg75", "est"), cmp_tr)
+    rng("SynCmpTrCompL", compL)
+    rng("SynCmpTrCleanL", vals(36, ("bic",), cmp_tr), magnitude=True)
+    # các câu ở mục 6.4 dựa trên những dấu này; đổi thì phải sửa câu
+    if any(r["d_rank1"] <= 0 for r in comp) or any(r["d_rank1"] >= 0 for r in vals(24, ("bicjpeg75", "est"), bic_tr)) \
+            or any(r["d_rank1"] <= 0 for r in vals(24, ("bic",), bic_tr)) or any(r["d_rank1"] >= 0 for r in vals(24, ("bic",), cmp_tr)):
+        print("CHÚ Ý: dấu chênh lệch trên ảnh dò tổng hợp 24 px không như câu ở mục 6.4")
+    if any(r["d_rank1_lo"] > 0 or r["d_rank1_hi"] < 0 for r in vals(36, ("bicjpeg75", "est"), bic_tr + cmp_tr)):
+        print("CHÚ Ý: có chênh lệch có ý nghĩa trên ảnh dò nén 36 px; sửa câu ở mục 6.4")
+    if any(r["d_rank1_hi"] >= 0 for r in vals(36, ("bic",), cmp_tr)):
+        print("CHÚ Ý: mô hình học có nén không còn kém có ý nghĩa trên ảnh dò sạch 36 px; sửa câu ở mục 6.4 và hạn chế")
+
+
 def natural_control(res: Path, out: Path) -> None:
     """Đối chứng trên ảnh tự nhiên (scripts/run_div2k_control.sh): cùng 16 mô hình, cùng các mức nén, ảnh vào từ 24 đến
     192 px. Chưa có kết quả thì bảng và macro ra ô TBD."""
@@ -1708,6 +1785,7 @@ def main(argv=None) -> None:
     realism_and_params(res, out, Path(a.degrade_params))
     recognition(res, out)
     recognition_extra(res, out)
+    recog_synth(res, out)
     latency_ios(res, out, pub["lat"])
     natural_control(res, out)
     error_ratio(res, out, fig)

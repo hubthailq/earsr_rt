@@ -134,6 +134,26 @@ Dataset & Recogniser trained on & Bicubic & Published SPAN & Ours & Ours minus b
 \end{tabular}}
 \end{table}
 
+\section{Synthesised probes}
+\label{app:recogsynth}
+Table~\ref{tab:recogsynth} gives the identification results on probes synthesised from large EarVN1.0 images (Section~\ref{sec:recog}). The probes are the large images of the test subjects that are not used as enrolment images, resized so that the short side is four times the target size and degraded as in the benchmark (bicubic downscaling by four, then JPEG 75 or the measured degradation); templates and recognisers are those of Table~\ref{tab:recog}.
+
+\begin{table}[H]
+\centering
+\caption{Identification of synthesised probes (\SynProbes{} images of \SynSubj{} EarVN1.0 subjects) after $\times4$ upscaling. First row of each block: rank-1 rate of bicubic upscaling (\%); other rows: paired difference from it in percentage points, with 95\% confidence interval. Fine-tuned rows average the models of the folds.}
+\label{tab:recogsynth}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{24-pixel probes} & \multicolumn{3}{c}{36-pixel probes} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Upscaling & Clean & JPEG 75 & Measured & Clean & JPEG 75 & Measured \\
+\midrule
+\tabinput{generated/tab_recog_synth}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Headroom of individual subjects}
 \label{app:headroom}
 We define the headroom of a subject as in Section~\ref{sec:recog}, from the rank-1 rates of its large probes and of its bicubically upscaled small probes, and split the subjects of each dataset at the median headroom. Among the \HeadEarvnReSubj{} subjects with at least five small probes, the half with less headroom (\HeadEarvnReLowRoom{} points on average) improves by \HeadEarvnReLowGain{} points and the half with more headroom (\HeadEarvnReHighRoom{}) by \HeadEarvnReHighGain{} points. With Ear-R50 the two halves improve by \HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{} points. The rank correlation between headroom and improvement is positive but not significant with this number of subjects (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$). Headroom alone does not appear to be sufficient: the AWEx subjects in the upper half of headroom (\HeadAwexReHighRoom{} points) change by \HeadAwexReHighGain{} and \HeadAwexRfHighGain{} points with the two recognisers, although these per-subject values are based on a median of two probes.
