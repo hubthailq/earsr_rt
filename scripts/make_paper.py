@@ -909,6 +909,15 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         if tag != "All":
             put(f"CrossQ{tag}Min", int(round(X[sel].q.min())))
             put(f"CrossQ{tag}Max", int(round(X[sel].q.max())))
+    # Khoảng lưới đo chứa điểm đổi dấu (góp ý reviewer 06/11: số nội suy chính xác hơn dữ liệu cho phép; văn bản dùng
+    # hai mức đo kề nhau, bảng giữ số nội suy). Mức JPEG của benchmark: 60, 75, 85, 93.
+    L = [60, 75, 85, 93]
+    for tag, sel in (("Nat", X.set == "DIV2K"), ("Ami", X.set == "AMI")):
+        lo_, hi_ = [l for l in L if l < X[sel].q.min()], [l for l in L if l > X[sel].q.max()]
+        if not lo_ or not hi_ or len([l for l in L if lo_[-1] < l < hi_[0]]):
+            print(f"CHÚ Ý: điểm đổi dấu {tag} không nằm trong một khoảng lưới; sửa tóm tắt, phần mở đầu và mục 4.2")
+        put(f"CrossGrid{tag}Lo", lo_[-1] if lo_ else "TBD")
+        put(f"CrossGrid{tag}Hi", hi_[0] if hi_ else "TBD")
     # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn (thêm cỡ 48 px ngày 05/11; TODO P6)
     A = X[X.set == "AMI"].sort_values("px")
     if not (np.all(np.diff(A.q) > 0) and np.all(np.diff(A.ratio) < 0)):
@@ -1559,7 +1568,8 @@ def recog_upscaled(res: Path, out: Path) -> None:
             rows.append(f"{label} & \\todo{{--}} & & & & \\\\")
             continue
         H = {("up", m): hits(f) for m, f in up.items()} | {("lg", m): hits(f) for m, f in lg.items()}
-        for kind_, lab_ in (("lg", "large images only"), ("up", "large and upscaled small images")):
+        # giao thức chính (bộ nhận dạng riêng cho mỗi cách phóng) đứng trước; góp ý reviewer 06/11
+        for kind_, lab_ in (("up", "large and upscaled small images"), ("lg", "large images only")):
             a, subj = H[(kind_, "est")]
             b, _ = H[(kind_, "bicubic")]
             if kind_ == "lg":   # cùng ước lượng in ở Bảng 8 (summarize_recog.py, 1000 mẫu, seed 0): đọc lại, không tính lại
@@ -1578,6 +1588,8 @@ def recog_upscaled(res: Path, out: Path) -> None:
                 put(f"RecUp{tag}Gain", num(e.point, 1))
                 put(f"RecUp{tag}GainLo", num(e.lo, 1))
                 put(f"RecUp{tag}GainHi", num(e.hi, 1))
+                if tag == "Earvn" and not e.lo > 0:
+                    print("CHÚ Ý: mức tăng rank-1 theo giao thức chính trên EarVN1.0 không còn có ý nghĩa; sửa tóm tắt, mở đầu, mục 6.4")
             else:
                 put(f"RecUp{tag}LgBic", f"{r1['bicubic']:.1f}")
                 put(f"RecUp{tag}LgEst", f"{r1['est']:.1f}")

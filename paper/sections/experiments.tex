@@ -4,14 +4,17 @@
 \subsection{Setup}
 For each backbone and fold we fine-tune one model per training degradation (bicubic, generic, bicubic followed by JPEG 75, and measured), all with the procedure of Section~\ref{sec:stable}. With the ablation runs, this gives \NRuns{} runs over \NFolds{} folds. Models are compared with bicubic interpolation and with the published weights of the same backbone on AMI at 36-pixel inputs (\NAmiImg{} images of \NAmiSubj{} subjects), EarVN1.0 at 24 pixels (\NEarvnImg{} images of \NEarvnSubj{} subjects) and AWEx at 24 and 36 pixels (\NAwexSImg{} and \NAwexMImg{} images).
 
-\subsection{For fidelity, the training degradation matters more than the architecture}
-Fine-tuning SPAN on ear images with bicubic downsampling improves clean inputs but leaves it below interpolation under compression, by a margin similar to that of the published weights (Table~\ref{tab:matrix}): target-domain data do not compensate for a mismatched degradation. The generic pipeline is below interpolation on clean inputs (by \GenVsBicCleanMin{} to \GenVsBicCleanMax{}~dB) and within \GenVsBicEstMin{} to \GenVsBicEstMax{}~dB of it on measured inputs; it wins only on its own inputs, which the classifier separates from real images. On JPEG 75 inputs, training with the measured degradation instead of bicubic downsampling gains \DegEffMin{} to \DegEffMax{}~dB, and training with fixed JPEG 75 gains \JpgEffMin{} to \JpgEffMax{}~dB, more than ten times the \SpreadQLow{}~dB range of the published architectures.
+\subsection{Training degradation and architecture}
+Fine-tuning SPAN on ear images with bicubic downsampling improves clean inputs but leaves it below interpolation under compression, by a margin similar to that of the published weights (Table~\ref{tab:matrix}): target-domain data do not compensate for a mismatched degradation. The generic pipeline is below interpolation on clean inputs (by \GenVsBicCleanMin{} to \GenVsBicCleanMax{}~dB) and within \GenVsBicEstMin{} to \GenVsBicEstMax{}~dB of it on measured inputs. On JPEG 75 inputs, training with the measured degradation instead of bicubic downsampling gains \DegEffMin{} to \DegEffMax{}~dB, and training with fixed JPEG 75 gains \JpgEffMin{} to \JpgEffMax{}~dB, against a \SpreadQLow{}~dB range among the published architectures.
+
+To compare architectures under identical training, we also fine-tune the published RRDB weights, with \ParamsRatio{} times the parameters of SPAN, by the same procedure (mixed precision, to fit memory; all runs pass the stress test). At JPEG 75 RRDB gains \RevRrdbGainQMin{} to \RevRrdbGainQMax{}~dB over its published weights, against \RevSpanGainQMin{} to \RevSpanGainQMax{}~dB for SPAN, and exceeds the fine-tuned SPAN by \RevRrdbVsEstQMin{} to \RevRrdbVsEstQMax{}~dB (\RevRrdbVsEstMin{} to \RevRrdbVsEstMax{}~dB over all compressed inputs; Table~\ref{tab:review} in \ref{app:alternatives}). For fidelity under compression, the training degradation thus changes either network by more than a decibel and the architecture by a fraction of a decibel.
 
 \begin{table}[t]
 \centering
 \caption{PSNR-Y (dB) of SPAN on AMI (36-pixel inputs) by training degradation (rows) and test input (columns). Best fine-tuned or published model per column in bold.}
 \label{tab:matrix}
-\resizebox{\linewidth}{!}{%
+\small
+\fitbox{%
 \begin{tabular}{@{}lccccc@{}}
 \toprule
  & \multicolumn{5}{c}{Test input} \\
@@ -24,16 +27,21 @@ Training degradation & Clean & JPEG 93 & JPEG 75 & Measured & Generic \\
 \end{table}
 
 \subsection{Comparison with the references}
-On measured inputs, SPAN fine-tuned with the measured degradation improves on bicubic interpolation by \EstVsBicMin{} to \EstVsBicMax{}~dB, on the published weights by \EstVsPubMin{} to \EstVsPubMax{}~dB and on the generic pipeline by \EstVsGenMin{} to \EstVsGenMax{}~dB, with confidence intervals excluding zero (Table~\ref{tab:main}). LPIPS also improves, by \EstLpipsVsBicMin{} to \EstLpipsVsBicMax{} over interpolation and \EstLpipsVsGenMin{} to \EstLpipsVsGenMax{} over the generic pipeline. The advantage holds in every fold, including the two held-out folds (\EstVsGenFoldMin{} to \EstVsGenFoldMax{}~dB over the generic pipeline on AMI), at single quality levels (\EstVsBicQLowMin{} to \EstVsBicQLowMax{}~dB over interpolation at quality 75, \EstVsBicQHighMin{} to \EstVsBicQHighMax{}~dB at 93), and for DISP (\DispEstVsBicMin{} to \DispEstVsBicMax{}~dB over interpolation). It also holds with an offset block grid or double compression (\ref{app:order}). It is largest for the smallest inputs (\EstVsBicAmiS{}, \EstVsBicAmiM{} and \EstVsBicAmiL{}~dB at 24, 36 and 48 pixels; Figure~\ref{fig:size}). The cost is on clean inputs, where the model is \EstVsPubCleanMin{} to \EstVsPubCleanMax{}~dB below the published weights while remaining above interpolation; all real small ear images we examined are compressed.
+On measured inputs, SPAN fine-tuned with the measured degradation improves on bicubic interpolation by \EstVsBicMin{} to \EstVsBicMax{}~dB, on the published weights by \EstVsPubMin{} to \EstVsPubMax{}~dB and on the generic pipeline by \EstVsGenMin{} to \EstVsGenMax{}~dB, with confidence intervals excluding zero (Table~\ref{tab:main}). LPIPS also improves. The advantage holds in every fold, including the two held-out folds, at single quality levels (\EstVsBicQLowMin{} to \EstVsBicQLowMax{}~dB over interpolation at quality 75, \EstVsBicQHighMin{} to \EstVsBicQHighMax{}~dB at 93), for DISP (\DispEstVsBicMin{} to \DispEstVsBicMax{}~dB) and with an offset block grid or double compression (\ref{app:order}). It is largest for the smallest inputs (\EstVsBicAmiS{}, \EstVsBicAmiM{} and \EstVsBicAmiL{}~dB at 24, 36 and 48 pixels; Figure~\ref{fig:size}). The cost is on clean inputs, where the model is \EstVsPubCleanMin{} to \EstVsPubCleanMax{}~dB below the published weights while remaining above interpolation.
+
+Published models of two other kinds also account for compression (\ref{app:alternatives}). FBCNN~\cite{jiang2021fbcnn} followed by the published SPAN, which removes compression artefacts before upscaling, is within \RevFbVsEstAmiMin{} to \RevFbVsEstAmiMax{}~dB of our model on compressed AMI inputs and keeps more accuracy on clean inputs, with \RevFbParamsRatio{} times the parameters. BSRNet~\cite{zhang2021bsrgan} and Real-ESRNet~\cite{wang2021realesrgan}, RRDB networks trained with synthetic degradations, stay within \RevBsrVsBicMin{} to \RevBsrVsBicMax{}~dB of interpolation or fall below it.
 
 \begin{table}[t]
 \centering
-\caption{Difference between SPAN fine-tuned with the measured degradation and each reference, on inputs degraded with the measured pipeline. Paired differences with 95\% confidence intervals (bootstrap over subjects).}
+\caption{Difference between SPAN fine-tuned with the measured degradation and each reference, on inputs degraded with the measured pipeline. Paired differences with 95\% confidence intervals (bootstrap over subjects). AMI has near-clean ground truth and carries the fidelity results; on EarVN1.0 the ground truth is itself compressed and on AWEx its compression history is unknown, so these columns are checks.}
 \label{tab:main}
-\resizebox{\linewidth}{!}{%
+\small
+\fitbox{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-Ours minus & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
+ & AMI (near-clean) & \multicolumn{3}{c}{In the wild (checks)} \\
+\cmidrule(lr){2-2}\cmidrule(l){3-5}
+Ours minus & 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
 \midrule
 \tabinput{generated/tab_main}
 \bottomrule
@@ -49,89 +57,32 @@ Ours minus & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 px \\
 
 \subsection{Components of the measured degradation}
 \label{sec:ablation}
-Relative to fixed JPEG 75, the measured degradation is better on quality-93 inputs (\EstVsJpgHighMin{} to \EstVsJpgHighMax{}~dB) and on the measured mixture (\EstVsJpgMin{} to \EstVsJpgMax{}~dB) and slightly worse at quality 75 (\EstVsJpgLowMin{} to \EstVsJpgLowMax{}~dB; Table~\ref{tab:levels} in \ref{app:levels}): covering the range of levels that occurs in the data is what matters. Two further models isolate the noise and blur, one with the measured JPEG levels only and one with JPEG quality drawn uniformly from 60 to 95 (Table~\ref{tab:ablation} in \ref{app:levels}). Each model is best on the inputs that match its training (the full measured model by \EstVsMixMin{} to \EstVsMixMax{}~dB on measured inputs, the levels-only model by \MixVsEstOnMixMin{} to \MixVsEstOnMixMax{}~dB on JPEG-only inputs), the two JPEG-only models differ by \MixVsUniMin{} to \MixVsUniMax{}~dB, and identification on real images (Section~\ref{sec:recog}) does not separate them. JPEG compression over the range found in the target images, about 70 to 95 here, is therefore the component that matters. We found no evidence that estimating noise and blur is needed, and keep the measured degradation as reference because it was specified before these comparisons.
+Relative to fixed JPEG 75, the measured degradation is better on quality-93 inputs (\EstVsJpgHighMin{} to \EstVsJpgHighMax{}~dB) and slightly worse at quality 75 (\EstVsJpgLowMin{} to \EstVsJpgLowMax{}~dB; \ref{app:levels}). Two further models, one with the measured JPEG levels only and one with JPEG quality drawn uniformly from 60 to 95, are each best on the inputs that match their training and differ from each other by \MixVsUniMin{} to \MixVsUniMax{}~dB. JPEG compression over the range found in the target images, about 70 to 95 here, is therefore the component that matters; we found no evidence that estimating noise and blur is needed.
 
-\paragraph{Training variation} The confidence intervals are computed over subjects and do not include training variation. Retraining the bicubic, JPEG 75 and measured-degradation models of fold 1 with two further seeds changes PSNR by at most \SeedMaxRange{}~dB (median \SeedMedRange{}~dB) over the \SeedCells{} combinations of model, dataset, input size and test input, and \SeedFlips{} of the \SeedDiffs{} differences between the measured-degradation model and the two others changes sign. The variation is small because every run starts from the same published weights. Differences of a few hundredths of a decibel are of this size, and we do not rank models on them.
-
+\paragraph{Training variation} The confidence intervals are computed over subjects. Retraining three models of fold 1 with two further seeds changes PSNR by at most \SeedMaxRange{}~dB (median \SeedMedRange{}~dB) over \SeedCells{} combinations, and \SeedFlips{} of the \SeedDiffs{} differences between models changes sign. We do not rank models on differences of a few hundredths of a decibel.
 
 \subsection{Identification on real small ear images}
 \label{sec:recog}
-Real small images have no ground truth, but they have identities. We enrol \RecEnrolled{} EarVN1.0 subjects not used for any training or fitting with half of their large images (\RecGallery{} images, averaged into templates) and use as probes their \RecProbes{} real small images (short side 24 to 48 pixels, \RecSubj{} subjects), enlarged $\times4$ by each method. The recogniser, Ear-R18, is a ResNet-18~\cite{he2016resnet} trained with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} other subjects (\RecValAcc{}\% accuracy on held-out images of these subjects), never on small or upscaled images; frozen ImageNet features of a ResNet-50 (ImageNet-R50) serve as a control. With large probes it reaches a rank-1 rate of \RecRankRef{}\%; with small probes and bicubic upscaling, \RecRankBic{}\% (Table~\ref{tab:recog}).
+Real small images have no ground truth, but they have identities. We enrol \RecEnrolled{} EarVN1.0 subjects not used for any training or fitting with half of their large images (\RecGallery{} images, averaged into templates) and use as probes their \RecProbes{} real small images (short side 24 to 48 pixels, \RecSubj{} subjects), enlarged $\times4$ by each method. A recogniser trained only on large images has never seen upscaled images, and the gain of an upscaler may then reflect how closely its output resembles large images rather than recovered identity. Our main protocol therefore trains, for each of bicubic upscaling, the published SPAN weights and our model, a separate ResNet-18~\cite{he2016resnet} with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} other subjects together with their \RecUpNSmall{} real small images upscaled by that method, and evaluates each method with its own recogniser.
 
-Bicubic-trained models barely change this rate: the published SPAN weights reach \RecRankPub{}\% (\RecPubVsBic{} points) and SPAN fine-tuned with bicubic downsampling \RecRankBict{}\%. With these two models and the published RRDB weights, the equal error rate is \RecEerBicTrMin{} to \RecEerBicTrMax{} points higher than with bicubic upscaling, with confidence intervals that include zero. Models trained with compression do: SPAN with the measured degradation reaches \RecRankEst{}\% (\RecEstVsBic{} points over bicubic upscaling, \RecEstVsPub{} over the published weights; EER from \RecEerBic{}\% to \RecEerEst{}\%), and DISP \RecRankDispEst{}\%. The compression-only variants are within about one point of each other, and the generic pipeline is slightly lower (\RecGenVsEst{} points relative to our model, and \RecEarvnRfGenVsEst{} with the second ear recogniser, Ear-R50, introduced below). BSRGAN and Real-ESRGAN \RecGanPair{}, not significantly different from our model (\RecBsrganVsEst{} points for BSRGAN) at \LatRatio{} times the latency. The control, ImageNet-R50, gives the same ordering (\RecCtlRankBic{}, \RecCtlRankPub{} and \RecCtlRankEst{}\%).
+With this protocol, our model raises the rank-1 rate on EarVN1.0 (Table~\ref{tab:recogup}) from \RecUpEarvnBic{}\% to \RecUpEarvnEst{}\%, by \RecUpEarvnGain{} points (95\% interval \RecUpEarvnGainLo{} to \RecUpEarvnGainHi{}), and the published SPAN weights remain close to bicubic upscaling (\RecUpEarvnPub{}\%). Absolute rates remain low; large probes reach \RecUpEarvnRef{}\%. On AWEx (\RecAwexEnrolled{} subjects enrolled, \RecAwexProbes{} probes, never used for training) the three methods are indistinguishable (\RecUpAwexBic{}\%, \RecUpAwexPub{}\% and \RecUpAwexEst{}\%).
 
 \begin{table}[t]
 \centering
-\caption{Identification of real small ear images (short side 24 to 48 pixels) after $\times4$ upscaling. Rank-1 rate with 95\% confidence interval and equal error rate, in \%, for the ear recogniser Ear-R18 and for the frozen ImageNet features ImageNet-R50. Fine-tuned rows average the models of the folds.}
-\label{tab:recog}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lcccc@{}}
+\caption{Rank-1 rate (\%) of real small probes with a ResNet-18 recogniser trained, separately for each method, on large images and the real small images of the training subjects upscaled by that method (main protocol), or on large images only (Ear-R18). Ours: SPAN fine-tuned with the measured degradation, five fold models averaged per probe. Last column: ours minus bicubic, with 95\% confidence intervals (bootstrap over subjects).}
+\label{tab:recogup}
+\small
+\fitbox{%
+\begin{tabular}{@{}llrrrc@{}}
 \toprule
- & \multicolumn{2}{c}{Ear-R18 (ear recogniser)} & \multicolumn{2}{c}{ImageNet-R50 (frozen control)} \\
-\cmidrule(lr){2-3}\cmidrule(l){4-5}
-Upscaling & Rank-1 & EER & Rank-1 & EER \\
+Dataset & Recogniser trained on & Bicubic & Published SPAN & Ours & Ours minus bicubic \\
 \midrule
-\tabinput{generated/tab_recog}
+\tabinput{generated/tab_recogup}
 \bottomrule
 \end{tabular}}
 \end{table}
 
-\paragraph{Compression level of the probe} The quality stored in each probe file links these results to Section~\ref{sec:analysis} (Table~\ref{tab:recogquality}). For probes at quality 70 to 80 (\RecQLowN{} probes), the published SPAN weights change the rank-1 rate by \RecQLowPub{} points and our model by \RecQLowEst{}; for probes at quality 90 or above (\RecQHighN{} probes), by \RecQHighPub{} and \RecQHighEst{} points. As for fidelity, bicubic-trained models help only under light compression; BSRGAN behaves similarly (\RecQHighBsrgan{} points for lightly compressed probes, \RecQLowBsrgan{} for the others).
-
-\begin{table}[t]
-\centering
-\caption{Rank-1 identification (\%) of real small ear images by the JPEG quality stored in the probe file, and paired difference from bicubic upscaling in percentage points with 95\% confidence interval (EarVN1.0, Ear-R18). The remaining \RecQMidN{} probes, stored at other qualities, belong to neither group.}
-\label{tab:recogquality}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & \multicolumn{2}{c}{Quality 70--80} & \multicolumn{2}{c}{Quality $\geq$ 90} \\
-\cmidrule(lr){2-3}\cmidrule(l){4-5}
-Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
-\midrule
-\tabinput{generated/tab_recog_quality}
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\paragraph{Synthesised probes} The two quality groups differ in subjects as well as in compression. To vary compression on fixed images, we downsized the large images of the \SynSubj{} test subjects that are not used for enrolment (\SynProbes{} images; the real probes come from \RecSubj{} of these subjects) to probes with a short side of 24 or 36 pixels, clean, at JPEG 75 or with the measured degradation (Table~\ref{tab:recogsynth}). Templates and recognisers, trained on large images only, are those used above, and the conditions were fixed before the run. These probes are easier than real ones (\SynBicEstS{}\% against \RecRankBic{}\% with bicubic upscaling and Ear-R18). The clearest result is at 24 pixels and JPEG 75: bicubic-trained models lose \SynJpgBicTrMin{} to \SynJpgBicTrMax{} points and models trained with compression gain \SynJpgCmpTrMin{} to \SynJpgCmpTrMax{}, with every interval excluding zero. On clean 24-pixel probes the order is the opposite for the bicubic-trained models, which gain \SynCleanBicTrMin{} to \SynCleanBicTrMax{} points, and for JPEG 75 training, which loses \SynCleanJpgTrMin{} to \SynCleanJpgTrMax{}; our model does not differ significantly from bicubic upscaling there (\SynCleanEstSRe{} and \SynCleanEstSRf{} points with the two recognisers). With the measured degradation our model gains \SynEstEstSRe{} and \SynEstEstSRf{} points; the second interval includes zero. At 36 pixels, where the probes lose less accuracy (\SynBicEstL{}\%), none of the \SynCompCmpTrLN{} gains of models trained with compression on compressed probes is significant (\SynCompCmpTrLMin{} to \SynCompCmpTrLMax{} points), whereas on clean probes these models are lower by \SynCleanCmpTrLMin{} to \SynCleanCmpTrLMax{} points, with every interval excluding zero. Compression thus reverses the ordering for 24-pixel probes at JPEG 75, and training with compression harms the identification of clean probes. Because these recognisers never saw upscaled images, the differences may partly reflect how closely upscaled probes resemble the enrolment images rather than recovered identity; the control with recognisers trained on upscaled images (below) was run for real probes only.
-
-\begin{table}[t]
-\centering
-\caption{Identification of synthesised probes (\SynProbes{} images of \SynSubj{} EarVN1.0 subjects) after $\times4$ upscaling. First row of each block: rank-1 rate of bicubic upscaling (\%); other rows: paired difference from it in percentage points, with 95\% confidence interval. Fine-tuned rows average the models of the folds. Probes are large images of the test subjects not used for enrolment, resized to four times the probe size and degraded as in the benchmark; templates and recognisers (trained on large images only) are those of Table~\ref{tab:recog}.}
-\label{tab:recogsynth}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
- & \multicolumn{3}{c}{24-pixel probes} & \multicolumn{3}{c}{36-pixel probes} \\
-\cmidrule(lr){2-4}\cmidrule(l){5-7}
-Upscaling & Clean & JPEG 75 & Measured & Clean & JPEG 75 & Measured \\
-\midrule
-\tabinput{generated/tab_recog_synth}
-\bottomrule
-\end{tabular}}
-\end{table}
-
-
-\paragraph{Second recogniser and second dataset} With Ear-R50, a ResNet-50 trained on the same data (\RecRfValAcc{}\% held-out accuracy), our model raises the rank-1 rate on real probes from \RecEarvnRfRankBic{}\% to \RecEarvnRfRankEst{}\% (\RecEarvnRfEstVsBic{} points), against \RecEarvnRfPubVsBic{} for the published weights (Table~\ref{tab:recogrobust}). On AWEx (\RecAwexEnrolled{} subjects enrolled, \RecAwexProbes{} probes, never used for training), no method changes the rate significantly with either recogniser; the confidence intervals, about 8 points wide, exclude only gains of the EarVN1.0 size. Examined after this result, AWEx lacks both conditions under which synthesised probes showed a gain, compression and a loss of accuracy at low resolution: its probes show no JPEG block structure (median block-boundary ratio \BlockAwex{}, against \BlockEarvnLow{} and \BlockEarvnHigh{} for the two EarVN1.0 groups), and its headroom, the gap between the rank-1 rates of large and upscaled small probes, is close to zero (\RecAwexReRankRef{}\% against \RecAwexReRankBic{}\%), whereas on EarVN1.0 it is large (\RecRankRef{}\% against \RecRankBic{}\%; per subject in \ref{app:headroom}). The results do not show that SR improves ear identification in general.
-
-\paragraph{Recognisers trained on upscaled images} In face SR, gains of this kind often shrink when the recogniser is trained on upscaled images. We therefore trained, for each of bicubic upscaling, the published SPAN weights and our model, a separate ResNet-18 recogniser with the recipe and subjects of Ear-R18, on the large images and the \RecUpNSmall{} real small images of the training subjects upscaled by that method, and evaluated each method with its own recogniser (Table~\ref{tab:recogup} in \ref{app:recogup}). On EarVN1.0 all rates rise, bicubic upscaling from \RecUpEarvnLgBic{}\% to \RecUpEarvnBic{}\%, and the gain of our model shrinks from \RecUpEarvnLgGain{} to \RecUpEarvnGain{} points (95\% interval \RecUpEarvnGainLo{} to \RecUpEarvnGainHi{}); the published SPAN weights remain close to bicubic upscaling (\RecUpEarvnPub{}\%). On AWEx the three methods are again indistinguishable (\RecUpAwexBic{}\%, \RecUpAwexPub{}\% and \RecUpAwexEst{}\%). About half of the gain thus reflects the mismatch between upscaled probes and the training images of the recogniser.
-
-\begin{table}[t]
-\centering
-\caption{Paired difference in rank-1 rate from bicubic upscaling (percentage points, 95\% confidence interval), on two datasets and with two ear recognisers. The first two rows give absolute rank-1 rates.}
-\label{tab:recogrobust}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lcccc@{}}
-\toprule
- & \multicolumn{2}{c}{EarVN1.0} & \multicolumn{2}{c}{AWEx} \\
-\cmidrule(lr){2-3}\cmidrule(l){4-5}
-Upscaling & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
-\midrule
-\tabinput{generated/tab_recog_robust}
-\bottomrule
-\end{tabular}}
-\end{table}
+\paragraph{Recognisers trained on large images} To compare all methods with one recogniser, we also use Ear-R18, trained with the same recipe on large images only (\RecValAcc{}\% accuracy on held-out images), Ear-R50, a ResNet-50 trained on the same data, and frozen ImageNet features as a control (\ref{app:recoglarge}). With Ear-R18 the gain of our model is larger, from \RecRankBic{}\% to \RecRankEst{}\% (\RecUpEarvnLgGain{} points), so about half of it reflects the mismatch between upscaled probes and the training images of the recogniser. Across the methods, bicubic-trained models barely change the rate (\RecPubVsBic{} points for the published SPAN weights), and every method that accounts for compression raises it, including FBCNN followed by SPAN, BSRNet and Real-ESRNet. Identification does not follow PSNR: BSRNet, with a PSNR close to interpolation, reaches \RevRankBsr{}\% and \RevRankBsrRf{}\% with the two ear recognisers, the highest rate with Ear-R50, whereas FBCNN followed by SPAN has a higher PSNR and a lower rate (\RevRankFb{}\% and \RevRankFbRf{}\%). As for fidelity, the published SPAN weights help only for probes stored at quality 90 or above (\RecQHighPub{} points, against \RecQLowPub{} at quality 70 to 80), and on probes synthesised from large images the ordering of bicubic-trained and compression-trained models depends on their compression (\ref{app:recogsynth}). On AWEx no method changes the rate significantly with any recogniser; the intervals, about 8 points wide, exclude only gains of the EarVN1.0 size. The results do not show that SR improves ear identification in general.
 
 \begin{figure}[!tbp]
 \centering
@@ -140,47 +91,9 @@ Upscaling & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
 \label{fig:qualitative}
 \end{figure}
 
-\subsection{Alternatives that account for compression}
-\label{sec:alternatives}
-Two alternatives remain: removing compression artefacts with a separate network before upscaling, and large published SR models trained with synthetic degradations that include compression. We evaluate both with published weights on the same inputs: FBCNN~\cite{jiang2021fbcnn} (\RevFbcnnParams{}M parameters, blind) followed by bicubic interpolation or the published SPAN, and BSRNet~\cite{zhang2021bsrgan} and Real-ESRNet~\cite{wang2021realesrgan}, the fidelity-oriented RRDB versions of BSRGAN and Real-ESRGAN. We also fine-tune RRDB itself with our procedure, which isolates the effect of architecture under identical training (Table~\ref{tab:review}).
-
-\begin{table}[t]
-\centering
-\caption{Published alternatives that account for compression, compared with bicubic interpolation, published weights trained with bicubic downsampling, and our model. PSNR-Y (dB) on AMI at 36-pixel inputs and on the in-the-wild sets at 24-pixel inputs; rank-1 rate (\%) on the real small probes of EarVN1.0 with the two ear recognisers Ear-R18 and Ear-R50. The first three rows repeat Tables~\ref{tab:published} and~\ref{tab:recog} for reference. Latency is the median on a desktop GPU for one $48\times68$ input, from the measurement of Table~\ref{tab:published}; BSRNet, Real-ESRNet and the fine-tuned RRDB share the architecture of RRDB and are given its latency, and the two FBCNN rows were measured in a separate session on the same GPU, in which SPAN-S also took \RevSpanLat{}~ms. RRDB, measured: the published RRDB weights fine-tuned with the procedure of our model.}
-\label{tab:review}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrrrrrrrr@{}}
-\toprule
- & & & \multicolumn{3}{c}{AMI} & EarVN1.0 & AWEx & \multicolumn{2}{c}{Rank-1 (\%)} \\
-\cmidrule(lr){4-6}\cmidrule(l){9-10}
-Method & Params (M) & Latency (ms) & Clean & JPEG 93 & JPEG 75 & JPEG 75 & JPEG 75 & Ear-R18 & Ear-R50 \\
-\midrule
-\tabinput{generated/tab_review}
-\bottomrule
-\end{tabular}}
-\end{table}
-
-\paragraph{Compression removal before upscaling} FBCNN followed by SPAN improves on interpolation by \RevFbVsBicMin{} to \RevFbVsBicMax{}~dB on compressed inputs. Against our model it is \RevFbVsEstAmiMin{} to \RevFbVsEstAmiMax{}~dB on compressed AMI inputs, \RevFbVsEstWildJpegMin{} to \RevFbVsEstWildJpegMax{}~dB on JPEG-only in-the-wild inputs and \RevFbVsEstWildEstMin{} to \RevFbVsEstWildEstMax{}~dB on measured ones, and it keeps more accuracy on clean inputs. Its rank-1 rate on EarVN1.0 (\RevRankFb{}\% and \RevRankFbRf{}\% with the two recognisers) is above bicubic upscaling but below our model (\RevFbVsEstRank{} and \RevFbVsEstRankRf{} points). It has \RevFbParamsRatio{} times the parameters of SPAN, takes \RevFbLat{} against \RevSpanLat{}~ms on the desktop GPU, and on the smartphone, where FBCNN must run in 32-bit precision (\ref{app:coreml}), needs \LatPhoneFbCpu{}~ms on the CPU and \LatPhoneFbAll{}~ms with all units, against \LatPhoneSpanFCpu{} and \LatPhoneSpanFAll{}~ms for SPAN at the same precision.
-
-\paragraph{Large models trained with synthetic degradations} BSRNet stays within \RevBsrVsBicMin{} to \RevBsrVsBicMax{}~dB of interpolation on compressed inputs and Real-ESRNet falls below it, yet both identify real probes well: BSRNet reaches \RevRankBsr{}\% and \RevRankBsrRf{}\% (\RevBsrVsEstRank{} and \RevBsrVsEstRankRf{} points relative to our model), Real-ESRNet \RevRankResr{}\% and \RevRankResrRf{}\%. With Ear-R50 both exceed our model, at \ParamsRatio{} times the parameters and \RevBsrLatRatio{} times the latency.
-
-\paragraph{The same architecture with our training} Fine-tuned with our procedure on the same five folds (mixed precision, to fit memory; all runs pass the stress test), RRDB gains \RevRrdbGainQMin{} to \RevRrdbGainQMax{}~dB over its published weights at JPEG 75, against \RevSpanGainQMin{} to \RevSpanGainQMax{}~dB for SPAN, and exceeds the fine-tuned SPAN by only \RevRrdbVsEstQMin{} to \RevRrdbVsEstQMax{}~dB (\RevRrdbVsEstMin{} to \RevRrdbVsEstMax{}~dB over all compressed inputs). Its rank-1 rate is \RevRankRrdb{}\% and \RevRankRrdbRf{}\% (\RevRrdbVsEstRank{} and \RevRrdbVsEstRankRf{} points relative to SPAN). A network with \ParamsRatio{} times more parameters thus adds a fraction of a decibel, whereas the training degradation changes either network by \RevSpanGainQMin{} to \RevRrdbGainQMax{}~dB.
-
-Every method that accounts for compression improved identification on EarVN1.0, and no bicubic-trained model did. PSNR and identification rank the methods differently: BSRNet has a PSNR close to interpolation and one of the highest rank-1 rates (the highest with Ear-R50), whereas FBCNN followed by SPAN has a higher PSNR and a lower rank-1 rate. With the same SPAN network, fine-tuning with compression identifies better than placing a deblocking network in front of it (\RevRankEst{}\% against \RevRankFb{}\%), without the second network. Among the methods that improved identification, the fine-tuned SPAN has the fewest parameters and the lowest latency.
-
-\paragraph{Fidelity and identification} Across the \CorrNAll{} methods with identification results, the rank-1 rate on real EarVN1.0 probes follows LPIPS measured on synthesised EarVN1.0 inputs (Spearman $\rho=\CorrLpipsAll$ and $\CorrLpipsAllRf$ for the two recognisers) and not PSNR ($\CorrPsnrAll$ and $\CorrPsnrAllRf$); without the two GAN-trained models, PSNR is also related to identification ($\rho=\CorrPsnrNogan$ over \CorrNNogan{} methods; \ref{app:fidrecog}). These correlations were computed after the identification results were known and describe this dataset rather than a general rule.
-
-
 \subsection{Efficiency}
 \label{sec:efficiency}
-The proposed training leaves the cost of the backbone unchanged. We define real time as a median latency of at most 33~ms for one $48\times68$ input, the largest size considered. On an RTX~3080, SPAN takes \LatSpan{}~ms and DISP \LatDisp{}~ms, against \LatBsrgan{}~ms for BSRGAN. On an \PhoneName{} (\PhoneChip{}, iOS \PhoneOs{}, released in 2020), with Core ML in 16-bit precision and the Xcode performance tool, SPAN takes \LatPhoneSpanCpu{}~ms on the CPU and \LatPhoneSpanAll{}~ms with all compute units, and DISP \LatPhoneDispCpu{} and \LatPhoneDispAll{}~ms (Table~\ref{tab:latencyios}). The RRDB architecture of BSRGAN, BSRNet, Real-ESRNet and the fine-tuned RRDB takes \LatPhoneRrdbCpu{}~ms on the CPU and \LatPhoneRrdbAll{}~ms on the neural engine, so it meets the threshold only with the accelerator; SwinIR-light misses it in both configurations (\LatPhoneSwinCpu{} and \LatPhoneSwinAll{}~ms), as \PhoneSwinOpsCpu{} of its \PhoneSwinOps{} operations stay on the CPU. On accelerated hardware a large model is therefore also real-time, and the small network's advantage becomes the time and memory left for other steps. Figure~\ref{fig:tradeoff} combines latency and identification: below the threshold on the CPU, only the compression-trained small networks improve identification markedly, and every method with a higher rank-1 rate needs about 100~ms.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_tradeoff.png}
-\caption{Rank-1 rate on real EarVN1.0 probes against CPU latency on the \PhoneName{} for one $48\times68$ input. Dashed: real-time threshold; dotted: bicubic upscaling. BSRNet, Real-ESRNet and the fine-tuned RRDB share the measured latency of the RRDB architecture; FBCNN followed by SPAN (open marker) is measured in 32-bit precision, the other models in 16-bit precision.}
-\label{fig:tradeoff}
-\end{figure} Converted and PyTorch outputs agree up to 16-bit rounding (\CoremlPsnrSpan{}~dB for SPAN, \CoremlPsnrDisp{}~dB for DISP); the tool reports only median prediction times, so no 95th percentile is available.
+The proposed training leaves the cost of the backbone unchanged. We define real time as a median latency of at most 33~ms for one $48\times68$ input, the largest size considered. On an RTX~3080, SPAN takes \LatSpan{}~ms and DISP \LatDisp{}~ms, against \LatBsrgan{}~ms for BSRGAN. On an \PhoneName{} (\PhoneChip{}, iOS \PhoneOs{}, released in 2020), with Core ML in 16-bit precision, SPAN takes \LatPhoneSpanCpu{}~ms on the CPU and \LatPhoneSpanAll{}~ms with all compute units (Table~\ref{tab:latencyios}); converted and PyTorch outputs agree up to 16-bit rounding (\CoremlPsnrSpan{}~dB). The RRDB architecture of BSRGAN, BSRNet and Real-ESRNet takes \LatPhoneRrdbCpu{}~ms on the CPU and \LatPhoneRrdbAll{}~ms with the neural engine, so it meets the threshold only with the accelerator, where the small network's advantage becomes the time and memory left for other steps. Latency and identification are plotted together in \ref{app:alternatives}.
 
 \begin{table}[t]
 \centering

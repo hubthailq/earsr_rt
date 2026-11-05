@@ -1,5 +1,5 @@
-Sixteen efficient SR models are tested on small JPEG-compressed ear images
-Every model adds an excess compression error that grows with compression
+Bicubic-trained efficient SR models add an excess to the compression error
+The excess grows with compression; the interpolation error saved does not
 Smooth ear images lose the SR advantage at lighter compression than natural ones
-For fidelity, the training degradation matters more than the architecture
-WebP and AVIF show the same excess, at codec-specific thresholds
+The excess also occurs with WebP and AVIF compression
+JPEG-aware fine-tuning lets a real-time network beat interpolation again

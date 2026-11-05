@@ -326,6 +326,25 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   - S4 Đóng góp 2 và tóm tắt: thêm "nén ảnh lớn trước khi thu nhỏ thì mọi mô hình lại hơn bicubic".
   - Nhỏ: câu gãy ở đoạn bộ nhận dạng học ảnh phóng to; tóm tắt 241 từ; đóng góp 1 có số mức chất lượng (64–66 / 87–91,
     dời theo cỡ ảnh); "same subjects" → 51 người test, ảnh dò thật từ 36 người trong số đó (đã kiểm là tập con).
+- [x] 06/11 **T. Phản biện thứ bảy (major revision, nếu giữ bốn đóng góp ngang nhau và tiêu đề nhận dạng cũ thì reject).**
+  Ba điều kiện của reviewer: một kết quả đo duy nhất; nhận dạng theo giao thức bộ nhận dạng riêng; rút ngắn mạnh. Không
+  thí nghiệm mới. Bản trước khi sửa: commit 7e1d909 (và scratchpad experiments_old.tex, appendix_old.tex).
+  - T1 Mở đầu: kết quả chính là b > 1 ở mọi ô, mọi mô hình; đóng góp còn một câu chính cộng hai phần đỡ (benchmark và phép
+    kiểm; ứng dụng có điều kiện). Tóm tắt, highlights, kết luận viết lại theo cấu trúc đó.
+  - T2 Nhận dạng: giao thức chính là bộ nhận dạng riêng cho từng cách phóng (+5,5 [1,6; 9,3], 31,3 → 36,8%); Bảng tab:recogup
+    lên thân bài, hàng giao thức chính đứng trước (make_paper.py, có cảnh báo nếu khoảng chứa 0). +11,8 chỉ còn ở đoạn bộ
+    nhận dạng học ảnh lớn. Giải thích AWEx chuyển sang thảo luận, ghi là giả thuyết nêu sau kết quả.
+  - T3 Điểm đổi dấu: văn bản dùng khoảng lưới đo (macro mới `CrossGrid{Ami,Nat}{Lo,Hi}`: 85–93 và 60–75, cảnh báo nếu không
+    nằm trong một khoảng); bỏ hai câu "intervals do not overlap"; xu hướng theo cỡ ảnh ghi là cần lưới dày hơn để xác nhận.
+  - T4 Bảng chính tách AMI (đáp án gần sạch) khỏi cột ảnh ngoài thực tế (kiểm thêm); mục 3 thêm câu ảnh nhỏ thật chỉ có
+    nhận dạng và hình minh họa.
+  - T5 Rút ngắn: thân bài khoảng 8.400 → 6.400 từ (thân bài 22 trang). Về phụ lục: bảng nhận dạng với bộ nhận dạng học ảnh
+    lớn (tab:recog, tab:recogrobust, tab:recogquality; app:recoglarge), probe tổng hợp (app:recogsynth), phương án công bố
+    FBCNN/BSRNet/Real-ESRNet và hình đánh đổi (app:alternatives). RRDB cùng công thức giữ ở 6.2. Bảng chỉ co khi rộng hơn
+    trang (macro `\fitbox` thay `\resizebox`), không kéo giãn.
+  - T6 Từ khóa: Super-resolution, JPEG compression, Error decomposition, Image content, Efficient networks, On-device
+    inference, Ear images.
+  - Lưu ý: tectonic không ghi main.log nếu không có `--keep-logs`; kiểm ô tràn phải dùng `tectonic --keep-logs main.tex`.
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

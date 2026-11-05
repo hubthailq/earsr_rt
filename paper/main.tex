@@ -4,6 +4,8 @@
 \usepackage[table]{xcolor}
 \usepackage[hidelinks]{hyperref}
 \newcommand{\todo}[1]{\textcolor{red}{[TBD: #1]}}
+\newsavebox{\fitboxbox}
+\newcommand{\fitbox}[1]{\sbox{\fitboxbox}{#1}\ifdim\wd\fitboxbox>\linewidth\resizebox{\linewidth}{!}{\usebox{\fitboxbox}}\else\usebox{\fitboxbox}\fi}
 \makeatletter\newcommand{\tabinput}[1]{\@@input #1.tex }\makeatother
 \input{generated/numbers}
 \setlength{\belowcaptionskip}{4pt}
@@ -24,7 +26,7 @@
 \input{sections/abstract}
 \end{abstract}
 \begin{keyword}
-Efficient super-resolution \sep Compression artifacts \sep Real-world degradation \sep Low-resolution recognition \sep Ear biometrics \sep On-device inference \sep Benchmark
+Super-resolution \sep JPEG compression \sep Error decomposition \sep Image content \sep Efficient networks \sep On-device inference \sep Ear images
 \end{keyword}
 \end{frontmatter}
 
