@@ -670,26 +670,38 @@ def recog_synth(res: Path, out: Path) -> None:
     put("SynBicCleanS", num(s0.loc["bicubic", "rank1"], 1))
     put("SynBicEstS", num(D["resnet18", 24, "est"][0].loc["bicubic", "rank1"], 1))
     put("SynBicEstL", num(D["resnet18", 36, "est"][0].loc["bicubic", "rank1"], 1))
-    put("SynEstEstSRe", f"{num(d_('resnet18', 24, 'est', 'span/est')['d_rank1'], 1, True)}")
-    put("SynEstEstSRf", f"{num(d_('resnet50', 24, 'est', 'span/est')['d_rank1'], 1, True)}")
-    rng("SynBicTrCleanS", vals(24, ("bic",), bic_tr))
-    rng("SynCmpTrCleanS", vals(24, ("bic",), cmp_tr), magnitude=True)
-    comp = vals(24, ("bicjpeg75", "est"), cmp_tr)
-    rng("SynCmpTrCompS", comp)
-    rng("SynBicTrCompS", vals(24, ("bicjpeg75", "est"), bic_tr), magnitude=True)
-    put("SynSigCompS", sum(int(r["d_rank1_lo"] > 0) for r in comp))
-    put("SynNCompS", len(comp))
-    compL = vals(36, ("bicjpeg75", "est"), cmp_tr)
-    rng("SynCmpTrCompL", compL)
-    rng("SynCmpTrCleanL", vals(36, ("bic",), cmp_tr), magnitude=True)
-    # các câu ở mục 6.4 dựa trên những dấu này; đổi thì phải sửa câu
-    if any(r["d_rank1"] <= 0 for r in comp) or any(r["d_rank1"] >= 0 for r in vals(24, ("bicjpeg75", "est"), bic_tr)) \
-            or any(r["d_rank1"] <= 0 for r in vals(24, ("bic",), bic_tr)) or any(r["d_rank1"] >= 0 for r in vals(24, ("bic",), cmp_tr)):
-        print("CHÚ Ý: dấu chênh lệch trên ảnh dò tổng hợp 24 px không như câu ở mục 6.4")
-    if any(r["d_rank1_lo"] > 0 or r["d_rank1_hi"] < 0 for r in vals(36, ("bicjpeg75", "est"), bic_tr + cmp_tr)):
-        print("CHÚ Ý: có chênh lệch có ý nghĩa trên ảnh dò nén 36 px; sửa câu ở mục 6.4")
-    if any(r["d_rank1_hi"] >= 0 for r in vals(36, ("bic",), cmp_tr)):
-        print("CHÚ Ý: mô hình học có nén không còn kém có ý nghĩa trên ảnh dò sạch 36 px; sửa câu ở mục 6.4 và hạn chế")
+
+    def txt(r):
+        return f"{num(r['d_rank1'], 1, True)} [{num(r['d_rank1_lo'], 1)}, {num(r['d_rank1_hi'], 1)}]"
+
+    def sig(rows):
+        return sum(int(r["d_rank1_lo"] > 0 or r["d_rank1_hi"] < 0) for r in rows)
+
+    # mỗi nhóm câu ở mục 6.4 ứng với đúng các ô này của Bảng tab:recogsynth (phản biện 05/11: câu phải khớp từng ô)
+    groups = {"SynJpgBicTr": (24, ("bicjpeg75",), bic_tr, True), "SynJpgCmpTr": (24, ("bicjpeg75",), cmp_tr, False),
+              "SynCleanBicTr": (24, ("bic",), bic_tr, False), "SynCleanJpgTr": (24, ("bic",), ("span/bicjpeg75",), True),
+              "SynCleanCmpTrL": (36, ("bic",), cmp_tr, True), "SynCompCmpTrL": (36, ("bicjpeg75", "est"), cmp_tr, False)}
+    G = {}
+    for name, (sz, ks, arms, mag) in groups.items():
+        rows = vals(sz, ks, arms)
+        G[name] = rows
+        rng(name, rows, magnitude=mag)
+        put(name + "Sig", sig(rows))
+        put(name + "N", len(rows))
+    put("SynEstEstSRe", txt(d_("resnet18", 24, "est", "span/est")))
+    put("SynEstEstSRf", txt(d_("resnet50", 24, "est", "span/est")))
+    put("SynJpgEstSRf", txt(d_("resnet50", 24, "est", "span/bicjpeg75")))
+    put("SynCleanEstSRe", txt(d_("resnet18", 24, "bic", "span/est")))
+    put("SynCleanEstSRf", txt(d_("resnet50", 24, "bic", "span/est")))
+    # các câu giả định: ô JPEG 75 ở 24 px và ô sạch 36 px có ý nghĩa ở mọi khoảng, ô nén 36 px không có ô nào
+    want = {"SynJpgBicTr": "all", "SynJpgCmpTr": "all", "SynCleanBicTr": "all", "SynCleanJpgTr": "all",
+            "SynCleanCmpTrL": "all", "SynCompCmpTrL": "none"}
+    for name, w in want.items():
+        k = sig(G[name])
+        if (w == "all" and k != len(G[name])) or (w == "none" and k != 0):
+            print(f"CHÚ Ý: {name}: {k}/{len(G[name])} khoảng không chứa 0; sửa câu ở mục 6.4, tóm tắt, đóng góp 4")
+    if not all(r["d_rank1"] < 0 for r in G["SynJpgBicTr"]) or not all(r["d_rank1"] > 0 for r in G["SynJpgCmpTr"]):
+        print("CHÚ Ý: chiều chênh lệch ở ô JPEG 75, 24 px đã đổi; sửa câu ở mục 6.4")
 
 
 def natural_control(res: Path, out: Path) -> None:

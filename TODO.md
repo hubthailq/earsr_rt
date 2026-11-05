@@ -314,6 +314,18 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   hai điều kiện; 6.5 đoạn tương quan còn 2 câu, phần còn lại và Bảng tab:fidrecog → phụ lục app:fidrecog, chi tiết Core ML →
   app:coreml; 5.2 bỏ hai ngoặc số; hạn chế nhóm theo 4 ý (Model, Analysis, Identification, Statistics).
   Bản trước khi sửa: scratchpad before_trim_1105 (và git).
+- [x] 05/11 **S. Phản biện thứ sáu (major revision; câu đóng góp phải khớp từng ô bảng).** Không thí nghiệm mới.
+  - S1 Probe tổng hợp: macro theo đúng nhóm ô (`SynJpg*`, `SynClean*`, `SynCompCmpTrL*`, kèm số khoảng không chứa 0 và
+    cảnh báo nếu đổi); đoạn 6.4 viết theo từng ô (rõ nhất: 24 px JPEG 75; est sạch 24 px không khác có ý nghĩa; Ear-R50 est
+    chứa 0; 36 px nén không ô nào có ý nghĩa; 36 px sạch học có nén kém, mọi khoảng loại 0). Bảng tab:recogsynth lên thân
+    bài, bỏ phụ lục cũ. Đóng góp 4, mở đầu, thảo luận, kết luận nói đúng phạm vi; tóm tắt bỏ câu probe tổng hợp.
+  - S2 Nói thẳng: probe tổng hợp chỉ chấm bằng bộ nhận dạng học ảnh lớn, có thể phản ánh độ giống ảnh đăng ký (6.4, hạn chế).
+  - S3 Codec: bỏ câu cơ chế AVIF (thêm "we did not test why", thang quality không tương đương); "Sign change" giới hạn
+    "within JPEG"; chú thích fig:ratio "JPEG only"; thảo luận và kết luận thêm câu codec (điều kiện pt. 2 chung, ngưỡng
+    tỉ số chỉ trong một codec); highlight 5 thành câu codec.
+  - S4 Đóng góp 2 và tóm tắt: thêm "nén ảnh lớn trước khi thu nhỏ thì mọi mô hình lại hơn bicubic".
+  - Nhỏ: câu gãy ở đoạn bộ nhận dạng học ảnh phóng to; tóm tắt 241 từ; đóng góp 1 có số mức chất lượng (64–66 / 87–91,
+    dời theo cỡ ảnh); "same subjects" → 51 người test, ảnh dò thật từ 36 người trong số đó (đã kiểm là tập con).
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR
