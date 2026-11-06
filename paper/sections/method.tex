@@ -1,16 +1,12 @@
-\section{Training with a measured degradation}
+\section{Fine-tuning over the measured compression range}
 \label{sec:method}
-We keep a published real-time backbone and change two aspects of its fine-tuning: the degradation of the training images (Section~\ref{sec:measured}) and the photometric range of the training data (Section~\ref{sec:stable}).
+We keep a published real-time backbone and change two aspects of its fine-tuning: the compression of the training inputs (Section~\ref{sec:measured}) and the photometric range of the training data (Section~\ref{sec:stable}).
 
-\subsection{Degradation of real small ear images}
+\subsection{Compression range of real small ear images}
 \label{sec:measured}
-We measure the degradation on the \FitSmall{} real small images (short side 24 to 48 pixels) and \FitLarge{} large images of the \RoleFit{} EarVN1.0 subjects reserved for this purpose.
+\paragraph{Compression level} The JPEG quality of each file can be read from its luminance quantisation table, by matching it to the closest standard libjpeg table (the 100 standard tables are distinct; files with non-standard tables are assigned the nearest level). On the \FitSmall{} real small images (short side 24 to 48 pixels) of the \RoleFit{} EarVN1.0 subjects reserved for this purpose, the distribution is bimodal: \QLowShare{}\% of the images are at quality 75 and \QHighShare{}\% at 93. This reading of the files is the only measurement the method needs.
 
-\paragraph{Compression level} The quality setting is recovered by matching the luminance quantisation table stored in each file to the closest standard libjpeg table (the 100 standard tables are distinct; files with non-standard tables are assigned the nearest level). Its distribution is bimodal: \QLowShare{}\% of the images are at quality 75 and \QHighShare{}\% at 93.
-
-\paragraph{Training degradation} The measured degradation draws, for every training sample, a JPEG quality from this distribution. When we specified it, we did not know whether compression alone would suffice, so it also contains small amounts of Gaussian blur ($\sigma\in[\BlurLo,\BlurHi]$ input pixels) and Gaussian noise, with ranges estimated from the same images (\ref{app:noiseblur}). The pipeline applies blur, bicubic downsampling, noise and JPEG compression with parameters drawn per sample; the generic pipeline has the same structure with wider ranges. Removing the noise and blur changes PSNR by only a few hundredths of a decibel (Section~\ref{sec:ablation}), so the component that matters is the compression range.
-
-\paragraph{Comparison with real images} A patch classifier (\ref{app:realism}) separates bicubic downsampling and the generic pipeline from real small ear images with similar accuracy (\RealBic{}\% and \RealGen{}\%; 50\% means no separation), but the measured pipeline and bicubic downsampling followed by JPEG 75 much less (\RealEst{}\% and \RealJpg{}\%), which is consistent with compression being the main factor; the classifier is tested on only \RealTestSubj{} subjects.
+\paragraph{Training degradation} For every training sample, the degradation draws a JPEG quality from this distribution after bicubic downsampling. When we specified it, we did not know whether compression alone would suffice, so it also contains small amounts of Gaussian blur ($\sigma\in[\BlurLo,\BlurHi]$ input pixels) and Gaussian noise estimated from the same images (\ref{app:noiseblur}), applied in the order blur, downsampling, noise, compression; the generic pipeline has the same structure with wider ranges. The comparisons of Section~\ref{sec:ablation} show that noise and blur change PSNR by a few hundredths of a decibel and that JPEG quality drawn uniformly from 60 to 95 performs about as well: what matters is to cover the range of qualities found in the target files, here about 70 to 95. We keep the degradation as specified, under the name ``measured'', because it was fixed before these comparisons. A patch classifier separates it from real small images less well than bicubic downsampling or the generic pipeline (\ref{app:realism}).
 
 \subsection{Stability of fine-tuning}
 \label{sec:stable}

@@ -852,7 +852,10 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
 
             cr, cq = crossing(np.arange(len(E)))
             bs = np.array([crossing(np.concatenate([idx[u] for u in rng.choice(us, len(us))])) for _ in range(400)])
-            cross.append({"set": name, "px": t // 4, "n": len(E), "levels": len(qs), "ratio": cr,
+            # khoảng giữa hai mức đã đo chứa điểm đổi dấu (cột đầu của bảng; góp ý reviewer 06/11)
+            b_hi_ = min([q for q in qs if q > cq], default=np.nan) if cq == cq else np.nan
+            b_lo_ = max([q for q in qs if q < cq], default=np.nan) if cq == cq else np.nan
+            cross.append({"set": name, "px": t // 4, "n": len(E), "levels": len(qs), "ratio": cr, "b_lo": b_lo_, "b_hi": b_hi_,
                           "ratio_lo": float(np.nanpercentile(bs[:, 0], 2.5)), "ratio_hi": float(np.nanpercentile(bs[:, 0], 97.5)),
                           "q": cq, "q_lo": float(np.nanpercentile(bs[:, 1], 2.5)), "q_hi": float(np.nanpercentile(bs[:, 1], 97.5))})
     R, X = pd.DataFrame(cells), pd.DataFrame(cross).dropna(subset=["ratio"])
@@ -918,6 +921,9 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
             print(f"CHÚ Ý: điểm đổi dấu {tag} không nằm trong một khoảng lưới; sửa tóm tắt, phần mở đầu và mục 4.2")
         put(f"CrossGrid{tag}Lo", lo_[-1] if lo_ else "TBD")
         put(f"CrossGrid{tag}Hi", hi_[0] if hi_ else "TBD")
+        hl_ = Path(__file__).resolve().parent.parent / "paper" / "highlights.txt"
+        if lo_ and hi_ and hl_.exists() and f"quality {lo_[-1]} and {hi_[0]}" not in hl_.read_text():
+            print(f"CHÚ Ý: highlights.txt không còn khớp khoảng {lo_[-1]}–{hi_[0]} ({tag}); sửa highlights")
     # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn (thêm cỡ 48 px ngày 05/11; TODO P6)
     A = X[X.set == "AMI"].sort_values("px")
     if not (np.all(np.diff(A.q) > 0) and np.all(np.diff(A.ratio) < 0)):
@@ -931,10 +937,13 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     rows = []
     for r in X.to_dict("records"):
         kind = "Natural" if r["set"] == "DIV2K" else "Ear"
-        rows.append(f"{kind} ({r['set']}) & {r['px']} & {r['levels']} & {r['q']:.1f} {{\\scriptsize[{min(r['q_lo'], r['q_hi']):.1f}, "
+        rows.append(f"{kind} ({r['set']}) & {r['px']} & {r['levels']} & {int(r['b_lo'])}--{int(r['b_hi'])} & {r['q']:.1f} {{\\scriptsize[{min(r['q_lo'], r['q_hi']):.1f}, "
                     f"{max(r['q_lo'], r['q_hi']):.1f}]}} & {num(r['ratio'], 2)} {{\\scriptsize[{num(r['ratio_lo'], 2)}, "
                     f"{num(r['ratio_hi'], 2)}]}} \\\\")
-    write(out / "tab_crossover.tex", "\n".join(rows) + "\n")
+    write(out / "tab_crossover_full.tex", "\n".join(rows) + "\n")
+    # thân bài chỉ in khoảng mức đã đo; số nội suy ở phụ lục (phản biện thứ tám, 06/11)
+    short = [" & ".join(r_.split(" & ")[:4]) + " \\\\" for r_ in rows]
+    write(out / "tab_crossover.tex", "\n".join(short) + "\n")
     # ô ×2 duy nhất có sẵn: SwinIR-light ×2 trên AMI (đáp án 144 px, ảnh vào 72 px)
     c2, j2 = mse("t2", "bicubic", 144, "bic", 2), mse("t2", "bicubic", 144, "bicjpeg75", 2)
     s2c, s2j = mse("t2", "swinir_light_x2", 144, "bic", 2), mse("t2", "swinir_light_x2", 144, "bicjpeg75", 2)
@@ -1601,6 +1610,62 @@ def recog_upscaled(res: Path, out: Path) -> None:
     put("RecUpNSmall", f"{json.loads(lg_.read_text())['info']['n_small_upscaled']:,}" if lg_.exists() else None, why)
 
 
+
+UP_RRDB = [f"REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f{k}" for k in range(1, 6)]
+UP_ALL = (("bicubic", ["bicubic"], "Bicubic", "Bic"), ("span_ch48", ["span_ch48"], "SPAN-S, published", "Pub"),
+          ("est", UP_EST, "SPAN-S, measured (ours)", "Est"), ("rrdb_est", UP_RRDB, "RRDB, measured", "Rrdb"),
+          ("bsrnet", ["bsrnet"], "BSRNet", "Bsr"), ("realesrnet", ["realesrnet"], "Real-ESRNet", "Resr"),
+          ("fbcnn_span_ch48", ["fbcnn_span_ch48"], "FBCNN, then SPAN-S published", "Fb"))
+
+
+def recog_upscaled_all(res: Path, out: Path) -> None:
+    """Giao thức chính (mỗi cách phóng một bộ nhận dạng học thêm ảnh nhỏ thật đã phóng bằng chính nó) cho cả bốn cách
+    phóng có tính đến nén (phản biện thứ tám, 06/11; TODO.md, việc V; scripts/run_recog_upscaled.sh với METHODS=...).
+    Ghép cặp theo ảnh dò như recog_upscaled. Chưa có kết quả thì in một dòng và để macro TBD; bài chưa dùng bảng này."""
+    why = "recog-up-all"
+    rows, ok = [], True
+    for key, tag, label in (("earvn", "Earvn", "EarVN1.0"), ("awex", "Awex", "AWEx")):
+        F = {m: [res / "recog_up" / f"{key}_{m}" / f"{c}.csv" for c in cs] for m, cs, _, _ in UP_ALL}
+        miss = [m for m, fs in F.items() if not all(f.exists() for f in fs)]
+        if miss:
+            ok = False
+            for _, _, _, t in UP_ALL:
+                for k in ("Rank", "VsBic", "VsEst"):
+                    put(f"RecAll{tag}{t}{k}", None, why)
+            continue
+        H = {}
+        for m, fs in F.items():
+            ts = [pd.read_csv(f, dtype={"subject": str}) for f in fs]
+            H[m] = (np.mean([(t["rank"].to_numpy() == 1).astype(float) for t in ts], 0), ts[0]["subject"].to_numpy())
+        subj = H["bicubic"][1]
+        for m, (h, sj) in H.items():
+            if len(h) != len(subj) or not np.array_equal(sj, subj):
+                raise SystemExit(f"recog_upscaled_all: ảnh dò của {m} không khớp với bicubic ({key})")
+        for m, _, name, t in UP_ALL:
+            r1 = 100 * H[m][0].mean()
+            put(f"RecAll{tag}{t}Rank", f"{r1:.1f}")
+            cells = [f"{r1:.1f}"]
+            for ref_, k in (("bicubic", "VsBic"), ("est", "VsEst")):
+                if m == ref_ or (m == "bicubic" and ref_ == "est"):
+                    cells.append("--")
+                    continue
+                e = paired_diff(100 * H[m][0], 100 * H[ref_][0], subj, n_boot=1000)
+                put(f"RecAll{tag}{t}{k}", f"{est_cell(e, 1)}")
+                cells.append(est_cell(e, 1))
+            rows.append((label, name, cells))
+    if not ok:
+        print("recog_upscaled_all: chưa đủ kết quả giao thức chính cho bốn cách phóng mới (TODO.md, việc V)")
+        write(out / "tab_recogup_all.tex", "\\todo{--} \\\\\n")
+        return
+    by = {}
+    for label, name, cells in rows:
+        by.setdefault(name, {})[label] = cells
+    lines = [f"{n} & " + " & ".join(by[n]["EarVN1.0"]) + " & " + " & ".join(by[n]["AWEx"][:2]) + " \\\\"
+             for _, _, n, _ in UP_ALL]
+    lines.insert(3, "\\midrule")
+    write(out / "tab_recogup_all.tex", "\n".join(lines) + "\n")
+
+
 ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
                ("shiftjpeg75", "Same, block grid offset 1--7 px"), ("dbljpeg93to75", "JPEG 93 with offset grid, then 75"),
                ("jpeg75bic", "JPEG 75, then downsize"), ("bicjpeg93", "Downsize, then JPEG 93 (as in the paper)"),
@@ -1822,6 +1887,7 @@ def main(argv=None) -> None:
     order_control(res, out)
     mechanism(res, fig)
     recog_upscaled(res, out)
+    recog_upscaled_all(res, out)
     fid_recog(res, out, fig)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))

@@ -345,6 +345,39 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   - T6 Từ khóa: Super-resolution, JPEG compression, Error decomposition, Image content, Efficient networks, On-device
     inference, Ear images.
   - Lưu ý: tectonic không ghi main.log nếu không có `--keep-logs`; kiểm ô tràn phải dùng `tectonic --keep-logs main.tex`.
+- [x] 06/11 **U. Phản biện thứ bảy, vòng hai** (reviewer bỏ ý reject; "major revision, with the expectation of acceptance").
+  - U1 Bảng tab:crossover: cột "Measured levels" (85–93, 60–75, 75–93) đứng trước, sinh từ make_paper.py (`b_lo`, `b_hi`);
+    hai cột nội suy gom dưới nhãn "Interpolated"; chú thích nói khoảng mức đo là kết quả, số nội suy chỉ để mô tả.
+  - U2 Phụ lục chỉ còn bảng và phần phương pháp: bỏ các đoạn song song với thân bài (nhận dạng với bộ nhận dạng học ảnh
+    lớn, probe tổng hợp rút còn thiết lập và hai ô chính, phương án công bố, headroom, tương quan, Core ML, bộ chọn ngưỡng,
+    bộ phân loại). Phụ lục 3.200 → 2.140 từ; bài 41 → 38 trang (thân bài trang 1–22, phụ lục 23–31).
+  - U3 Thêm câu: thứ hạng BSRNet chưa đo lại bằng giao thức chính (mới chạy cho ba cách phóng). Nếu reviewer hỏi thì mới
+    huấn luyện bộ nhận dạng riêng cho BSRNet và Real-ESRNet.
+  - U4 Tóm tắt viết lại thành năm ý, 207 từ: b > 1; ảnh tai đổi dấu giữa 85 và 93 vì ảnh trơn; dưới nén kiểu suy giảm hơn
+    kiến trúc; rank-1 theo giao thức chính; AWEx không tăng và ảnh sạch kém trọng số công bố.
+  - U5 (06/11) Thảo luận, ý nghĩa thực hành và hạn chế: câu BSRNet/Real-ESRNet nhận dạng tốt hơn giới hạn "under
+    recognisers trained on large images only", thêm "not evaluated with the main protocol".
+  - Còn để ngỏ: đoạn "Other codecs" ở mục 4.2 vẫn ghi mức quality nội suy (89, 86, 61) trong ngoặc; chưa sửa.
+- [ ] 06/11 **V. Phản biện thứ tám** (dự đoán major; nguy cơ desk reject nếu tóm tắt mở bằng công thức a, b).
+  Người dùng chọn: sửa câu chữ, cộng chạy giao thức chính cho bốn cách phóng có tính đến nén (phương án a).
+  - [x] 06/11 V1 Tóm tắt (224 từ), mở đầu, đóng góp, highlights mở bằng vị trí đổi dấu (85–93 trên AMI, 60–75 trên DIV2K;
+    highlights có số, make_paper.py cảnh báo nếu lệch); b > 1 thành lời giải thích; câu phân biệt với Chen 2018, BSRGAN,
+    Real-ESRGAN; điều kiện vận hành (crop còn lỗi nén; nén trước khi thu nhỏ thì mô hình lại hơn) nêu ở tóm tắt và mở đầu.
+  - [x] 06/11 V2 Mục 5 viết theo ablation: "đo" là đọc bảng lượng tử trong file; nhiễu, mờ, bộ phân loại xuống sau.
+  - [x] 06/11 V3 Câu kiến trúc giới hạn ở độ trung thực và hai họ mạng đã tinh chỉnh; chưa tinh chỉnh transformer.
+  - [x] 06/11 V4 Related work: câu loại mô hình khuếch tán và mạng real-world lớn vì độ trễ.
+  - [x] 06/11 V5 Bảng 2 chỉ còn khoảng mức đo; số nội suy sang phụ lục (tab:crossoverfull, `tab_crossover_full.tex`);
+    đoạn codec bỏ mức quality nội suy.
+  - [ ] V6 [Bạn, labai217] Giao thức chính cho BSRNet, Real-ESRNet, FBCNN rồi SPAN, RRDB tinh chỉnh (công thức cố định như
+    O4, ra số nào báo số đó; khoảng 2 đến 4 giờ):
+    ```bash
+    git pull
+    nohup env METHODS="bsrnet realesrnet fbcnn_span_ch48 rrdb_est" bash scripts/run_recog_upscaled.sh > recog_up2.log 2>&1 &
+    ```
+    Xong thì commit `results/recog_up`. make_paper.py (`recog_upscaled_all`) sinh `tab_recogup_all.tex` và macro
+    `RecAll{Earvn,Awex}{Bic,Pub,Est,Rrdb,Bsr,Resr,Fb}{Rank,VsBic,VsEst}`; đã thử với dữ liệu giả.
+  - [ ] V7 Sau V6: thay Bảng tab:recogup bằng bảng bảy cách phóng; viết lại 6.4, câu BSRNet ở thảo luận và hạn chế theo số
+    mới; bỏ câu "not evaluated with the main protocol".
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).
   - **M1. Mô hình của ta không thắng rõ ở đâu** (BSRNet hơn ta 5,9 điểm hạng 1 với ResNet-50; FBCNN rồi SPAN ngang ta về PSNR

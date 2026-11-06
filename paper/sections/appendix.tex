@@ -22,9 +22,28 @@ Dataset & Input (px) & Images & Clean & JPEG 93 & JPEG 85 & JPEG 75 & JPEG 60 & 
 \end{tabular}}
 \end{table}
 
+Table~\ref{tab:crossoverfull} locates the sign change of Table~\ref{tab:crossover} by linear interpolation between the two neighbouring measured qualities.
+
+\begin{table}[H]
+\centering
+\caption{Sign change of the median gain of the \NPub{} published models over bicubic interpolation, located by linear interpolation between the two neighbouring measured qualities (the error ratio on a log scale), with 95\% bootstrap intervals. The intervals reflect only the resampling of subjects (of images for DIV2K), not the spacing of the levels, so the interpolated values describe the data and are not measurements.}
+\label{tab:crossoverfull}
+\small
+\fitbox{%
+\begin{tabular}{@{}lrrccc@{}}
+\toprule
+ & & & & \multicolumn{2}{c}{Interpolated} \\
+\cmidrule(l){5-6}
+Images & Input (px) & Levels & Measured levels & Quality & $E_c/E_i$ \\
+\midrule
+\tabinput{generated/tab_crossover_full}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Estimating the error ratio without ground truth}
 \label{app:selector}
-Both terms can be approximated at test time: $E_i$ from the input itself, as the error of bicubic interpolation after downscaling it by two, and $E_c$ from the JPEG quality stored in the file. The estimate has a rank correlation of \SelRhoMin{} to \SelRhoMax{} with the true ratio. Used to choose, per input, between bicubic interpolation and the published SPAN weights, with a threshold selected on DIV2K, it gives a PSNR \SelCrossMin{} to \SelCrossMax{}~dB higher on held-out images of the three ear datasets than a rule based on the quality level alone, which selects the model at quality \SelLevelsDiv{}. Calibrated and tested on the same type of image, the two rules do not differ (\SelSame{}~dB on AMI). The ratio therefore transfers across image types where the quality level does not; the absolute gain is small (at most \SelGainMax{}~dB) and was measured on synthesised inputs.
+Both terms can be approximated at test time: $E_i$ from the input itself, as the error of bicubic interpolation after downscaling it by two, and $E_c$ from the JPEG quality stored in the file (rank correlation \SelRhoMin{} to \SelRhoMax{} with the true ratio). Used with a threshold selected on DIV2K to choose per input between interpolation and the published SPAN weights, it gives a PSNR \SelCrossMin{} to \SelCrossMax{}~dB higher on the three ear datasets than a rule based on the quality level alone, and at most \SelGainMax{}~dB overall.
 
 \section{Order of degradations}
 \label{app:order}
@@ -67,7 +86,7 @@ Both estimates use the \FitSmall{} real small images and \FitLarge{} large image
 
 \section{Realism classifier}
 \label{app:realism}
-To assess how close the simulated images are to real ones, we train a small convolutional classifier to separate $16\times16$ patches of real small ear images from patches of simulated images, which are generated from large images of the same subjects and brought to the same size distribution. Subjects are split between training and testing (\RealTrainSubj{} and \RealTestSubj{} subjects of the classifier group), and the experiment is repeated with three seeds. Table~\ref{tab:realism} gives the balanced accuracy, where 50\% means that the classifier does not separate simulated from real images. The classifier separates bicubic downsampling (\RealBic{}\%) and the generic pipeline (\RealGen{}\%) from real images with similar accuracy, so by this test the generic pipeline is not closer to the real data than bicubic downsampling. The measured pipeline gives \RealEst{}\%. Bicubic downsampling followed by JPEG at quality 75 gives \RealJpg{}\%, which is not significantly different from the measured pipeline. 
+To assess how close the simulated images are to real ones, we train a small convolutional classifier to separate $16\times16$ patches of real small ear images from patches of simulated images, which are generated from large images of the same subjects and brought to the same size distribution. Subjects are split between training and testing (\RealTrainSubj{} and \RealTestSubj{} subjects of the classifier group), and the experiment is repeated with three seeds. Table~\ref{tab:realism} gives the balanced accuracy.
 
 \begin{table}[H]
 \centering
@@ -106,7 +125,7 @@ The stress test brightens the validation images by factors of 1.4 and 1.8 and ma
 
 \section{Fixed and measured compression levels}
 \label{app:levels}
-Table~\ref{tab:levels} gives, for both backbones, the paired differences between the models trained with the measured degradation and with fixed JPEG at quality 75 that are summarised in Section~\ref{sec:ablation}. Table~\ref{tab:ablation} compares the measured degradation with the two JPEG-only variants.
+Tables~\ref{tab:levels} and~\ref{tab:ablation} give the comparisons summarised in Section~\ref{sec:ablation}.
 
 \begin{table}[H]
 \centering
@@ -138,9 +157,7 @@ Comparison & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 
 
 \section{Identification with recognisers trained on large images}
 \label{app:recoglarge}
-Ear-R18 is a ResNet-18~\cite{he2016resnet} trained with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} subjects (\RecValAcc{}\% accuracy on held-out images of these subjects), never on small or upscaled images; Ear-R50 is a ResNet-50 trained on the same data (\RecRfValAcc{}\%), and frozen ImageNet features of a ResNet-50 (ImageNet-R50) serve as a control. With large probes Ear-R18 reaches a rank-1 rate of \RecRankRef{}\%; with small probes and bicubic upscaling, \RecRankBic{}\% (Table~\ref{tab:recog}). The published SPAN weights reach \RecRankPub{}\% and SPAN fine-tuned with bicubic downsampling \RecRankBict{}\%; with these two models and the published RRDB weights, the equal error rate is \RecEerBicTrMin{} to \RecEerBicTrMax{} points higher than with bicubic upscaling, with confidence intervals that include zero. SPAN with the measured degradation reaches \RecRankEst{}\% (\RecEstVsBic{} points over bicubic upscaling, \RecEstVsPub{} over the published weights; EER from \RecEerBic{}\% to \RecEerEst{}\%), and DISP \RecRankDispEst{}\%. The compression-only variants are within about one point of each other, and the generic pipeline is slightly lower (\RecGenVsEst{} points relative to our model, and \RecEarvnRfGenVsEst{} with Ear-R50). BSRGAN and Real-ESRGAN \RecGanPair{}, not significantly different from our model (\RecBsrganVsEst{} points for BSRGAN) at \LatRatio{} times the latency. ImageNet-R50 gives the same ordering (\RecCtlRankBic{}, \RecCtlRankPub{} and \RecCtlRankEst{}\%). With Ear-R50 our model raises the rate from \RecEarvnRfRankBic{}\% to \RecEarvnRfRankEst{}\% (\RecEarvnRfEstVsBic{} points), against \RecEarvnRfPubVsBic{} for the published weights (Table~\ref{tab:recogrobust}). On AWEx no method changes the rate significantly with either recogniser.
-
-By the JPEG quality stored in the probe file (Table~\ref{tab:recogquality}), the published SPAN weights change the rank-1 rate by \RecQLowPub{} points for probes at quality 70 to 80 (\RecQLowN{} probes) and by \RecQHighPub{} for probes at quality 90 or above (\RecQHighN{} probes); our model by \RecQLowEst{} and \RecQHighEst{} points, and BSRGAN by \RecQLowBsrgan{} and \RecQHighBsrgan{}. The relation between fidelity and identification across methods is examined in \ref{app:fidrecog}.
+Ear-R18 and Ear-R50 are a ResNet-18~\cite{he2016resnet} and a ResNet-50 trained with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} subjects (\RecValAcc{}\% and \RecRfValAcc{}\% accuracy on held-out images of these subjects), never on small or upscaled images; frozen ImageNet features of a ResNet-50 (ImageNet-R50) serve as a control. Tables~\ref{tab:recog} to~\ref{tab:recogquality} give the results summarised in Section~\ref{sec:recog}.
 
 \begin{table}[H]
 \centering
@@ -192,7 +209,7 @@ Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
 
 \section{Synthesised probes}
 \label{app:recogsynth}
-The two quality groups of \ref{app:recoglarge} differ in subjects as well as in compression. To vary compression on fixed images, we downsized the large images of the \SynSubj{} test subjects that are not used for enrolment (\SynProbes{} images; the real probes come from \RecSubj{} of these subjects) to probes with a short side of 24 or 36 pixels, clean, at JPEG 75 or with the measured degradation (Table~\ref{tab:recogsynth}). Templates and recognisers, trained on large images only, are Ear-R18 and Ear-R50 (\ref{app:recoglarge}), and the conditions were fixed before the run. These probes are easier than real ones (\SynBicEstS{}\% against \RecRankBic{}\% with bicubic upscaling and Ear-R18). The clearest result is at 24 pixels and JPEG 75: bicubic-trained models lose \SynJpgBicTrMin{} to \SynJpgBicTrMax{} points and models trained with compression gain \SynJpgCmpTrMin{} to \SynJpgCmpTrMax{}, with every interval excluding zero. On clean 24-pixel probes the order is the opposite for the bicubic-trained models, which gain \SynCleanBicTrMin{} to \SynCleanBicTrMax{} points, and for JPEG 75 training, which loses \SynCleanJpgTrMin{} to \SynCleanJpgTrMax{}; our model does not differ significantly from bicubic upscaling there (\SynCleanEstSRe{} and \SynCleanEstSRf{} points with the two recognisers). With the measured degradation our model gains \SynEstEstSRe{} and \SynEstEstSRf{} points; the second interval includes zero. At 36 pixels, where the probes lose less accuracy (\SynBicEstL{}\%), none of the \SynCompCmpTrLN{} gains of models trained with compression on compressed probes is significant (\SynCompCmpTrLMin{} to \SynCompCmpTrLMax{} points), whereas on clean probes these models are lower by \SynCleanCmpTrLMin{} to \SynCleanCmpTrLMax{} points, with every interval excluding zero. Compression thus reverses the ordering for 24-pixel probes at JPEG 75, and training with compression harms the identification of clean probes. Because these recognisers never saw upscaled images, the differences may partly reflect how closely upscaled probes resemble the enrolment images rather than recovered identity; the main protocol, with recognisers trained on upscaled images (Section~\ref{sec:recog}), was run for real probes only.
+The two quality groups of Table~\ref{tab:recogquality} differ in subjects as well as in compression. To vary compression on fixed images, we downsized the large images of the \SynSubj{} test subjects not used for enrolment (\SynProbes{} images; the real probes come from \RecSubj{} of these subjects) to probes of 24 or 36 pixels, clean, at JPEG 75 or with the measured degradation, with conditions fixed before the run (Table~\ref{tab:recogsynth}). These probes are easier than real ones (\SynBicEstS{}\% against \RecRankBic{}\% with bicubic upscaling and Ear-R18). The clearest result is at 24 pixels and JPEG 75, where bicubic-trained models lose \SynJpgBicTrMin{} to \SynJpgBicTrMax{} points and models trained with compression gain \SynJpgCmpTrMin{} to \SynJpgCmpTrMax{}, every interval excluding zero; on clean 36-pixel probes, models trained with compression are lower by \SynCleanCmpTrLMin{} to \SynCleanCmpTrLMax{} points. The recognisers were trained on large images only, so the differences may partly reflect how closely upscaled probes resemble the enrolment images.
 
 \begin{table}[H]
 \centering
@@ -212,11 +229,7 @@ Upscaling & Clean & JPEG 75 & Measured & Clean & JPEG 75 & Measured \\
 
 \section{Published alternatives that account for compression}
 \label{app:alternatives}
-We evaluate, with published weights and on the same inputs as our model, FBCNN~\cite{jiang2021fbcnn} (\RevFbcnnParams{}M parameters, blind) followed by bicubic interpolation or the published SPAN, and BSRNet~\cite{zhang2021bsrgan} and Real-ESRNet~\cite{wang2021realesrgan}, the fidelity-oriented RRDB versions of BSRGAN and Real-ESRGAN, and the RRDB weights fine-tuned with our procedure (Table~\ref{tab:review}).
-
-\paragraph{Compression removal before upscaling} FBCNN followed by SPAN improves on interpolation by \RevFbVsBicMin{} to \RevFbVsBicMax{}~dB on compressed inputs. Against our model it is \RevFbVsEstAmiMin{} to \RevFbVsEstAmiMax{}~dB on compressed AMI inputs, \RevFbVsEstWildJpegMin{} to \RevFbVsEstWildJpegMax{}~dB on JPEG-only in-the-wild inputs and \RevFbVsEstWildEstMin{} to \RevFbVsEstWildEstMax{}~dB on measured ones, and it keeps more accuracy on clean inputs. Its rank-1 rate on EarVN1.0 (\RevRankFb{}\% and \RevRankFbRf{}\% with the two recognisers) is above bicubic upscaling but below our model (\RevFbVsEstRank{} and \RevFbVsEstRankRf{} points). It has \RevFbParamsRatio{} times the parameters of SPAN, takes \RevFbLat{} against \RevSpanLat{}~ms on the desktop GPU, and on the smartphone, where FBCNN must run in 32-bit precision (\ref{app:coreml}), needs \LatPhoneFbCpu{}~ms on the CPU and \LatPhoneFbAll{}~ms with all units, against \LatPhoneSpanFCpu{} and \LatPhoneSpanFAll{}~ms for SPAN at the same precision.
-
-\paragraph{Large models trained with synthetic degradations} BSRNet stays within \RevBsrVsBicMin{} to \RevBsrVsBicMax{}~dB of interpolation on compressed inputs and Real-ESRNet falls below it, yet both identify real probes well: BSRNet reaches \RevRankBsr{}\% and \RevRankBsrRf{}\% (\RevBsrVsEstRank{} and \RevBsrVsEstRankRf{} points relative to our model), Real-ESRNet \RevRankResr{}\% and \RevRankResrRf{}\%. With Ear-R50 both exceed our model, at \ParamsRatio{} times the parameters and \RevBsrLatRatio{} times the latency.
+Table~\ref{tab:review} gives the published alternatives of Section~\ref{sec:experiments}, evaluated with published weights on the same inputs as our model: FBCNN~\cite{jiang2021fbcnn} (\RevFbcnnParams{}M parameters, blind) followed by bicubic interpolation or the published SPAN, and BSRNet~\cite{zhang2021bsrgan} and Real-ESRNet~\cite{wang2021realesrgan}, the fidelity-oriented RRDB versions of BSRGAN and Real-ESRGAN. On the smartphone, FBCNN must run in 32-bit precision (\ref{app:coreml}) and takes \LatPhoneFbCpu{}~ms on the CPU, against \LatPhoneSpanFCpu{}~ms for SPAN at the same precision.
 
 \begin{table}[H]
 \centering
@@ -234,7 +247,7 @@ Method & Params (M) & Latency (ms) & Clean & JPEG 93 & JPEG 75 & JPEG 75 & JPEG 
 \end{tabular}}
 \end{table}
 
-In Figure~\ref{fig:tradeoff}, which combines latency and identification, below the real-time threshold on the CPU, only the compression-trained small networks improve identification markedly, and every method with a higher rank-1 rate needs about 100~ms. DISP takes \LatPhoneDispCpu{} and \LatPhoneDispAll{}~ms on the smartphone (outputs agree with PyTorch at \CoremlPsnrDisp{}~dB), and SwinIR-light misses the threshold in both configurations (\LatPhoneSwinCpu{} and \LatPhoneSwinAll{}~ms), as \PhoneSwinOpsCpu{} of its \PhoneSwinOps{} operations stay on the CPU. The performance tool reports only median prediction times, so no 95th percentile is available.
+
 
 \begin{figure}[H]
 \centering
@@ -245,11 +258,11 @@ In Figure~\ref{fig:tradeoff}, which combines latency and identification, below t
 
 \section{Headroom of individual subjects}
 \label{app:headroom}
-We define the headroom of a subject as in Section~\ref{sec:discussion}, from the rank-1 rates of its large probes and of its bicubically upscaled small probes, and split the subjects of each dataset at the median headroom. Among the \HeadEarvnReSubj{} subjects with at least five small probes, the half with less headroom (\HeadEarvnReLowRoom{} points on average) improves by \HeadEarvnReLowGain{} points and the half with more headroom (\HeadEarvnReHighRoom{}) by \HeadEarvnReHighGain{} points. With Ear-R50 the two halves improve by \HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{} points. The rank correlation between headroom and improvement is positive but not significant with this number of subjects (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$). Headroom alone does not appear to be sufficient: the AWEx subjects in the upper half of headroom (\HeadAwexReHighRoom{} points) change by \HeadAwexReHighGain{} and \HeadAwexRfHighGain{} points with the two recognisers, although these per-subject values are based on a median of two probes.
+We split the subjects at the median headroom (Section~\ref{sec:discussion}). Among the \HeadEarvnReSubj{} EarVN1.0 subjects with at least five small probes, the half with less headroom improves by \HeadEarvnReLowGain{} points and the half with more by \HeadEarvnReHighGain{} points with Ear-R18 (\HeadEarvnRfLowGain{} and \HeadEarvnRfHighGain{} with Ear-R50); the rank correlation between headroom and improvement is not significant (Spearman $\rho=\HeadEarvnReRho$, $p=\HeadEarvnReP$, and $\rho=\HeadEarvnRfRho$, $p=\HeadEarvnRfP$).
 
 \section{Fidelity and identification}
 \label{app:fidrecog}
-Across the \CorrNAll{} methods with identification results, the rank-1 rate on real EarVN1.0 probes follows LPIPS measured on synthesised EarVN1.0 inputs (Spearman $\rho=\CorrLpipsAll$ and $\CorrLpipsAllRf$ for the two recognisers), less closely DISTS ($\CorrDistsAll$ and $\CorrDistsAllRf$), and not PSNR ($\CorrPsnrAll$ and $\CorrPsnrAllRf$; Table~\ref{tab:fidrecog}). The two GAN-trained models cause most of the difference: without them PSNR is also related to identification ($\rho=\CorrPsnrNogan$ over \CorrNNogan{} methods), and within the \CorrNLone{} L1-trained models fine-tuned in this study PSNR and LPIPS track it about equally well ($\CorrPsnrLone$ and $\CorrLpipsLone$). The methods are not independent, the fidelity measures are computed on synthesised inputs of partly different subjects and against EarVN1.0 ground truth that is itself compressed (Section~\ref{sec:benchmark}), and the analysis was made after the identification results were known, so these correlations describe this dataset rather than establish a general rule. PSNR thus loses its relation with identification once GAN-trained upscalers are compared, whereas LPIPS keeps it in all three groups. LPIPS relies on ImageNet features~\cite{zhang2018lpips} and the recognisers on ear images, so the agreement is not built into the measures.
+Across the \CorrNAll{} methods, the rank-1 rate on real EarVN1.0 probes follows LPIPS on synthesised inputs and not PSNR (Table~\ref{tab:fidrecog}); without the two GAN-trained models, PSNR is also related to identification. The analysis was made after the identification results were known and describes this dataset only.
 
 \begin{table}[H]
 \centering
@@ -269,4 +282,4 @@ Methods & $n$ & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
 
 \section{Precision of the converted FBCNN}
 \label{app:coreml}
-The pipeline with FBCNN is measured on the smartphone in 32-bit precision, because the 16-bit Core ML conversion of FBCNN does not reproduce its output: the PSNR between the Core ML and PyTorch outputs is \CoremlPsnrFbHalf{}~dB, compared with more than 50~dB for the other converted models. In 32-bit precision the two outputs agree. SPAN is measured in the same precision for comparison. At 32-bit precision Core ML runs both networks on the GPU rather than the neural engine, and for a network as small as SPAN the GPU path is slower than the CPU, possibly because of scheduling overhead.
+The 16-bit Core ML conversion of FBCNN does not reproduce its output (PSNR \CoremlPsnrFbHalf{}~dB between Core ML and PyTorch outputs, against more than 50~dB for the other models), so FBCNN and, for comparison, SPAN are measured in 32-bit precision, where Core ML runs them on the GPU.
