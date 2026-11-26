@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Đối chứng thứ tự suy giảm (phản biện ngày 04/11; TODO.md, việc O2). Chỉ chấm, không huấn luyện.
+# Đối chứng thứ tự suy giảm. Chỉ chấm, không huấn luyện.
 # AMI, ảnh vào 36 px (đáp án 144), mọi người; 16 mô hình công bố, bicubic, và SPAN tinh chỉnh (est, JPEG 75; 5 fold,
 # mỗi mô hình chỉ chấm người test của fold của nó). Các kiểu ảnh vào (earsr/degrade/pipelines.py):
 #   bicjpeg75, bicjpeg93      : như bài (thu nhỏ rồi nén, lưới khối thẳng với ảnh, màu 4:2:0)

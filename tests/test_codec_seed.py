@@ -1,4 +1,4 @@
-"""Chuẩn nén khác JPEG, ảnh dò tổng hợp và nhãn seed (TODO.md, việc Q1 đến Q3)."""
+"""Chuẩn nén khác JPEG, ảnh dò tổng hợp và nhãn seed."""
 import sys
 from pathlib import Path
 

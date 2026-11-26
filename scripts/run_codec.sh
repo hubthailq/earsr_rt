@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chuẩn nén khác JPEG (kiểm toán 04/11; TODO.md, việc Q1). Chỉ chấm, không huấn luyện.
+# Chuẩn nén khác JPEG. Chỉ chấm, không huấn luyện.
 # Câu hỏi, cố định trước khi chạy: với WebP và AVIF, mô hình công bố có thêm phần dư vào sai số nén (b > 1) và có đổi dấu
 # so với bicubic như với JPEG không; nếu có, ở tỉ số E_c/E_i nào (so với JPEG trên cùng ảnh: Bảng 2, AMI 36 px).
 # Mức chất lượng chọn trên Mac (100 ảnh AMI) để E_c/E_i của bicubic phủ cùng dải với JPEG 93 đến 60:

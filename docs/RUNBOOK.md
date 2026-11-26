@@ -205,7 +205,7 @@ Hình dùng ảnh AMI cần thư đồng ý của tác giả bộ dữ liệu: x
 
 Sau đó làm theo mục 2.7 của kế hoạch: xác định kịch bản, điền `[X]`, chọn nhánh câu, viết bình luận từng bảng.
 
-## 6. Mốc thêm cho vòng phản biện (08/10/2026; `TODO.md` mục 0, việc J)
+## 6. Mốc bổ sung
 
 Ba việc, mỗi việc một cấu hình chốt trước: khử nén rồi mới phóng (FBCNN), RRDB học có nén với trọng số có sẵn (BSRNet,
 Real-ESRNet), và RRDB tinh chỉnh với đúng công thức của SPAN nhánh est.

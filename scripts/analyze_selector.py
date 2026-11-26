@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phép thử khả thi của luật chọn lúc chạy (góp ý ngày 04/11/2026; TODO.md, việc N): với mỗi ảnh vào đã nén, chọn giữa
+"""Phép thử khả thi của luật chọn lúc chạy: với mỗi ảnh vào đã nén, chọn giữa
 bicubic và một mô hình công bố học bằng bicubic, chỉ dựa trên thông tin có lúc chạy (mức JPEG đọc từ file và một thống kê
 độ sắc nét của chính ảnh nhỏ), không dùng ảnh gốc.
 

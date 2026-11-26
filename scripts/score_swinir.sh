@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chấm các lần chạy SwinIR-light tinh chỉnh (runs/SWIN_*, từ make_swinir_jobs.sh; TODO.md, việc W12) cùng bicubic và
+# Chấm các lần chạy SwinIR-light tinh chỉnh cùng bicubic và
 # SwinIR-light trọng số công bố, trên cùng ảnh vào như SPAN và RRDB:
 #   AMI      : ba cỡ; sạch, JPEG 93, 85, 75, suy giảm đo được (mỗi lần chạy chỉ trên người test của fold nó) -> results/swin
 #   EarVN1.0 : nhóm test, cỡ 96; sạch, JPEG 93, 75, suy giảm đo được                                     -> results/swin_earvn

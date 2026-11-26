@@ -76,7 +76,7 @@ def main(argv=None) -> dict:
     ap.add_argument("--out", default="runs/RECOG_resnet18")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--limit", type=int, default=None, help="chỉ dùng N ảnh đầu của mỗi người (để thử)")
-    # Bộ nhận dạng học trên ảnh đã phóng (phản biện 04/11; TODO.md, việc O4): thêm ảnh NHỎ THẬT của chính những người
+    # Bộ nhận dạng học trên ảnh đã phóng: thêm ảnh NHỎ THẬT của chính những người
     # học, đã phóng ×4 bằng đúng phương pháp sẽ được chấm. Tập người và ảnh theo dõi giữ nguyên như bản chỉ học ảnh lớn.
     ap.add_argument("--sr-model", default=None, help="phương pháp phóng ảnh nhỏ lúc học (bicubic, span_ch48, ...)")
     ap.add_argument("--sr-run", nargs="+", default=None,

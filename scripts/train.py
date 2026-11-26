@@ -72,7 +72,7 @@ def parse_args(argv=None):
     ap.add_argument("--runs-csv", default="results/runs.csv")
     ap.add_argument("--tag", default="", help="nhãn thêm vào mã lần chạy, ví dụ lr1e-4")
     ap.add_argument("--seed", type=int, default=None,
-                    help="seed khác số fold (mặc định seed = fold); mã lần chạy có thêm nhãn sN (TODO.md, việc Q3)")
+                    help="seed khác số fold (mặc định seed = fold); mã lần chạy có thêm nhãn sN")
     ap.add_argument("--force", action="store_true", help="chạy lại dù sổ ghi đã có trạng thái 'done'")
     ap.add_argument("--print-run-id", action="store_true", help="chỉ in mã lần chạy rồi thoát")
     # tối ưu

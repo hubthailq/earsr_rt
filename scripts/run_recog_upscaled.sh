@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bộ nhận dạng học trên ảnh đã phóng (phản biện ngày 04/11; TODO.md, việc O4).
+# Bộ nhận dạng học trên ảnh đã phóng.
 # Câu hỏi: mức tăng hạng 1 của SPAN tinh chỉnh so với bicubic có còn khi mỗi phương pháp có một bộ nhận dạng học trên
 # chính ảnh do nó phóng không (trong SR mặt, mức tăng kiểu này thường co lại)?
 # Công thức cố định trước, không dò: giống hệt ResNet-18 của bài (30 epoch, lr 3e-4, seed 0, cùng người học, cùng ảnh
@@ -8,7 +8,7 @@
 # gộp như bài). Mỗi bộ nhận dạng chỉ chấm phương pháp của nó, trên
 # EarVN1.0 (test, viewer) và AWEx. So với bộ nhận dạng chỉ học ảnh lớn: results/recog/resnet18 và awex_resnet18.
 # Dùng (từ gốc repo):  bash scripts/run_recog_upscaled.sh        (khoảng 1 đến 2 giờ trên GPU, ước lượng)
-# Thêm ngày 06/11 (phản biện thứ tám; TODO.md, việc V): cùng công thức cho bốn cách phóng có tính đến nén:
+# Thêm ngày 06/11: cùng công thức cho bốn cách phóng có tính đến nén:
 #   METHODS="bsrnet realesrnet fbcnn_span_ch48 rrdb_est" bash scripts/run_recog_upscaled.sh
 #   (rrdb_est = 5 lần chạy REV_rrdb-*_est_f?, gộp như SPAN est). Công thức cố định, không dò; ra số nào báo số đó.
 set -euo pipefail

@@ -1,4 +1,4 @@
-# Đo độ trễ trên iPhone bằng Xcode (việc 4 của docs/story-imavis.md)
+# Đo độ trễ trên iPhone bằng Xcode
 
 Thiết bị: iPhone 12 Pro Max (chip A14), iOS 18.7.8. Máy Mac: Xcode 26.3. Ảnh vào 68×48 (cao × rộng), mỗi lần một ảnh, ×4.
 Ngưỡng real-time của bài: trung vị không quá 33 ms.

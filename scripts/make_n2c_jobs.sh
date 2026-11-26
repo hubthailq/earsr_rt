@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Khối n2c (07/10/2026): tách phần "có nén" khỏi phần "đo từ dữ liệu" của suy giảm ước lượng (việc 1 của
-# docs/story-imavis.md). Hai nhánh huấn luyện mới, cùng công thức với khối n2 chạy lại (ảnh EarVN1.0 nhóm train 30%,
+# Khối n2c (07/10/2026): tách phần "có nén" khỏi phần "đo từ dữ liệu" của suy giảm ước lượng.
+# Hai nhánh huấn luyện mới, cùng công thức với khối n2 chạy lại (ảnh EarVN1.0 nhóm train 30%,
 # tăng cường độ sáng), chỉ khác kiểu suy giảm:
 #   jpegmix : bicubic rồi JPEG với đúng phân bố mức nén đã đo (configs/degrade_estimated.json); không mờ, không nhiễu;
 #   jpegu   : bicubic rồi JPEG, mức nén rút đều 60 đến 95; không dùng gì đo từ dữ liệu.

@@ -71,7 +71,7 @@ def put(name: str, value, why: str = "") -> None:
 
 
 
-# Kiểu vẽ chung cho mọi hình (06/11, người dùng muốn hình hiện đại hơn). Bảng màu đã qua validate_palette (CVD, tương phản):
+# Kiểu vẽ chung cho mọi hình. Bảng màu đã qua validate_palette (CVD, tương phản):
 # C0 xanh thép (bicubic, mốc tham chiếu), C1 hổ phách (EarVN1.0), C2 xanh ngọc, C3 đỏ gạch (AMI, mô hình của ta), C4 tím (AWEx).
 PAL = ["#3B6EA8", "#B97A00", "#2A9D8F", "#C8553D", "#7B5EA7", "#6B7280"]
 TINT = {"C3": "#F6E1DA", "grey": "#ECEDEF"}
@@ -262,7 +262,7 @@ def published(res: Path, out: Path) -> dict:
     put("AllQHighBelow", sum(v[0] for k, v in below.items() if k[2] == "bicjpeg93"))   # mọi bộ ảnh tai, mọi cỡ
     put("AllQHighSig", sum(v[1] for k, v in below.items() if k[2] == "bicjpeg93"))
     put("AllQHighCells", sum(16 for k in below if k[2] == "bicjpeg93"))
-    ae = [v for k, v in below.items() if k[0] == "AMI" and k[2] == "est"]   # suy giảm đo được trên AMI (05/11; TODO P6)
+    ae = [v for k, v in below.items() if k[0] == "AMI" and k[2] == "est"]   # suy giảm đo được trên AMI
     put("AmiEstSig", min(v[1] for v in ae) if ae else None, "ami-est")
     me = [cell(q, t, "est").gain.median() for t in (96, 144, 192) if len(cell(q, t, "est")) == 16]
     put("AmiEstMedMin", num(-max(me), 2) if me else None, "ami-est")
@@ -351,7 +351,8 @@ def trained(res: Path, out: Path, folds_path: Path) -> dict:
         for k in kinds:
             v = mean_of(P["ami"], a_[0], 144, k)
             s = num(v) if v is not None else "\\todo{--}"
-            cells.append("\\textbf{" + s + "}" if v is not None and abs(v - best[k]) < 5e-3 else s)
+            # in đậm khi số hiển thị bằng số lớn nhất của cột (trước 26/11 dùng sai khác < 0,005 dB, làm 35,67 và 35,68 cùng đậm)
+            cells.append("\\textbf{" + s + "}" if v is not None and s == num(best[k]) else s)
         rows.append(f"{a_[1]} & " + " & ".join(cells) + " \\\\")
     write(out / "tab_matrix.tex", "\n".join(rows) + "\n")
 
@@ -521,7 +522,7 @@ def recognition(res: Path, out: Path) -> None:
                             ("disp26/est", "bicubic", "DispEstVsBic")):
         put("Rec" + tag, gap("resnet18", arm_, base), why)
     put("RecEerEstVsBic", gap("resnet18", "span/est", "bicubic", "d_eer"), why)
-    # EER của ba mô hình học với bicubic so với phóng bicubic (phản biện 04/11, TODO P4): câu ở 6.4 nói khoảng tin cậy chứa 0
+    # EER của ba mô hình học với bicubic so với phóng bicubic: câu ở 6.4 nói khoảng tin cậy chứa 0
     t = Pd.get("resnet18")
     bt = [(PUB, "bicubic"), ("rrdb_psnr (published)", "bicubic"), ("span/bic", "bicubic")]
     if t is not None and all(k in t.index for k in bt):
@@ -576,7 +577,7 @@ def recognition_extra(res: Path, out: Path) -> None:
         for arm_, label in rows_spec:
             lo, hi = q.loc[(arm_, "low")], q.loc[(arm_, "high")]
             rows.append(f"{label} & {num(lo['rank1'], 1)} & {ci(lo, 'd_bic')} & {num(hi['rank1'], 1)} & {ci(hi, 'd_bic')} \\\\")
-        # ảnh dò ngoài hai nhóm (3 ảnh mức 65, 7 ảnh mức 81 đến 87): ghi trong chú thích Bảng 7 (phản biện 04/11, TODO P4)
+        # ảnh dò ngoài hai nhóm (3 ảnh mức 65, 7 ảnh mức 81 đến 87): ghi trong chú thích Bảng 7
         put("RecQMidN", int(R["meta"]["n_probe"] - q.loc[("bicubic", "low"), "n_probe"] - q.loc[("bicubic", "high"), "n_probe"]))
         for g, tag in (("low", "QLow"), ("high", "QHigh")):
             b = q.loc[("bicubic", g)]
@@ -637,7 +638,7 @@ def recognition_extra(res: Path, out: Path) -> None:
 
 
 def recog_synth(res: Path, out: Path) -> None:
-    """Ảnh dò tổng hợp từ ảnh lớn của người test (TODO.md, việc Q2b; scripts/run_recog_synth2.sh): cạnh ngắn 24 và 36 px,
+    """Ảnh dò tổng hợp từ ảnh lớn của người test: cạnh ngắn 24 và 36 px,
     sạch / JPEG 75 / suy giảm đo được, hai bộ nhận dạng. Chênh lệch rank-1 so với bicubic, theo nhánh huấn luyện."""
     base = res / "recog_synth2"
     recs, shorts, kinds = ("resnet18", "resnet50"), (24, 36), ("bic", "bicjpeg75", "est")
@@ -698,7 +699,7 @@ def recog_synth(res: Path, out: Path) -> None:
     def sig(rows):
         return sum(int(r["d_rank1_lo"] > 0 or r["d_rank1_hi"] < 0) for r in rows)
 
-    # mỗi nhóm câu ở mục 6.4 ứng với đúng các ô này của Bảng tab:recogsynth (phản biện 05/11: câu phải khớp từng ô)
+    # mỗi nhóm câu ở mục 6.4 ứng với đúng các ô này của Bảng tab:recogsynth
     groups = {"SynJpgBicTr": (24, ("bicjpeg75",), bic_tr, True), "SynJpgCmpTr": (24, ("bicjpeg75",), cmp_tr, False),
               "SynCleanBicTr": (24, ("bic",), bic_tr, False), "SynCleanJpgTr": (24, ("bic",), ("span/bicjpeg75",), True),
               "SynCleanCmpTrL": (36, ("bic",), cmp_tr, True), "SynCompCmpTrL": (36, ("bicjpeg75", "est"), cmp_tr, False)}
@@ -755,7 +756,7 @@ def natural_control(res: Path, out: Path) -> None:
             rows.append(f"DIV2K & {int(tier) // 4} & {n} & " + " & ".join(c) + " & -- \\\\")
     else:
         rows.append("DIV2K & \\todo{--} & \\todo{--} & " + " & ".join(["\\todo{--}"] * 6) + " \\\\")
-    # Bảng A.1 gộp ảnh tai và DIV2K (phản biện 04/11, TODO P3): các hàng AMI nằm ở tab_generality, không in lại ở đây
+    # Bảng A.1 gộp ảnh tai và DIV2K: các hàng AMI nằm ở tab_generality, không in lại ở đây
     write(out / "tab_natural.tex", "\n".join(rows) + "\n")
     small, large = stats.get(144), stats.get(max(stats)) if stats else None
     put("NatLargePx", max(stats) // 4 if stats else None, why)
@@ -873,7 +874,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
 
             cr, cq = crossing(np.arange(len(E)))
             bs = np.array([crossing(np.concatenate([idx[u] for u in rng.choice(us, len(us))])) for _ in range(400)])
-            # khoảng giữa hai mức đã đo chứa điểm đổi dấu (cột đầu của bảng; góp ý reviewer 06/11)
+            # khoảng giữa hai mức đã đo chứa điểm đổi dấu
             b_hi_ = min([q for q in qs if q > cq], default=np.nan) if cq == cq else np.nan
             b_lo_ = max([q for q in qs if q < cq], default=np.nan) if cq == cq else np.nan
             cross.append({"set": name, "px": t // 4, "n": len(E), "levels": len(qs), "ratio": cr, "b_lo": b_lo_, "b_hi": b_hi_,
@@ -933,8 +934,8 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         if tag != "All":
             put(f"CrossQ{tag}Min", int(round(X[sel].q.min())))
             put(f"CrossQ{tag}Max", int(round(X[sel].q.max())))
-    # Khoảng lưới đo chứa điểm đổi dấu (góp ý reviewer 06/11: số nội suy chính xác hơn dữ liệu cho phép; văn bản dùng
-    # hai mức đo kề nhau, bảng giữ số nội suy). Mức JPEG của benchmark: 60, 75, 85, 93.
+    # Khoảng lưới đo chứa điểm đổi dấu: số nội suy chính xác hơn dữ liệu cho phép, nên văn bản dùng
+    # hai mức đo kề nhau, bảng giữ số nội suy. Mức JPEG của benchmark: 60, 75, 85, 93.
     L = [60, 75, 85, 93]
     for tag, sel in (("Nat", X.set == "DIV2K"), ("Ami", X.set == "AMI")):
         lo_, hi_ = [l for l in L if l < X[sel].q.min()], [l for l in L if l > X[sel].q.max()]
@@ -945,7 +946,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         hl_ = Path(__file__).resolve().parent.parent / "paper" / "highlights.txt"
         if lo_ and hi_ and hl_.exists() and f"quality {lo_[-1]} and {hi_[0]}" not in hl_.read_text():
             print(f"CHÚ Ý: highlights.txt không còn khớp khoảng {lo_[-1]}–{hi_[0]} ({tag}); sửa highlights")
-    # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn (thêm cỡ 48 px ngày 05/11; TODO P6)
+    # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn
     A = X[X.set == "AMI"].sort_values("px")
     if not (np.all(np.diff(A.q) > 0) and np.all(np.diff(A.ratio) < 0)):
         print("CHÚ Ý: điểm đổi dấu trên AMI không còn dời đều theo cỡ ảnh; sửa câu ở mục 4.2 và phần mở đầu")
@@ -962,7 +963,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
                     f"{max(r['q_lo'], r['q_hi']):.1f}]}} & {num(r['ratio'], 2)} {{\\scriptsize[{num(r['ratio_lo'], 2)}, "
                     f"{num(r['ratio_hi'], 2)}]}} \\\\")
     write(out / "tab_crossover_full.tex", "\n".join(rows) + "\n")
-    # thân bài chỉ in khoảng mức đã đo; số nội suy ở phụ lục (phản biện thứ tám, 06/11)
+    # thân bài chỉ in khoảng mức đã đo; số nội suy ở phụ lục
     short = [" & ".join(r_.split(" & ")[:4]) + " \\\\" for r_ in rows]
     write(out / "tab_crossover.tex", "\n".join(short) + "\n")
     # ô ×2 duy nhất có sẵn: SwinIR-light ×2 trên AMI (đáp án 144 px, ảnh vào 72 px)
@@ -1012,7 +1013,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     f.savefig(fig / "fig_ratio.png", dpi=600)
     plt.close(f)
 
-    # Hình 1 (phản biện thứ tám, 06/11): điểm đổi dấu của ảnh tai và ảnh tự nhiên theo mức JPEG, cùng phân bố mức JPEG
+    # Hình 1: điểm đổi dấu của ảnh tai và ảnh tự nhiên theo mức JPEG, cùng phân bố mức JPEG
     # của ảnh tai nhỏ thật (configs/degrade_estimated.json, đọc từ bảng lượng tử của file). Trung vị qua 16 mô hình.
     jq = json.loads(Path("configs/degrade_estimated.json").read_text())["jpeg_q"]
     # Hình 1 theo kiểu Hình 4 (06/11): (a) mức lợi theo mức JPEG ở 36 px, đường liền có chấm tròn, chú giải trong ô, đường
@@ -1072,7 +1073,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
 
 
 def codec_control(res: Path, out: Path) -> None:
-    """Chuẩn nén khác JPEG (TODO.md, việc Q1): WebP và AVIF trên AMI 36 px, so với JPEG ở cùng ảnh.
+    """Chuẩn nén khác JPEG: WebP và AVIF trên AMI 36 px, so với JPEG ở cùng ảnh.
     Với mỗi chuẩn nén và mức chất lượng: E_c/E_i, trung vị phần hơn bicubic, số mô hình kém bicubic, hệ số b (phương trình
     phân tích sai số); rồi tỉ số và mức chất lượng tại đó phần hơn đổi dấu, kèm khoảng tin cậy bootstrap theo người."""
     codecs = (("JPEG", "Jpeg", "t2", "bicjpeg", (93, 85, 75, 60)), ("WebP", "Webp", "codec", "bicwebp", (95, 90, 85, 75, 60)),
@@ -1148,7 +1149,7 @@ def codec_control(res: Path, out: Path) -> None:
 
 
 def seeds(res: Path, folds_path: Path) -> None:
-    """Dao động do seed huấn luyện (TODO.md, việc Q3): fold 1, ba nhánh SPAN, seed 1 (lần chạy cuối), 101 và 102."""
+    """Dao động do seed huấn luyện: fold 1, ba nhánh SPAN, seed 1 (lần chạy cuối), 101 và 102."""
     keys = ("SeedMaxRange", "SeedMedRange", "SeedCells", "SeedDiffs", "SeedFlips", "SeedMinDiff")
     sets = ("ami", "earvn", "awex")
     if not all((res / "seeds" / s).is_dir() for s in sets):
@@ -1281,7 +1282,7 @@ REV_COMP = ("bicjpeg93", "bicjpeg85", "bicjpeg75", "est")        # các kiểu �
 
 
 def review(res: Path, out: Path) -> None:
-    """Mốc cho vòng phản biện (scripts/run_review.sh): FBCNN rồi phóng; BSRNet, Real-ESRNet; RRDB tinh chỉnh (nếu đã có).
+    """Mốc bổ sung (scripts/run_review.sh): FBCNN rồi phóng; BSRNet, Real-ESRNet; RRDB tinh chỉnh (nếu đã có).
 
     Mọi phép so ghép cặp tính trên các ảnh mà cả hai phương pháp đều có (mô hình tự huấn luyện trên AMI chỉ có ảnh của
     người test các fold đã chạy)."""
@@ -1379,7 +1380,7 @@ def review(res: Path, out: Path) -> None:
 
     # Độ trễ trong bảng: lấy từ lượt đo của Bảng 1 (latency_local.csv) cho mọi mô hình có ở đó; các mô hình kiến trúc RRDB
     # (BSRNet, Real-ESRNet) dùng chung số của RRDB như Hình 7. Chỉ FBCNN lấy từ lượt đo sau (latency_review.csv). Hai lượt
-    # cho RRDB 13,39 và 13,21 ms: dao động giữa các lượt, không in hai số cho cùng một kiến trúc (phản biện 04/11, TODO P1).
+    # cho RRDB 13,39 và 13,21 ms: dao động giữa các lượt, không in hai số cho cùng một kiến trúc.
     loc = pd.read_csv(res / "latency_local.csv")
     loc = loc[(loc.input_h == 68) & (loc.input_w == 48) & (loc.device == "cuda")].set_index("name")
 
@@ -1428,7 +1429,7 @@ def review(res: Path, out: Path) -> None:
 def fid_recog(res: Path, out: Path, fig: Path) -> None:
     """Độ trung thực trên ảnh EarVN1.0 mô phỏng (ảnh vào 'est', 24 px) so với hạng 1 trên ảnh dò thật, mọi phương pháp có cả
     hai số: tương quan hạng theo ba nhóm (tất cả; bỏ GAN; chỉ các mô hình L1 do bài tinh chỉnh). Kèm hình đánh đổi độ trễ CPU
-    điện thoại và hạng 1. Phân tích làm sau khi có kết quả (phản biện gợi ý), nên trong bài gọi là mô tả."""
+    điện thoại và hạng 1. Phân tích làm sau khi có kết quả, nên trong bài gọi là mô tả."""
     from scipy.stats import spearmanr
 
     why = "fidrecog"
@@ -1529,7 +1530,7 @@ def gt_quality(res: Path, bench: Path = Path("data/bench"), raw: Path = Path("da
     put("GtEarvnQMin", d["min"] if d else None, "gt")
     put("GtEarvnQMax", d["max"] if d else None, "gt")
     put("GtEarvnQMed", int(d["median"]) if d else None, "gt")
-    # độ khối 8×8 còn sót ở đáp án AMI (phản biện 04/11): ảnh gốc JPEG 90 là đối chứng dương
+    # độ khối 8×8 còn sót ở đáp án AMI: ảnh gốc JPEG 90 là đối chứng dương
     b = json.loads(f.read_text()).get("ami_blockiness") if f.exists() else None
     for key, mac in (("ami_originals_jpeg90", "BlockAmiRaw"), ("ami_gt_hr96", "BlockAmiGtS"),
                      ("ami_gt_hr144", "BlockAmiGtM"), ("ami_lr36_bicjpeg75", "BlockAmiLrQLow"),
@@ -1538,7 +1539,7 @@ def gt_quality(res: Path, bench: Path = Path("data/bench"), raw: Path = Path("da
 
 
 def mechanism(res: Path, fig: Path) -> None:
-    """Phần dư nén theo vị trí trong khối 8×8 và theo tần số (scripts/analyze_blocks.py; TODO.md, việc O1)."""
+    """Phần dư nén theo vị trí trong khối 8×8 và theo tần số."""
     why = "mechanism"
     keys = ["MechBoundQLow", "MechBoundQHigh", "MechBoundShare", "MechBoundFrac", "MechBoundDivQLow",
             "MechNearNyq", "MechAboveNyq", "MechAboveNyqEc", "MechNearNyqDiv", "MechAboveNyqDiv"]
@@ -1634,8 +1635,8 @@ UP_EST = [f"N2_span-zero+xearvn_pub_rand_x4_hrall_est_f{k}" for k in range(1, 6)
 
 
 def recog_upscaled(res: Path, out: Path) -> None:
-    """Bộ nhận dạng học thêm ảnh nhỏ thật đã phóng bằng đúng phương pháp được chấm (scripts/run_recog_upscaled.sh;
-    TODO.md, việc O4). So với ResNet-18 chỉ học ảnh lớn, trên cùng ảnh dò, cùng lần chạy SPAN (5 fold, gộp như bài)."""
+    """Bộ nhận dạng học thêm ảnh nhỏ thật đã phóng bằng đúng phương pháp được chấm (scripts/run_recog_upscaled.sh).
+    So với ResNet-18 chỉ học ảnh lớn, trên cùng ảnh dò, cùng lần chạy SPAN (5 fold, gộp như bài)."""
     why = "recog-up"
     meth = (("bicubic", ["bicubic"]), ("span_ch48", ["span_ch48"]), ("est", UP_EST))
     sets = (("earvn", "resnet18", "Earvn", "EarVN1.0"), ("awex", "awex_resnet18", "Awex", "AWEx"))
@@ -1656,7 +1657,7 @@ def recog_upscaled(res: Path, out: Path) -> None:
             rows.append(f"{label} & \\todo{{--}} & & & & \\\\")
             continue
         H = {("up", m): hits(f) for m, f in up.items()} | {("lg", m): hits(f) for m, f in lg.items()}
-        # giao thức chính (bộ nhận dạng riêng cho mỗi cách phóng) đứng trước; góp ý reviewer 06/11
+        # giao thức chính (bộ nhận dạng riêng cho mỗi cách phóng) đứng trước
         for kind_, lab_ in (("up", "large and upscaled small images"), ("lg", "large images only")):
             a, subj = H[(kind_, "est")]
             b, _ = H[(kind_, "bicubic")]
@@ -1699,7 +1700,7 @@ UP_ALL = (("bicubic", ["bicubic"], "Bicubic", "Bic"), ("span_ch48", ["span_ch48"
 
 def recog_upscaled_all(res: Path, out: Path) -> None:
     """Giao thức chính (mỗi cách phóng một bộ nhận dạng học thêm ảnh nhỏ thật đã phóng bằng chính nó) cho cả bốn cách
-    phóng có tính đến nén (phản biện thứ tám, 06/11; TODO.md, việc V; scripts/run_recog_upscaled.sh với METHODS=...).
+    phóng có tính đến nén.
     Ghép cặp theo ảnh dò như recog_upscaled. Chưa có kết quả thì in một dòng và để macro TBD; bài chưa dùng bảng này."""
     why = "recog-up-all"
     rows, ok = [], True
@@ -1756,7 +1757,7 @@ def recog_upscaled_all(res: Path, out: Path) -> None:
         elif any(e.lo > 0 for e in [D[(t, "bicubic")] for t in ("Rrdb", "Bsr", "Resr", "Fb", "Pub", "Est")]):
             print("CHÚ Ý: có cách phóng tăng có ý nghĩa trên AWEx theo giao thức chính; sửa mục 6.4")
     if not ok:
-        print("recog_upscaled_all: chưa đủ kết quả giao thức chính cho bốn cách phóng mới (TODO.md, việc V)")
+        print("recog_upscaled_all: chưa đủ kết quả giao thức chính cho bốn cách phóng mới")
         write(out / "tab_recogup_all.tex", "\\todo{--} \\\\\n")
         return
     by = {}
@@ -1768,6 +1769,58 @@ def recog_upscaled_all(res: Path, out: Path) -> None:
     write(out / "tab_recogup_all.tex", "\n".join(lines) + "\n")
 
 
+def recog_curves_tab(res: Path, out: Path) -> None:
+    """CMC và TAR@FAR của bảy cách phóng theo giao thức chính, từ ma trận điểm đã lưu
+    (scripts/recog_curves.py). Không chạy lại mạng. Bảng phụ lục tab_recog_curves.tex và vài macro RecCurve*."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import recog_curves as rc
+
+    why = "recog-curves"
+    data, ok = {}, True
+    for m, cs, name, tag in UP_ALL:
+        d = res / "recog_up" / f"earvn_{m}"
+        pat = "N2_*.npy" if m == "est" else ("REV_*.npy" if m == "rrdb_est" else f"{m}.npy")
+        if not (d / "meta.json").exists() or not list(d.glob(pat)):
+            ok = False
+            break
+        data[tag] = (name, rc.load(d, pat))
+    names = ["RecCurveCmcFiveBic", "RecCurveCmcFiveEst", "RecCurveCmcFiveGain", "RecCurveCmcFiveGainLo",
+             "RecCurveCmcFiveGainHi", "RecCurveTarBic", "RecCurveTarEst", "RecCurveTarAltMin", "RecCurveTarAltMax"]
+    if not ok:
+        for n_ in names:
+            put(n_, None, why)
+        write(out / "tab_recog_curves.tex", "\\todo{--} \\\\\n")
+        return
+    subj0 = data["Bic"][1][2]
+    for t, (_, (_, _, ps)) in data.items():
+        if not np.array_equal(ps, subj0):
+            raise SystemExit(f"recog_curves_tab: thứ tự ảnh dò của {t} không khớp bicubic")
+    R = {t: rc.per_probe(m_, ti, 10) for t, (_, (m_, ti, _)) in data.items()}
+    tar = {t: {f: 100 * rc.tar_at_far(g, i, f) for f in (0.01, 0.001)} for t, (_, g, i) in R.items()}
+    rows = []
+    for t, (name, _) in data.items():
+        h = R[t][0]
+        cmc = [100 * float(h[k - 1].mean()) for k in (1, 5, 10)]
+        rows.append(f"{name} & " + " & ".join(f"{v:.1f}" for v in cmc) + f" & {tar[t][0.01]:.1f} & {tar[t][0.001]:.1f} \\\\")
+    rows.insert(3, "\\midrule")
+    write(out / "tab_recog_curves.tex", "\n".join(rows) + "\n")
+    e = paired_diff(100 * R["Est"][0][4], 100 * R["Bic"][0][4], subj0, n_boot=1000)
+    put("RecCurveCmcFiveBic", f"{100 * R['Bic'][0][4].mean():.1f}")
+    put("RecCurveCmcFiveEst", f"{100 * R['Est'][0][4].mean():.1f}")
+    put("RecCurveCmcFiveGain", num(e.point, 1))
+    put("RecCurveCmcFiveGainLo", num(e.lo, 1))
+    put("RecCurveCmcFiveGainHi", num(e.hi, 1))
+    put("RecCurveTarBic", f"{tar['Bic'][0.01]:.1f}")
+    put("RecCurveTarEst", f"{tar['Est'][0.01]:.1f}")
+    alt = [tar[t][0.01] for t in ("Rrdb", "Bsr", "Resr", "Fb")]
+    put("RecCurveTarAltMin", f"{min(alt):.1f}")
+    put("RecCurveTarAltMax", f"{max(alt):.1f}")
+    if not e.lo > 0:
+        print("CHÚ Ý: mức tăng CMC hạng 5 của SPAN est không còn có ý nghĩa; sửa câu ở mục 6.5")
+    if not tar["Est"][0.01] > tar["Bic"][0.01]:
+        print("CHÚ Ý: TAR@FAR 1% của SPAN est không còn hơn bicubic; sửa câu ở mục 6.5")
+
+
 ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
                ("shiftjpeg75", "Same, block grid offset 1--7 px"), ("dbljpeg93to75", "JPEG 93 with offset grid, then 75"),
                ("jpeg75bic", "JPEG 75, then downsize"), ("bicjpeg93", "Downsize, then JPEG 93 (as in the paper)"),
@@ -1775,7 +1828,7 @@ ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicj
 
 
 def order_control(res: Path, out: Path, folds_path: Path = Path("splits/ami_5fold.json")) -> None:
-    """Đối chứng thứ tự suy giảm (scripts/run_order_control.sh; TODO.md, việc O2): AMI, 36 px."""
+    """Đối chứng thứ tự suy giảm: AMI, 36 px."""
     why = "order"
     names = ["OrdShiftBelow", "OrdShiftGapMin", "OrdShiftGapMax", "OrdDblBelow", "OrdDblGapMin", "OrdDblGapMax",
              "OrdChromaMax", "OrdPreGainMin", "OrdPreGainMax", "OrdShiftHighBelow", "OrdEstShiftMin", "OrdEstShiftMax",
@@ -1834,7 +1887,7 @@ def order_control(res: Path, out: Path, folds_path: Path = Path("splits/ami_5fol
 
 
 def selector(res: Path) -> None:
-    """Luật chọn lúc chạy giữa bicubic và SPAN công bố (scripts/analyze_selector.py; TODO.md, việc N)."""
+    """Luật chọn lúc chạy giữa bicubic và SPAN công bố."""
     why = "selector"   # chưa chạy scripts/analyze_selector.py
     f = res / "selector" / "comparisons_span_ch48.json"
     k = json.loads(f.read_text()) if f.exists() else None
@@ -1871,7 +1924,7 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
     fig.mkdir(parents=True, exist_ok=True)
     q, P = pub["q"], tr["P"]["ami"]
     kinds = ["bicjpeg60", "bicjpeg75", "bicjpeg85", "bicjpeg93", "bic"]
-    # Hình 2 theo kiểu Hình 4 (06/11, người dùng muốn chung định dạng): hai ô (a)/(b), đường liền có chấm tròn, chú giải
+    # Hình 2 theo kiểu Hình 4: hai ô (a)/(b), đường liền có chấm tròn, chú giải
     # trong ô, đường chấm mảnh cho bicubic. Trung vị 16 mô hình công bố (liền), mô hình thấp nhất và cao nhất (đứt, mảnh).
     f, axes = plt.subplots(1, 2, figsize=(6.6, 2.7), sharey=True)
     labs = ["60", "75", "85", "93", "clean"]
@@ -1995,6 +2048,7 @@ def main(argv=None) -> None:
     mechanism(res, fig)
     recog_upscaled(res, out)
     recog_upscaled_all(res, out)
+    recog_curves_tab(res, out)
     fid_recog(res, out, fig)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))
@@ -2003,7 +2057,7 @@ def main(argv=None) -> None:
     lines += [f"\\newcommand{{\\{k}}}{{{v}}}" for k, v in sorted(M.items())]
     write(out / "numbers.tex", "\n".join(lines) + "\n")
     print(f"đã ghi {len(M)} macro vào {out / 'numbers.tex'}; fold đã gộp trên AMI: {tr['folds']}")
-    print(f"còn {len(TODO)} macro chưa có số:")
+    print(f"còn {len} macro chưa có số:")
     for t in TODO:
         print("  -", t)
 

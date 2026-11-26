@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tóm tắt kết quả của scripts/run_review.sh (các mốc thêm cho vòng phản biện): PSNR-Y trung bình của từng phương pháp
+"""Tóm tắt kết quả của scripts/run_review.sh: PSNR-Y trung bình của từng phương pháp
 và chênh lệch ghép cặp so với bicubic và so với SPAN nhánh est, theo bộ dữ liệu, cỡ ảnh và kiểu ảnh vào.
 
   python scripts/summarize_review.py --results results        # ghi results/rev_summary/summary.md và fidelity.csv
@@ -86,7 +86,7 @@ def main(argv=None) -> None:
     T = pd.DataFrame(rows)
     T.to_csv(out / "fidelity.csv", index=False)
     rank = {a_: i for i, a_ in enumerate(ORDER)}
-    md = ["# Các mốc thêm cho vòng phản biện: độ trung thực (PSNR-Y, dB)", "",
+    md = ["# Các mốc bổ sung: độ trung thực (PSNR-Y, dB)", "",
           "Chênh lệch ghép cặp kèm khoảng tin cậy 95% (bootstrap theo người); dấu * là khoảng không chứa 0; "
           "n là số ảnh chung của hai phương pháp. Cột fold: các fold đã có của mô hình tự huấn luyện.", ""]
     for (ds, tier), g in T.groupby(["dataset", "tier"], sort=False):

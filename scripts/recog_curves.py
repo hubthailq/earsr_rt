@@ -1,4 +1,4 @@
-"""Đường CMC và TAR@FAR từ ma trận điểm đã lưu của recog_eval.py (góp ý của thầy 24/11/2026, mục 7; TODO.md, W10, W11).
+"""Đường CMC và TAR@FAR từ ma trận điểm đã lưu của recog_eval.py.
 
 Mỗi thư mục kết quả của recog_eval.py có ``meta.json`` (danh sách người đăng ký, theo thứ tự cột), ``probes.csv`` (người
 của từng ảnh dò, theo thứ tự hàng) và một file ``<tên>.npy`` cho mỗi cách phóng: ma trận điểm cosine ảnh dò × người

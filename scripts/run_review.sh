@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Các mốc thêm cho vòng phản biện (chốt ngày 08/10/2026, trước khi chạy; xem mục "Mốc cho vòng phản biện" của TODO.md):
+# Các mốc bổ sung:
 #   1.  Khử nén rồi mới phóng: FBCNN (chế độ mù) rồi bicubic, và FBCNN rồi SPAN công bố   fbcnn_bicubic, fbcnn_span_ch48
 #   2a. RRDB học bằng suy giảm ngoài thực tế, bản tối ưu độ trung thực                    bsrnet, realesrnet
 #   2b. RRDB tinh chỉnh với công thức của SPAN nhánh est (nếu đã có lần chạy runs/REV_*)  scripts/make_rrdb_jobs.sh

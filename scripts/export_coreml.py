@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Xuất mô hình sang Core ML (.mlpackage) để đo độ trễ trên iPhone bằng Xcode (việc 4 của docs/story-imavis.md).
+"""Xuất mô hình sang Core ML (.mlpackage) để đo độ trễ trên iPhone bằng Xcode.
 
   .venv-coreml/bin/python scripts/export_coreml.py                       # các mốc mặc định, trọng số công bố
   .venv-coreml/bin/python scripts/export_coreml.py --runs runs/N2_span-zero+xearvn_pub_rand_x4_hrall_est_f2

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# LẦN CHẠY CUỐI (việc 3 của docs/story-imavis.md): huấn luyện trên hai fold giữ kín, 1 và 5.
+# LẦN CHẠY CUỐI: huấn luyện trên hai fold giữ kín, 1 và 5.
 # Đây là lần đầu và lần duy nhất dùng hai fold này. Danh sách nhánh được chốt ngày 07/10/2026, trước khi chạy, và giống
 # hệt các fold 2, 3, 4 (không thêm, không bớt, không đổi siêu tham số):
 #   SPAN và DISP × (bic, generic, bicjpeg75, est), có ảnh EarVN1.0 nhóm train          8 lần mỗi fold
