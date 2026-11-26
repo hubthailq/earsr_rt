@@ -70,6 +70,27 @@ def put(name: str, value, why: str = "") -> None:
         M[name] = str(value)
 
 
+
+# Kiểu vẽ chung cho mọi hình (06/11, người dùng muốn hình hiện đại hơn). Bảng màu đã qua validate_palette (CVD, tương phản):
+# C0 xanh thép (bicubic, mốc tham chiếu), C1 hổ phách (EarVN1.0), C2 xanh ngọc, C3 đỏ gạch (AMI, mô hình của ta), C4 tím (AWEx).
+PAL = ["#3B6EA8", "#B97A00", "#2A9D8F", "#C8553D", "#7B5EA7", "#6B7280"]
+TINT = {"C3": "#F6E1DA", "grey": "#ECEDEF"}
+
+
+def fig_style(plt) -> None:
+    from cycler import cycler
+    plt.rcParams.update({
+        "font.family": "sans-serif", "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+        "font.size": 8, "axes.labelsize": 8, "axes.titlesize": 8.5, "xtick.labelsize": 7, "ytick.labelsize": 7,
+        "axes.spines.top": False, "axes.spines.right": False, "axes.edgecolor": "#9CA3AF", "axes.linewidth": 0.6,
+        "xtick.color": "#4B5563", "ytick.color": "#4B5563", "xtick.major.width": 0.6, "ytick.major.width": 0.6,
+        "xtick.major.size": 2.5, "ytick.major.size": 2.5, "axes.labelcolor": "#1F2937", "text.color": "#1F2937",
+        "axes.grid": True, "axes.grid.axis": "y", "grid.color": "#E5E7EB", "grid.linewidth": 0.6, "axes.axisbelow": True,
+        "legend.frameon": False, "legend.fontsize": 7, "lines.linewidth": 1.6, "lines.markersize": 4,
+        "lines.solid_capstyle": "round", "savefig.facecolor": "white", "axes.facecolor": "white",
+        "axes.prop_cycle": cycler(color=PAL), "mathtext.fontset": "dejavusans"})
+
+
 def est_cell(e, nd: int = 2) -> str:
     """Chênh lệch ghép cặp kèm khoảng tin cậy, cho ô bảng."""
     if e is None:
@@ -961,23 +982,73 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    fig_style(plt)
 
-    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False})
-    f, ax = plt.subplots(figsize=(5.2, 3.0))
+    # Hình 5 theo định dạng Hình 4 (06/11): (a) mức lợi theo mức JPEG, (b) theo tỉ số E_c/E_i; màu chỉ cho bộ ảnh, mỗi cặp
+    # (bộ ảnh, cỡ ảnh vào) là một đường mảnh nối các mức JPEG. Dải xám ở (b): các tỉ số tại điểm đổi dấu (bảng phụ lục).
     col = {"AMI": "C3", "EarVN1.0": "C1", "AWEx": "C4", "DIV2K": "0.35"}
-    mk = {60: "v", 75: "o", 85: "s", 93: "^"}
-    ax.axvspan(X.ratio.min(), X.ratio.max(), color="0.9", lw=0, zorder=0)
-    for (st, qq), g in R.groupby(["set", "q"]):
-        ax.scatter(g.ratio, g.gain, s=16 + g.px / 6, c=col[st], marker=mk.get(qq, "x"), alpha=0.85, linewidths=0, zorder=2)
-    ax.axhline(0, color="C0", lw=0.9, ls="--", zorder=1)
-    ax.set_xscale("log")
-    ax.set_xlabel("Compression error / interpolation error ($E_c/E_i$)")
-    ax.set_ylabel("Median PSNR gain over bicubic (dB)")
-    h1 = [plt.Line2D([], [], marker="o", ls="", color=c, label=("ear: " if n != "DIV2K" else "natural: ") + n) for n, c in col.items()]
-    h2 = [plt.Line2D([], [], marker=v, ls="", color="k", label=f"JPEG {k}") for k, v in sorted(mk.items(), reverse=True)]
-    ax.legend(handles=h1 + h2, frameon=False, fontsize=6.5, ncol=2, loc="upper right")
+    lab = {"AMI": "ear: AMI", "EarVN1.0": "ear: EarVN1.0", "AWEx": "ear: AWEx", "DIV2K": "natural: DIV2K"}
+    f, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.7), sharey=True)
+    a2.axvspan(X.ratio.min(), X.ratio.max(), color="0.9", lw=0, zorder=0)
+    for (st, px_), g in R.groupby(["set", "px"]):
+        g = g.sort_values("q", ascending=False)
+        for ax_, xv in ((a1, g.q), (a2, g.ratio)):
+            ax_.plot(xv, g.gain, color=col[st], lw=0.9, alpha=0.85, marker="o", ms=3, zorder=2)
+    for ax_ in (a1, a2):
+        ax_.axhline(0, color="0.6", lw=0.7, ls=":")
+    a1.invert_xaxis()
+    a1.set_xticks([93, 85, 75, 60])
+    a1.set_xlabel("JPEG quality of the input", fontsize=7)
+    a1.set_ylabel("Median PSNR gain over bicubic (dB)", fontsize=7)
+    a1.set_title("(a) Against the JPEG quality", fontsize=8)
+    a2.set_xscale("log")
+    a2.set_xlabel("Compression error / interpolation error ($E_c/E_i$)", fontsize=7)
+    a2.set_title("(b) Against the error ratio", fontsize=8)
+    a2.text(np.sqrt(X.ratio.min() * X.ratio.max()), a2.get_ylim()[1] * 0.97, "sign change", ha="center", va="top",
+            fontsize=6, color="0.4")
+    h = [plt.Line2D([], [], color=c, lw=0.9, marker="o", ms=3, label=lab[n]) for n, c in col.items()]
+    a1.legend(handles=h, fontsize=6, frameon=False, handlelength=3, loc="upper right")
     f.tight_layout()
     f.savefig(fig / "fig_ratio.png", dpi=600)
+    plt.close(f)
+
+    # Hình 1 (phản biện thứ tám, 06/11): điểm đổi dấu của ảnh tai và ảnh tự nhiên theo mức JPEG, cùng phân bố mức JPEG
+    # của ảnh tai nhỏ thật (configs/degrade_estimated.json, đọc từ bảng lượng tử của file). Trung vị qua 16 mô hình.
+    jq = json.loads(Path("configs/degrade_estimated.json").read_text())["jpeg_q"]
+    # Hình 1 theo kiểu Hình 4 (06/11): (a) mức lợi theo mức JPEG ở 36 px, đường liền có chấm tròn, chú giải trong ô, đường
+    # chấm mảnh cho bicubic, khoảng đổi dấu tô rất nhạt; (b) phân bố mức JPEG của ảnh tai nhỏ thật.
+    f, (ax, bx) = plt.subplots(1, 2, figsize=(6.6, 2.7), gridspec_kw={"width_ratios": [1.25, 1]})
+    for ax_ in (ax, bx):
+        ax_.axvspan(85, 93, color=col["AMI"], alpha=0.08, lw=0, zorder=0)
+        ax_.axvspan(60, 75, color="0.35", alpha=0.08, lw=0, zorder=0)
+    lab = {"AMI": "ear images (AMI)", "DIV2K": "natural images (DIV2K)"}
+    for st in ("AMI", "DIV2K"):
+        g = R[(R.set == st) & (R.px == 36)].sort_values("q")
+        ax.plot(g.q, g.gain, color=col[st], lw=1.4, marker="o", ms=3.5, label=f"{lab[st]}, 36-pixel inputs")
+    ax.axhline(0, color="0.6", lw=0.7, ls=":")
+    top_ = ax.get_ylim()[1]
+    ax.text(89, top_, "sign change,\nears", ha="center", va="top", fontsize=6, color=col["AMI"])
+    ax.text(67.5, top_, "sign change,\nnatural images", ha="center", va="top", fontsize=6, color="0.35")
+    ax.set_ylabel("Median PSNR gain over bicubic (dB)", fontsize=7)
+    ax.legend(fontsize=6, frameon=False, handlelength=3, loc="upper left", bbox_to_anchor=(0.0, 0.86))
+    ax.set_xlabel("JPEG quality of the input", fontsize=7)
+    ax.set_xlim(58, 95)
+    ax.set_xticks([60, 75, 85, 93])
+    ax.set_title("(a) Gain of the 16 published models", fontsize=8)
+    qs_ = [int(q_) for q_, _ in jq]
+    sh_ = [100 * float(v_) for _, v_ in jq]
+    bx.bar(qs_, sh_, width=1.2, color=col["EarVN1.0"], zorder=2)
+    for q_, v_ in zip(qs_, sh_):
+        if v_ > 10:
+            bx.text(q_, v_ + 3, f"{v_:.0f}%", ha="center", fontsize=6)
+    bx.set_ylim(0, 72)
+    bx.set_ylabel("Share of images (%)", fontsize=7)
+    bx.set_xlabel("JPEG quality of the input", fontsize=7)
+    bx.set_title("(b) Real small ear images (EarVN1.0)", fontsize=8)
+    bx.set_xlim(58, 95)
+    bx.set_xticks([60, 65, 70, 75, 80, 85, 90, 93])
+    f.tight_layout(w_pad=1.5)
+    f.savefig(fig / "fig_overview.png", dpi=600)
     plt.close(f)
 
     # phần dư tuyệt đối (b-1)E_c theo mức nén, cùng phần tiết kiệm (1-a)E_i (đường ngang), đều chia cho E_i
@@ -1033,18 +1104,21 @@ def codec_control(res: Path, out: Path) -> None:
     rows, nlev = [], 0
     for name, tg, per, pre, qs in codecs:
         pts = {q: np.stack([mse(per, m, f"{pre}{q}")[0].loc[ei.index].to_numpy() for m in ["bicubic"] + PSNR16], 1) for q in qs}
-        bs_all = []
+        bs_all, rr_ = [], []
         for i, q in enumerate(qs):
             J = pts[q]
             Ec = J[:, 0].mean() - E.mean()
             b_ = (J[:, 1:].mean(0) - a_ * E.mean()) / Ec
             bs_all += b_.tolist()
+            rr_.append(Ec / E.mean())
             p = -10 * np.log10(J)
             g = p[:, 1:].mean(0) - p[:, 0].mean()
             rows.append(f"{name if i == 0 else ''} & {q} & {num(Ec / E.mean(), 2)} & {num(float(np.median(g)), 2, True)} & "
                         f"{int((g < 0).sum())} & {num(float(np.median(b_)), 2)} \\\\")
             nlev += 1
         rows[-1] += "\n\\addlinespace" if tg != "Avif" else ""
+        put(f"Codec{tg}RatioMin", num(min(rr_), 2))   # dải E_c/E_i thực có của từng codec (kiểm 06/11)
+        put(f"Codec{tg}RatioMax", num(max(rr_), 2))
 
         def crossing(rr, qs=qs, pts=pts):
             e0, r, g = E[rr].mean(), [], []
@@ -1181,6 +1255,9 @@ def latency_ios(res: Path, out: Path, lat: pd.DataFrame) -> None:
             put(f"LatPhone{tag}{t2}", num(v[(name, cu)], 1) if (name, cu) in v else None, why)
     ex = res / "coreml_export.json"   # scripts/export_coreml.py: phép so đầu ra Core ML với PyTorch
     ce = {x["name"]: x for x in json.loads(ex.read_text())} if ex.exists() else {}
+    fid_ = [x["psnr_vs_torch_db"] for n_, x in ce.items() if n_ in PSNR16 and "psnr_vs_torch_db" in x]
+    put("CoremlPsnrFidMin", num(min(fid_), 1) if fid_ else None, why)   # mọi mô hình độ trung thực, 16 bit (kiểm 06/11)
+    put("CoremlPsnrBsrgan", num(ce["bsrgan"]["psnr_vs_torch_db"], 1) if "bsrgan" in ce else None, why)
     for name, tag in (("span_ch48", "Span"), ("disp26", "Disp"), ("fbcnn_span_ch48", "FbHalf")):
         put("CoremlPsnr" + tag, num(ce[name]["psnr_vs_torch_db"], 1) if name in ce and "psnr_vs_torch_db" in ce[name] else None, why)
     for cu, t2 in (("cpu", "Cpu"), ("all", "All")):   # BSRGAN chậm hơn SPAN bao nhiêu lần trên điện thoại
@@ -1407,6 +1484,7 @@ def fid_recog(res: Path, out: Path, fig: Path) -> None:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    fig_style(plt)
 
     f, axes = plt.subplots(1, 2, figsize=(6.6, 3.3), sharey=True)
     for ax, tag, title in zip(axes, ("resnet18", "resnet50"), ("Ear-R18", "Ear-R50")):
@@ -1515,6 +1593,7 @@ def mechanism(res: Path, fig: Path) -> None:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    fig_style(plt)
 
     col = {"ami": "C3", "div2k": "0.35"}
     lab = {"ami": "AMI", "div2k": "DIV2K"}
@@ -1653,6 +1732,29 @@ def recog_upscaled_all(res: Path, out: Path) -> None:
                 put(f"RecAll{tag}{t}{k}", f"{est_cell(e, 1)}")
                 cells.append(est_cell(e, 1))
             rows.append((label, name, cells))
+        # số rời cho văn bản: mức tăng của ba phương án công bố và chênh lệch với SPAN est (cảnh báo nếu ý nghĩa đổi)
+        D = {}
+        for m, _, _, t in UP_ALL:
+            for ref_ in ("bicubic", "est"):
+                if m not in (ref_, "bicubic"):
+                    D[(t, ref_)] = paired_diff(100 * H[m][0], 100 * H[ref_][0], subj, n_boot=1000)
+        alt = [D[(t, "bicubic")] for t in ("Bsr", "Resr", "Fb")]
+        put(f"RecAll{tag}AltGainMin", num(min(e.point for e in alt), 1))
+        put(f"RecAll{tag}AltGainMax", num(max(e.point for e in alt), 1))
+        put(f"RecAll{tag}AltRankMin", f"{min(100 * H[m][0].mean() for m in ('bsrnet', 'realesrnet', 'fbcnn_span_ch48')):.1f}")
+        put(f"RecAll{tag}AltRankMax", f"{max(100 * H[m][0].mean() for m in ('bsrnet', 'realesrnet', 'fbcnn_span_ch48')):.1f}")
+        vs = [D[(t, "est")] for t in ("Rrdb", "Bsr", "Resr", "Fb")]
+        put(f"RecAll{tag}VsEstMin", num(min(e.point for e in vs), 1, True))
+        put(f"RecAll{tag}VsEstMax", num(max(e.point for e in vs), 1, True))
+        r_ = D[("Rrdb", "bicubic")]
+        put(f"RecAll{tag}RrdbGain", num(r_.point, 1))
+        put(f"RecAll{tag}RrdbGainLo", num(r_.lo, 1))
+        put(f"RecAll{tag}RrdbGainHi", num(r_.hi, 1))
+        if tag == "Earvn":
+            if any(e.lo > 0 for e in alt) or not r_.lo > 0 or any(e.lo > 0 or e.hi < 0 for e in vs):
+                print("CHÚ Ý: ý nghĩa thống kê của giao thức chính (bảy cách phóng) đã đổi; sửa mục 6.4, thảo luận, mở đầu")
+        elif any(e.lo > 0 for e in [D[(t, "bicubic")] for t in ("Rrdb", "Bsr", "Resr", "Fb", "Pub", "Est")]):
+            print("CHÚ Ý: có cách phóng tăng có ý nghĩa trên AWEx theo giao thức chính; sửa mục 6.4")
     if not ok:
         print("recog_upscaled_all: chưa đủ kết quả giao thức chính cho bốn cách phóng mới (TODO.md, việc V)")
         write(out / "tab_recogup_all.tex", "\\todo{--} \\\\\n")
@@ -1764,29 +1866,33 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    fig_style(plt)
 
-    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False})
     fig.mkdir(parents=True, exist_ok=True)
     q, P = pub["q"], tr["P"]["ami"]
     kinds = ["bicjpeg60", "bicjpeg75", "bicjpeg85", "bicjpeg93", "bic"]
-    f, axes = plt.subplots(1, 2, figsize=(6.6, 2.5), sharey=True)
-    for ax, tier in zip(axes, (96, 144)):
+    # Hình 2 theo kiểu Hình 4 (06/11, người dùng muốn chung định dạng): hai ô (a)/(b), đường liền có chấm tròn, chú giải
+    # trong ô, đường chấm mảnh cho bicubic. Trung vị 16 mô hình công bố (liền), mô hình thấp nhất và cao nhất (đứt, mảnh).
+    f, axes = plt.subplots(1, 2, figsize=(6.6, 2.7), sharey=True)
+    labs = ["60", "75", "85", "93", "clean"]
+    x = np.arange(5)
+    for n_, (ax, tier) in enumerate(zip(axes, (96, 144))):
         g = q[(q.tier == tier) & q.model.isin(PSNR16) & q.degrade.isin(kinds)].pivot(index="model", columns="degrade",
                                                                                       values="gain")[kinds]
-        for m in g.index:
-            ax.plot(range(5), g.loc[m], color="0.65", lw=0.7, zorder=1)
-        ax.plot(range(5), g.median(), color="k", lw=1.6, marker="o", ms=3, label="16 published models (median)", zorder=3)
+        ax.plot(x, g.median(), color="0.35", lw=1.4, marker="o", ms=3.5, label=f"{len(g)} published models, median")
+        ax.plot(x, g.min(), color="0.35", lw=0.8, ls="--", label="lowest and highest of them")
+        ax.plot(x, g.max(), color="0.35", lw=0.8, ls="--")
         ours = [paired(P, "span/est", "bicubic", tier, k) for k in ("bicjpeg75", "bicjpeg93", "bic")]
         if all(ours):
-            ax.plot([1, 3, 4], [e.point for e in ours], color="C3", lw=1.6, marker="s", ms=3.5,
-                    label="SPAN-S, measured degradation (ours)", zorder=4)
-        ax.axhline(0, color="C0", lw=0.9, ls="--", zorder=2)
-        ax.text(0.02, 0.06, "bicubic", color="C0", fontsize=7, transform=ax.get_yaxis_transform())
-        ax.set_xticks(range(5), ["60", "75", "85", "93", "none"])
-        ax.set_xlabel("JPEG quality of the input")
-        ax.set_title(f"AMI, {tier // 4} px inputs", fontsize=8)
-    axes[0].set_ylabel("PSNR-Y gain over bicubic (dB)")
-    axes[0].legend(frameon=False, fontsize=7, loc="upper left")
+            ax.errorbar([1, 3, 4], [e.point for e in ours], yerr=[[e.point - e.lo for e in ours], [e.hi - e.point for e in ours]],
+                        color="C3", lw=1.4, marker="o", ms=3.5, elinewidth=0.8, capsize=1.5,
+                        label="SPAN-S, measured degradation (ours)")
+        ax.axhline(0, color="0.6", lw=0.7, ls=":")
+        ax.set_xticks(x, labs)
+        ax.set_xlabel("JPEG quality of the input", fontsize=7)
+        ax.set_title(f"({'ab'[n_]}) AMI, {tier // 4}-pixel inputs", fontsize=8)
+    axes[0].set_ylabel("PSNR-Y gain over bicubic (dB)", fontsize=7)
+    axes[0].legend(fontsize=6, frameon=False, handlelength=3, loc="upper left")
     f.tight_layout()
     f.savefig(fig / "fig_jpeg_sweep.png", dpi=600)
     plt.close(f)
@@ -1826,6 +1932,7 @@ def qualitative(res: Path, fig: Path, raw: Path) -> bool:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    fig_style(plt)
 
     # sr2: 12 ảnh rải trên nhiều người (mã từ 07/10); sr: 16 ảnh đầu, đều của một người (mã cũ).
     # Không lấy ảnh 0 của sr2: ảnh 40×146 px, phần cắt giữa không còn thấy vành tai.

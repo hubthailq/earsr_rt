@@ -368,7 +368,35 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
   - [x] 06/11 V4 Related work: câu loại mô hình khuếch tán và mạng real-world lớn vì độ trễ.
   - [x] 06/11 V5 Bảng 2 chỉ còn khoảng mức đo; số nội suy sang phụ lục (tab:crossoverfull, `tab_crossover_full.tex`);
     đoạn codec bỏ mức quality nội suy.
-  - [ ] V6 [Bạn, labai217] Giao thức chính cho BSRNet, Real-ESRNet, FBCNN rồi SPAN, RRDB tinh chỉnh (công thức cố định như
+  - [x] 06/11 V8 Hình 1 (fig:overview, `fig_overview.png`, sinh trong `error_ratio` của make_paper.py): lợi PSNR trung vị
+    theo mức JPEG, AMI so với DIV2K, tô khoảng đổi dấu; dưới là phân bố mức JPEG của ảnh tai nhỏ thật. Đặt ở phần mở đầu.
+  - [x] 06/11 V9 Từ khóa: Compressed image super-resolution, Lightweight super-resolution, Real-world degradation, JPEG
+    artifacts, Error decomposition, On-device inference, Ear images (theo cách gọi của các bài SR 2025, ví dụ Pattern
+    Recognition 2025 dùng "compressed image super-resolution").
+  - [x] 06/11 V11 Rà văn phong toàn bài: bỏ câu khẩu hiệu ("Our main result is where...", "The explanation is measured as
+    well"), câu kiểu "what X adds is", "tell a different story", "no ground truth, but they have identities", các dấu hai
+    chấm tạo kịch tính ở tóm tắt, mở đầu, mục 4, 5, 6, thảo luận. Tóm tắt 238 từ (đếm trên PDF).
+  - [x] 06/11 V12 Vẽ lại mọi hình bằng kiểu chung `fig_style` (Arial, lưới ngang nhạt, trục mảnh) và bảng màu PAL đã qua
+    validate_palette (CVD, tương phản); trục "none" thành "clean" ở fig_jpeg_sweep.
+  - [x] 06/11 V15 Hình 5 (fig_ratio) thành hai ô: (a) mức lợi theo mức JPEG, (b) theo E_c/E_i; màu chỉ cho bộ ảnh, mỗi
+    cặp bộ ảnh–cỡ ảnh một đường mảnh; bỏ mã hóa hình dạng và cỡ chấm.
+  - [x] 06/11 V14 Hình 1 và 2 theo đúng định dạng Hình 4 (cơ chế): hai ô (a)/(b) đặt ngang, khổ 6,6 × 2,7, đường liền có
+    chấm tròn, chú giải trong ô, đường chấm mảnh cho bicubic; Hình 2: trung vị liền, thấp nhất và cao nhất đứt mảnh, SPAN của
+    ta đỏ có khoảng tin cậy; Hình 1: (a) AMI và DIV2K ở 36 px, khoảng đổi dấu tô rất nhạt, (b) phân bố mức JPEG ảnh thật.
+  - [x] 06/11 V13 Hình 2 (fig_jpeg_sweep) cuối cùng là dạng đường: trung vị 16 mô hình cộng dải thấp nhất–cao nhất, SPAN của ta đường đỏ có khoảng tin cậy, vùng dưới bicubic tô nhạt (người dùng chê biểu đồ chấm và bản đồ nhiệt vì lệch kiểu với các hình khác). Ghi chú cũ: mỗi mức một cụm 16 chấm, vạch
+    trung vị, số mô hình dưới bicubic dưới nhãn trục, vùng dưới bicubic tô nhạt, mô hình của ta là hình thoi đỏ; sửa chú thích.
+  - [x] 06/11 V16 Rà khớp số, văn phong, AI, tài liệu. Sửa 4 câu viết tay lệch dữ liệu: AWEx (khoảng tin cậy giao thức
+    chính rộng ~17 điểm, không loại được mức +5,5), dải E_c/E_i của codec (AVIF chỉ tới 0,74; macro Codec*RatioMin/Max),
+    probe tổng hợp (giúp trên mọi probe 24 px có nén, không chỉ JPEG 75), Core ML (BSRGAN 39,2 dB; macro CoremlPsnrFidMin).
+    Thêm "median" ở câu đổi dấu (AMI 48 px có 1 mô hình âm ở mức 93, không có ý nghĩa). 46 tài liệu: 40 có DOI khớp Crossref,
+    6 không DOI khớp arXiv (NTIRE 2024/25/26, KernelGAN, Adam) và trang AMI (đổi sang https). Không có chữ AI nào trong paper/.
+    Lưu ý: python3 trên Mac lỗi chứng chỉ SSL; gọi Crossref bằng curl.
+  - [ ] V10 Đề xuất, chờ người dùng: chuyển phụ lục thành file Supplementary material riêng (bài 40 → khoảng 30 trang).
+  - [x] 06/11 V6 [Bạn, labai217] XONG (commit a98dfc0). EarVN1.0, giao thức chính: bicubic 31,3; SPAN est 36,8 (+5,5 [1,6; 9,3]);
+    RRDB est 37,5 (+6,3 [1,9; 10,7]); BSRNet 34,8 (+3,5, khoảng chứa 0); Real-ESRNet 34,8 (+3,5, chứa 0); FBCNN rồi SPAN
+    35,4 (+4,1, chứa 0); không cách nào khác SPAN est có ý nghĩa (−2,0 đến +0,7). AWEx: không cách nào tăng có ý nghĩa.
+    (BSRNet và Real-ESRNet cùng 701/2015 ảnh trúng là trùng hợp; chỉ 28% ảnh dò cùng thứ hạng.)
+  - [x] Lệnh đã chạy cho V6 [Bạn, labai217] Giao thức chính cho BSRNet, Real-ESRNet, FBCNN rồi SPAN, RRDB tinh chỉnh (công thức cố định như
     O4, ra số nào báo số đó; khoảng 2 đến 4 giờ):
     ```bash
     git pull
@@ -376,7 +404,10 @@ dạng; rà tài liệu lượt đầu; chuyển mô hình sang Core ML; viết 
     ```
     Xong thì commit `results/recog_up`. make_paper.py (`recog_upscaled_all`) sinh `tab_recogup_all.tex` và macro
     `RecAll{Earvn,Awex}{Bic,Pub,Est,Rrdb,Bsr,Resr,Fb}{Rank,VsBic,VsEst}`; đã thử với dữ liệu giả.
-  - [ ] V7 Sau V6: thay Bảng tab:recogup bằng bảng bảy cách phóng; viết lại 6.4, câu BSRNet ở thảo luận và hạn chế theo số
+  - [x] 06/11 V7 Bảng tab:recogall (bảy cách phóng, giao thức chính) lên mục 6.4 thay tab:recogup (về phụ lục
+    app:recoglarge); macro RecAll*, cảnh báo nếu ý nghĩa đổi. 6.4, mở đầu, thực hành, hạn chế viết theo số mới: hai mạng
+    tinh chỉnh bằng công thức của bài giữ mức tăng có ý nghĩa; ba phương án công bố tăng ít hơn, khoảng chứa 0; giao thức
+    không xếp hạng các cách có tính đến nén. Việc gốc: thay Bảng tab:recogup bằng bảng bảy cách phóng; viết lại 6.4, câu BSRNet ở thảo luận và hạn chế theo số
     mới; bỏ câu "not evaluated with the main protocol".
 - [ ] **M. Việc cần làm cho bốn điểm yếu sau khi có kết quả J1, J2a** (ghi ngày 08/10 theo yêu cầu người dùng; mục nào ghi
   "đề xuất" là chưa duyệt).

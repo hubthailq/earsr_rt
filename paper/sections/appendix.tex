@@ -65,7 +65,7 @@ Input & Bicubic & Median gain & Below & Bicubic & Published SPAN \\
 
 \section{Other codecs}
 \label{app:codec}
-Table~\ref{tab:codec} gives the evaluation of Section~\ref{sec:natural} with WebP and AVIF. Inputs are produced as for JPEG (bicubic downscaling, then compression of the 36-pixel input with OpenCV), and the levels were chosen on 100 AMI images before the evaluation so that $E_c/E_i$ spans about 0.1 to 1.1 for each codec.
+Table~\ref{tab:codec} gives the evaluation of Section~\ref{sec:natural} with WebP and AVIF. Inputs are produced as for JPEG (bicubic downscaling, then compression of the 36-pixel input with OpenCV), and the levels were chosen on 100 AMI images before the evaluation so that $E_c/E_i$ spans a range similar to that of JPEG; the AVIF levels reach only \CodecAvifRatioMax{}.
 
 \begin{table}[H]
 \centering
@@ -157,7 +157,7 @@ Comparison & Test input & AMI, 36 px & EarVN1.0, 24 px & AWEx, 24 px & AWEx, 36 
 
 \section{Identification with recognisers trained on large images}
 \label{app:recoglarge}
-Ear-R18 and Ear-R50 are a ResNet-18~\cite{he2016resnet} and a ResNet-50 trained with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} subjects (\RecValAcc{}\% and \RecRfValAcc{}\% accuracy on held-out images of these subjects), never on small or upscaled images; frozen ImageNet features of a ResNet-50 (ImageNet-R50) serve as a control. Tables~\ref{tab:recog} to~\ref{tab:recogquality} give the results summarised in Section~\ref{sec:recog}.
+Ear-R18 and Ear-R50 are a ResNet-18~\cite{he2016resnet} and a ResNet-50 trained with a cosine-margin loss~\cite{wang2018cosface} on large images of \RecTrainSubj{} subjects (\RecValAcc{}\% and \RecRfValAcc{}\% accuracy on held-out images of these subjects), never on small or upscaled images; frozen ImageNet features of a ResNet-50 (ImageNet-R50) serve as a control. Tables~\ref{tab:recog} to~\ref{tab:recogquality} give the results summarised in Section~\ref{sec:recog}, and Table~\ref{tab:recogup} compares the two kinds of recogniser for three methods.
 
 \begin{table}[H]
 \centering
@@ -203,6 +203,21 @@ Upscaling & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
 Upscaling & Rank-1 & vs.\ bicubic & Rank-1 & vs.\ bicubic \\
 \midrule
 \tabinput{generated/tab_recog_quality}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Rank-1 rate (\%) of real small probes with a ResNet-18 recogniser trained, separately for each method, on large images and the real small images of the training subjects upscaled by that method or on large images only (Ear-R18), for the three methods of the first run of the main protocol. Ours: SPAN fine-tuned with the measured degradation, five fold models averaged per probe. Last column: ours minus bicubic, with 95\% confidence intervals (bootstrap over subjects).}
+\label{tab:recogup}
+\small
+\fitbox{%
+\begin{tabular}{@{}llrrrc@{}}
+\toprule
+Dataset & Recogniser trained on & Bicubic & Published SPAN & Ours & Ours minus bicubic \\
+\midrule
+\tabinput{generated/tab_recogup}
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -282,4 +297,4 @@ Methods & $n$ & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 & Ear-R18 & Ear-R50 \\
 
 \section{Precision of the converted FBCNN}
 \label{app:coreml}
-The 16-bit Core ML conversion of FBCNN does not reproduce its output (PSNR \CoremlPsnrFbHalf{}~dB between Core ML and PyTorch outputs, against more than 50~dB for the other models), so FBCNN and, for comparison, SPAN are measured in 32-bit precision, where Core ML runs them on the GPU.
+The 16-bit Core ML conversion of FBCNN does not reproduce its output (PSNR \CoremlPsnrFbHalf{}~dB between Core ML and PyTorch outputs, against at least \CoremlPsnrFidMin{}~dB for the fidelity-oriented models), so FBCNN and, for comparison, SPAN are measured in 32-bit precision, where Core ML runs them on the GPU.

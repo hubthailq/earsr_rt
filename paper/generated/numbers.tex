@@ -40,12 +40,16 @@
 \newcommand{\CodecAvifCrossHi}{0.73}
 \newcommand{\CodecAvifCrossLo}{0.67}
 \newcommand{\CodecAvifCrossQ}{61}
+\newcommand{\CodecAvifRatioMax}{0.74}
+\newcommand{\CodecAvifRatioMin}{0.10}
 \newcommand{\CodecJpegBMax}{3.0}
 \newcommand{\CodecJpegBMin}{1.6}
 \newcommand{\CodecJpegCross}{0.26}
 \newcommand{\CodecJpegCrossHi}{0.28}
 \newcommand{\CodecJpegCrossLo}{0.25}
 \newcommand{\CodecJpegCrossQ}{89}
+\newcommand{\CodecJpegRatioMax}{1.01}
+\newcommand{\CodecJpegRatioMin}{0.17}
 \newcommand{\CodecLevels}{14}
 \newcommand{\CodecWebpBMax}{2.6}
 \newcommand{\CodecWebpBMin}{1.6}
@@ -53,12 +57,16 @@
 \newcommand{\CodecWebpCrossHi}{0.37}
 \newcommand{\CodecWebpCrossLo}{0.35}
 \newcommand{\CodecWebpCrossQ}{86}
+\newcommand{\CodecWebpRatioMax}{1.13}
+\newcommand{\CodecWebpRatioMin}{0.10}
 \newcommand{\CollapseBic}{32.33}
 \newcommand{\CollapseBroken}{82}
 \newcommand{\CollapsePsnr}{22.08}
 \newcommand{\CollapsePub}{36.39}
+\newcommand{\CoremlPsnrBsrgan}{39.2}
 \newcommand{\CoremlPsnrDisp}{57.0}
 \newcommand{\CoremlPsnrFbHalf}{29.6}
+\newcommand{\CoremlPsnrFidMin}{52.9}
 \newcommand{\CoremlPsnrSpan}{63.1}
 \newcommand{\CorrDistsAll}{$-$0.60}
 \newcommand{\CorrDistsAllRf}{$-$0.55}
@@ -330,48 +338,60 @@
 \newcommand{\RealJpg}{56.7}
 \newcommand{\RealTestSubj}{4}
 \newcommand{\RealTrainSubj}{8}
-\newcommand{\RecAllAwexBicRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexBicVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexBicVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexBsrRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexBsrVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexBsrVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexEstRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexEstVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexEstVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexFbRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexFbVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexFbVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexPubRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexPubVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexPubVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexResrRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexResrVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexResrVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexRrdbRank}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexRrdbVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllAwexRrdbVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBicRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBicVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBicVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBsrRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBsrVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnBsrVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnEstRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnEstVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnEstVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnFbRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnFbVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnFbVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnPubRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnPubVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnPubVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnResrRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnResrVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnResrVsEst}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnRrdbRank}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnRrdbVsBic}{\todo{recog-up-all}}
-\newcommand{\RecAllEarvnRrdbVsEst}{\todo{recog-up-all}}
+\newcommand{\RecAllAwexAltGainMax}{0.0}
+\newcommand{\RecAllAwexAltGainMin}{$-$2.8}
+\newcommand{\RecAllAwexAltRankMax}{36.7}
+\newcommand{\RecAllAwexAltRankMin}{33.9}
+\newcommand{\RecAllAwexBicRank}{36.7}
+\newcommand{\RecAllAwexBsrRank}{33.9}
+\newcommand{\RecAllAwexBsrVsBic}{$-$2.8 {\scriptsize[$-$8.7, 3.0]}}
+\newcommand{\RecAllAwexBsrVsEst}{$-$2.7 {\scriptsize[$-$9.1, 4.0]}}
+\newcommand{\RecAllAwexEstRank}{36.6}
+\newcommand{\RecAllAwexEstVsBic}{$-$0.1 {\scriptsize[$-$9.1, 7.8]}}
+\newcommand{\RecAllAwexFbRank}{34.3}
+\newcommand{\RecAllAwexFbVsBic}{$-$2.3 {\scriptsize[$-$10.3, 5.7]}}
+\newcommand{\RecAllAwexFbVsEst}{$-$2.2 {\scriptsize[$-$8.7, 3.3]}}
+\newcommand{\RecAllAwexPubRank}{36.7}
+\newcommand{\RecAllAwexPubVsBic}{$+$0.0 {\scriptsize[$-$8.1, 7.9]}}
+\newcommand{\RecAllAwexPubVsEst}{$+$0.1 {\scriptsize[$-$9.4, 8.7]}}
+\newcommand{\RecAllAwexResrRank}{36.7}
+\newcommand{\RecAllAwexResrVsBic}{$+$0.0 {\scriptsize[$-$6.8, 7.1]}}
+\newcommand{\RecAllAwexResrVsEst}{$+$0.1 {\scriptsize[$-$7.7, 9.3]}}
+\newcommand{\RecAllAwexRrdbGain}{0.6}
+\newcommand{\RecAllAwexRrdbGainHi}{7.8}
+\newcommand{\RecAllAwexRrdbGainLo}{$-$7.1}
+\newcommand{\RecAllAwexRrdbRank}{37.2}
+\newcommand{\RecAllAwexRrdbVsBic}{$+$0.6 {\scriptsize[$-$7.1, 7.8]}}
+\newcommand{\RecAllAwexRrdbVsEst}{$+$0.7 {\scriptsize[$-$6.3, 7.8]}}
+\newcommand{\RecAllAwexVsEstMax}{$+$0.7}
+\newcommand{\RecAllAwexVsEstMin}{$-$2.7}
+\newcommand{\RecAllEarvnAltGainMax}{4.1}
+\newcommand{\RecAllEarvnAltGainMin}{3.5}
+\newcommand{\RecAllEarvnAltRankMax}{35.4}
+\newcommand{\RecAllEarvnAltRankMin}{34.8}
+\newcommand{\RecAllEarvnBicRank}{31.3}
+\newcommand{\RecAllEarvnBsrRank}{34.8}
+\newcommand{\RecAllEarvnBsrVsBic}{$+$3.5 {\scriptsize[$-$1.5, 8.0]}}
+\newcommand{\RecAllEarvnBsrVsEst}{$-$2.0 {\scriptsize[$-$7.1, 2.6]}}
+\newcommand{\RecAllEarvnEstRank}{36.8}
+\newcommand{\RecAllEarvnEstVsBic}{$+$5.5 {\scriptsize[1.6, 9.3]}}
+\newcommand{\RecAllEarvnFbRank}{35.4}
+\newcommand{\RecAllEarvnFbVsBic}{$+$4.1 {\scriptsize[$-$1.7, 9.5]}}
+\newcommand{\RecAllEarvnFbVsEst}{$-$1.4 {\scriptsize[$-$6.0, 3.1]}}
+\newcommand{\RecAllEarvnPubRank}{32.3}
+\newcommand{\RecAllEarvnPubVsBic}{$+$1.0 {\scriptsize[$-$4.8, 8.2]}}
+\newcommand{\RecAllEarvnPubVsEst}{$-$4.6 {\scriptsize[$-$10.3, 2.3]}}
+\newcommand{\RecAllEarvnResrRank}{34.8}
+\newcommand{\RecAllEarvnResrVsBic}{$+$3.5 {\scriptsize[$-$1.2, 8.2]}}
+\newcommand{\RecAllEarvnResrVsEst}{$-$2.0 {\scriptsize[$-$6.2, 2.5]}}
+\newcommand{\RecAllEarvnRrdbGain}{6.3}
+\newcommand{\RecAllEarvnRrdbGainHi}{10.7}
+\newcommand{\RecAllEarvnRrdbGainLo}{1.9}
+\newcommand{\RecAllEarvnRrdbRank}{37.5}
+\newcommand{\RecAllEarvnRrdbVsBic}{$+$6.3 {\scriptsize[1.9, 10.7]}}
+\newcommand{\RecAllEarvnRrdbVsEst}{$+$0.7 {\scriptsize[$-$3.0, 4.5]}}
+\newcommand{\RecAllEarvnVsEstMax}{$+$0.7}
+\newcommand{\RecAllEarvnVsEstMin}{$-$2.0}
 \newcommand{\RecAwexEnrolled}{112}
 \newcommand{\RecAwexGalMed}{2}
 \newcommand{\RecAwexProbes}{428}
