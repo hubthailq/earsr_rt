@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tách điều kiện nén của phần nhận dạng (kiểm toán 04/11; TODO.md, việc Q2). Chỉ chấm, không huấn luyện.
+# Tách điều kiện nén của phần nhận dạng. Chỉ chấm, không huấn luyện.
 # Câu hỏi, cố định trước khi chạy: trên cùng người và cùng ảnh của EarVN1.0, mức tăng hạng 1 của SPAN tinh chỉnh (suy giảm
 # đo được) so với bicubic có xuất hiện khi ảnh dò nhỏ KHÔNG nén không, hay chỉ khi ảnh dò bị nén (JPEG 93, 75)?
 # Ảnh dò: nửa ảnh lớn không dùng làm ảnh đăng ký (như ref_large), thu về cạnh ngắn 144 rồi suy giảm ×4 thành ảnh 36 px

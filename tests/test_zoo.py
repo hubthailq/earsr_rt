@@ -23,7 +23,7 @@ MEASURED = {"span_ch48_t44": 32.13, "span_ch28": 31.73, "span_ch26": 31.74, "rlf
             "span26": 31.73, "pds26": 31.76, "pkdsr26": 31.77, "dscf26": 31.74, "disp26": 31.94, "errn26": 31.89,
             # EDSR-baseline, trọng số chính thức (đo ngày 06/10/2026: 32,096). Không nằm trong PUBLISHED vì tác giả
             # không công bố số Set5 cho bản baseline; số họ công bố là 28,95 dB trên DIV2K 0801..0900 (RGB), và
-            # project tái lập được 28,96 dB (đo tay một lần, xem docs/STATUS.md; quá chậm cho bộ kiểm thử).
+            # project tái lập được 28,96 dB.
             "edsr_baseline": 32.10}
 
 

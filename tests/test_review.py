@@ -1,4 +1,4 @@
-"""Các mốc thêm cho vòng phản biện: khử nén rồi phóng, RRDB học có nén, RRDB tinh chỉnh (scripts/run_review.sh)."""
+"""Các mốc bổ sung: khử nén rồi phóng, RRDB học có nén, RRDB tinh chỉnh (scripts/run_review.sh)."""
 import subprocess
 import sys
 from pathlib import Path

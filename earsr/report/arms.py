@@ -13,10 +13,10 @@ def arm_of(model: str) -> tuple[str, int]:
     """Tên lần chạy hoặc tên mô hình -> (nhánh, fold). Mô hình có trọng số công bố và mốc nội suy có fold 0.
 
     ``N2_span-zero+xearvn_pub_rand_x4_hrall_est_f3`` -> (``span/est``, 3); nhãn ``+pa`` (chỉ AMI) thêm hậu tố.
-    Các lần chạy thêm cho vòng phản biện mang tiền tố ``REV_`` và được gộp cùng cách (``rrdb/est``).
+    Các lần chạy bổ sung mang tiền tố ``REV_`` và được gộp cùng cách (``rrdb/est``).
     """
     g = RUN.match(model)
     if not g:
         return (model if model in ("bicubic", "bicubic_sharp", "direct", "ref_large") else model + PUBLISHED), 0
-    seed = f" [seed {g['seed']}]" if g["seed"] else ""   # lần chạy thêm seed (TODO.md, việc Q3): nhánh riêng
+    seed = f" [seed {g['seed']}]" if g["seed"] else ""   # lần chạy thêm seed: nhánh riêng
     return f"{g['bb']}/{g['kind']}" + ("" if g["tag"] == "xearvn" else AMI_ONLY) + seed, int(g["fold"])

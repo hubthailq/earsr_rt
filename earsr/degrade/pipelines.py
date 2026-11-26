@@ -86,12 +86,12 @@ def random_degrade(hr: np.ndarray, scale: int, p: DegradeParams, rng: np.random.
 
 
 _BICJPEG = re.compile(r"^bicjpeg(\d{1,3})$")
-# Đối chứng thứ tự suy giảm (phản biện ngày 04/11); chỉ dùng để chấm, không dùng để huấn luyện.
+# Đối chứng thứ tự suy giảm; chỉ dùng để chấm, không dùng để huấn luyện.
 _BICJPEG444 = re.compile(r"^bicjpeg(\d{1,3})c444$")          # như bicjpegQ nhưng không lấy mẫu màu (4:4:4)
 _SHIFTJPEG = re.compile(r"^shiftjpeg(\d{1,3})$")             # lưới khối lệch 1..7 px so với ảnh
 _DBLJPEG = re.compile(r"^dbljpeg(\d{1,3})to(\d{1,3})$")      # nén Q1 lệch lưới, rồi nén lại Q2 thẳng lưới
 _JPEGBIC = re.compile(r"^jpeg(\d{1,3})bic$")                 # nén ảnh lớn trước, thu nhỏ sau
-_BICWEBP = re.compile(r"^bicwebp(\d{1,3})$")                # chuẩn nén khác JPEG (phản biện; TODO Q1), chỉ để chấm
+_BICWEBP = re.compile(r"^bicwebp(\d{1,3})$")                # chuẩn nén khác JPEG, chỉ để chấm
 _BICAVIF = re.compile(r"^bicavif(\d{1,3})$")
 SHIFT_RANGE = (1, 7)
 

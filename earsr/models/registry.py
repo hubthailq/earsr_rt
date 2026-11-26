@@ -165,7 +165,7 @@ SPECS: dict[str, ModelSpec] = {s.name: s for s in [
     # --- trần trên, tối ưu PSNR ---
     ModelSpec("rrdb_psnr", 4, _rrdb(4), "kair_RRDB_psnr_x4.pth", None, convert=_kair, group="upper",
               pretrain="DF2K (ESRGAN bản PSNR)", source=_KAIR, note="RRDB 16,7 triệu tham số, bản tối ưu PSNR"),
-    # --- RRDB học bằng suy giảm ngoài thực tế, bản tối ưu độ trung thực (mốc cho vòng phản biện, 08/10/2026):
+    # --- RRDB học bằng suy giảm ngoài thực tế, bản tối ưu độ trung thực:
     #     cùng kiến trúc với rrdb_psnr, khác dữ liệu huấn luyện; không thuộc 16 mô hình học bằng bicubic của bài ---
     ModelSpec("bsrnet", 4, _rrdb(4), "BSRNet.pth", None, convert=_kair, group="upper",
               pretrain="suy giảm tổng hợp của BSRGAN (mờ, nhiễu, JPEG)", source=_KAIR,
@@ -223,7 +223,7 @@ for _s in [
     SPECS[_s.name] = _s
 
 
-# --- Khử nén rồi mới phóng (mốc cho vòng phản biện, 08/10/2026) ---
+# --- Khử nén rồi mới phóng ---
 # Mạng khử nén nhận và trả ảnh RGB trong [0, 1] cùng cỡ, nên không nằm trong SPECS (SPECS chỉ chứa mạng phóng ảnh).
 @dataclass(frozen=True)
 class RestorerSpec:

@@ -386,9 +386,10 @@ def test_latex_tables(tmp_path):
     q.to_csv(tmp_path / "t2_summary" / "quality.csv", index=False)
     made = _script("make_tables").main(["--results", str(tmp_path), "--out", str(tmp_path / "tex")])
     assert made == ["t2_hr144_x4.tex"]
-    # trên kết quả thật đi kèm project
-    made = _script("make_tables").main(["--results", str(ROOT / "results"), "--out", str(tmp_path / "tex2")])
-    assert any(m.startswith("t2_hr144") for m in made)
+    # trên kết quả thật đi kèm project (bản phát hành tách results/ ra gói riêng: khi đó bỏ qua phần này)
+    if (ROOT / "results" / "t2").is_dir():
+        made = _script("make_tables").main(["--results", str(ROOT / "results"), "--out", str(tmp_path / "tex2")])
+        assert any(m.startswith("t2_hr144") for m in made)
 
 
 # ----------------------------------------------------------------- khảo sát người xem
@@ -650,6 +651,8 @@ def test_figures_from_result_files(tmp_path):
         F.fig_grid({"LR": tmp_path / "lr"}, ["khong-co"], tmp_path / "x.pdf")
 
 
+@pytest.mark.skipif(not (ROOT / "results" / "t6_context").is_dir(),
+                    reason="cần results/ (bản phát hành để kết quả trong gói riêng)")
 def test_make_figures_script_on_shipped_results(tmp_path):
     mf = _script("make_figures")
     made = mf.main(["--results", str(ROOT / "results"), "--out", str(tmp_path / "fig")])

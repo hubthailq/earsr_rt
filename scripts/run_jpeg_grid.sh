@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lưới mức JPEG dày (góp ý của thầy 24/11/2026, mục 2; TODO.md, việc W6). Chỉ chấm, không huấn luyện.
+# Lưới mức JPEG dày. Chỉ chấm, không huấn luyện.
 # Câu hỏi: điểm đổi dấu của mức hơn bicubic nằm ở đâu khi đo trực tiếp, thay vì nội suy giữa 85 và 93.
 #   AMI      : thêm JPEG 80, 83, 87, 89, 91, 95, 97 ở ba cỡ (96, 144, 192), 16 mô hình công bố và bicubic   -> results/t2
 #              cùng SPAN tinh chỉnh nhánh est (5 fold, mỗi mô hình trên người test của fold nó)          -> results/n2

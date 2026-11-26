@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ảnh dò tổng hợp gần ảnh thật hơn (TODO.md, việc Q2b, 05/11). Chỉ chấm, không huấn luyện.
+# Ảnh dò tổng hợp gần ảnh thật hơn. Chỉ chấm, không huấn luyện.
 # Lần đầu (run_recog_synth.sh): ảnh dò 36 px thu từ ảnh lớn gần như không mất độ chính xác (bicubic 56,8% so với 60,2% của
 # ảnh lớn; ảnh nhỏ thật 13,2%), nên không còn dư địa để so phương pháp.
 # Câu hỏi, cố định trước khi chạy:

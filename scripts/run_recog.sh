@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Đo nhận dạng tai trên ảnh nhỏ thật (việc 2 của docs/story-imavis.md).
+# Đo nhận dạng tai trên ảnh nhỏ thật.
 #   1. Huấn luyện hai mạng nhận dạng (ResNet-18 và ResNet-50), chỉ trên ảnh lớn của người EarVN1.0 có vai train, fit, clf.
 #   2. Chấm mọi phương pháp phóng ảnh trên ảnh nhỏ thật của hai bộ:
 #        EarVN1.0, nhóm test và viewer (những người không dùng để huấn luyện SR hay mạng nhận dạng);

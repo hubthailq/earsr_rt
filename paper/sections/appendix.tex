@@ -222,6 +222,27 @@ Dataset & Recogniser trained on & Bicubic & Published SPAN & Ours & Ours minus b
 \end{tabular}}
 \end{table}
 
+\section{Cumulative match and verification rates}
+\label{app:curves}
+Table~\ref{tab:recogcurves} gives, for the main protocol of Section~\ref{sec:recog}, the cumulative match characteristic at ranks 1, 5 and 10 and the true acceptance rate at false acceptance rates of 1\% and 0.1\%. Each probe is compared with every enrolled template; comparisons with the template of the probe's own subject are genuine and the others impostor. All values are computed from the stored similarity scores, without running any network again; fine-tuned rows average the five fold models.
+
+\begin{table}[H]
+\centering
+\caption{Cumulative match characteristic (CMC) and true acceptance rate (TAR) at a given false acceptance rate (FAR), in \%, on real small EarVN1.0 probes under the main protocol (Table~\ref{tab:recogall}).}
+\label{tab:recogcurves}
+\small
+\fitbox{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{CMC} & \multicolumn{2}{c}{TAR} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-6}
+Upscaling & Rank 1 & Rank 5 & Rank 10 & FAR 1\% & FAR 0.1\% \\
+\midrule
+\tabinput{generated/tab_recog_curves}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Synthesised probes}
 \label{app:recogsynth}
 The two quality groups of Table~\ref{tab:recogquality} differ in subjects as well as in compression. To vary compression on fixed images, we downsized the large images of the \SynSubj{} test subjects not used for enrolment (\SynProbes{} images; the real probes come from \RecSubj{} of these subjects) to probes of 24 or 36 pixels, clean, at JPEG 75 or with the measured degradation, with conditions fixed before the run (Table~\ref{tab:recogsynth}). These probes are easier than real ones (\SynBicEstS{}\% against \RecRankBic{}\% with bicubic upscaling and Ear-R18). The clearest result is at 24 pixels and JPEG 75, where bicubic-trained models lose \SynJpgBicTrMin{} to \SynJpgBicTrMax{} points and models trained with compression gain \SynJpgCmpTrMin{} to \SynJpgCmpTrMax{}, every interval excluding zero; on clean 36-pixel probes, models trained with compression are lower by \SynCleanCmpTrLMin{} to \SynCleanCmpTrLMax{} points. The recognisers were trained on large images only, so the differences may partly reflect how closely upscaled probes resemble the enrolment images.

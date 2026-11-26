@@ -41,8 +41,11 @@ bộ nhận dạng pretrain trên dữ liệu tai lớn hay không (mục 7); đ
   thêm vế "for crops that keep their compression error"; ghi rõ nhận dạng theo bộ nhận dạng học ảnh phóng. 220 từ (đếm
   trên PDF), cả tóm tắt nằm gọn trang 1 trước chú thích tác giả. Đã bỏ khỏi tóm tắt: RRDB lớn gấp 39 lần và cái giá trên
   ảnh sạch, vẫn có ở mở đầu và hạn chế. Tiêu đề đã bỏ \\ (phần đầu của W3)). Gốc: tóm tắt theo bản của thầy (~170 từ, số qua macro) cộng vế điều kiện vận hành.
-- [ ] W3 [Claude] Mục 12: (đã bỏ `\\` trong tiêu đề 26/11); từ khóa "JPEG artefacts"; rà † và chữ đậm ở Bảng 1, 3, G.1.
-- [ ] W4 [Claude] Mục 3: tìm và kiểm (Crossref/arXiv) 10–15 tài liệu: SR ảnh nén 2023–2026, SR khuếch tán/một bước
+- [x] 26/11 W3 [Claude] (xong: tiêu đề một dòng; từ khóa "JPEG artefacts"; Bảng 3 trước in đậm cả 35,67 và 35,68 vì
+  dùng sai khác < 0,005 dB, nay chỉ in đậm ô có số hiển thị lớn nhất; Bảng 1 và † ở Bảng G.1 đúng). Gốc: Mục 12: (đã bỏ `\\` trong tiêu đề 26/11); từ khóa "JPEG artefacts"; rà † và chữ đậm ở Bảng 1, 3, G.1.
+- [~] 26/11 W4 [Claude] (xong phần tài liệu: thêm 12, tổng 58, mọi DOI kiểm trên Crossref, metadata lấy từ DOI; tên
+  đồng tác giả UERC 2023 để viết tắt như Crossref. Khuếch tán/một bước: StableSR, ResShift, SinSR, OSEDiff, DiffBIR; ảnh nén:
+  HST, PromptCIR, Guo 2026, Kim 2024; tai: UERC 2023, VGGFace-Ear, PaW-ViT. CÒN: span_tiny, chờ người dùng). Gốc: Mục 3: tìm và kiểm (Crossref/arXiv) 10–15 tài liệu: SR ảnh nén 2023–2026, SR khuếch tán/một bước
   (1–2 câu lý do loại), nhận dạng tai gần đây (UERC 2023, transformer/foundation model); span_tiny khi có thông tin.
 - [x] 26/11 W5 [Claude] (xong, đã thử ngắn trên Mac: `scripts/run_jpeg_grid.sh` (W6), `--probe-jpeg` trong
   `recog_eval.py` cộng `scripts/run_awex_recompress.sh` (W7), bí danh `swinir` trong `earsr/train/finetune.py` cộng
@@ -56,11 +59,18 @@ bộ nhận dạng pretrain trên dữ liệu tai lớn hay không (mục 7); đ
 - [ ] W8 [Claude] Đưa kết quả W6 vào bài (Bảng 2, Hình 1, 2, 5, Bảng D.1, các câu về khoảng đổi dấu; bỏ cột nội suy nếu
   lưới đã đủ dày); viết theo đúng số đo.
 - [ ] W9 [Claude] Đưa kết quả W7 vào thảo luận AWEx (củng cố hoặc bác giả thuyết, ghi đúng như kết quả).
-- [ ] W10 [Claude] Mục 7: đường CMC từ kết quả có sẵn (Mac).
-- [ ] W11 [Claude] Mục 7: TAR@FAR (đổi từ labai217 sang Mac 26/11: ma trận điểm .npy đã có trong results/recog_up,
+- [x] 26/11 W10 [Claude] Mục 7: CMC (hạng 1, 5, 10) trong bảng phụ lục app:curves (`recog_curves_tab` trong
+  make_paper.py); câu ở 6.5: hạng 5 ours 69,2% so với 62,9%, +6,3 [0,4; 12,7]. Hạng 1 khớp Bảng 5.
+- [x] 26/11 W11 [Claude] Mục 7: TAR@FAR 1% và 0,1% cùng bảng app:curves; câu ở 6.5: ours 29,0% so với bicubic 24,9%,
+  nằm trong 28,6–30,5% của các cách có tính đến nén (FBCNN rồi SPAN cao nhất, 30,5%). Gốc: TAR@FAR (đổi từ labai217 sang Mac 26/11: ma trận điểm .npy đã có trong results/recog_up,
   tính bằng `scripts/recog_curves.py`, không cần chạy lại).
 - [ ] W12 [labai217] Mục 6: tinh chỉnh SwinIR-light, 2 fold, suy giảm đo được (thêm bicubic nếu kịp). Ước 4–12 giờ.
-- [ ] W13 [Claude] Mục 5: chạy `scripts/make_release.sh`, rà sạch dấu vết nội bộ; chuẩn bị README phát hành.
+- [x] 26/11 W13 [Claude] Mục 5 (xong phần chuẩn bị: bỏ tham chiếu nội bộ (TODO.md, mã việc, "phản biện", "góp ý của
+  thầy", "người dùng") khỏi chú thích của 35 file mã, chỉ đổi chú thích; `make_release.sh` viết lại: bỏ paper/, *.log, ghi
+  chú nội bộ; tách results/ thành gói riêng cho Zenodo (thử: 225 MB nén); README tiếng Anh `docs/README_release.md` thành
+  README.md; chặn cả từ AI lẫn từ nội bộ; kiểm cú pháp. Thử trong worktree tạm: kho mã 184 file 1,5 MB, 164 kiểm thử đạt,
+  1 bỏ qua (cần results/). CÒN: chọn giấy phép mã (đề xuất MIT); đóng gói trọng số đã huấn luyện từ runs/ trên labai217;
+  DOI Zenodo vào README và Data availability (W17)). Gốc: Mục 5: chạy `scripts/make_release.sh`, rà sạch dấu vết nội bộ; chuẩn bị README phát hành.
 
 ### Tuần 3
 - [ ] W14 [Claude] Đưa kết quả W11, W12 vào bài (Bảng K.1, mục 6.2, 6.5, hạn chế).

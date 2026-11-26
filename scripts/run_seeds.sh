@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dao động do seed huấn luyện (kiểm toán 04/11; TODO.md, việc Q3).
+# Dao động do seed huấn luyện.
 # Câu hỏi, cố định trước khi chạy: trên fold 1, ba nhánh SPAN (bic, bicjpeg75, est) huấn luyện lại với seed 101 và 102,
 # cùng mọi siêu tham số của lần chạy cuối (seed mặc định = số fold = 1). PSNR của một nhánh dao động bao nhiêu giữa ba seed,
 # và các chênh lệch giữa nhánh (est trừ bicjpeg75, est trừ bic) có đổi dấu không. Không chọn gì theo kết quả này.

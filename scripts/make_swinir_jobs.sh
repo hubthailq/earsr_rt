@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Tinh chỉnh một mô hình transformer (SwinIR-light, 0,93 triệu tham số, trọng số công bố ×4) với ĐÚNG công thức của SPAN
-# nhánh est (góp ý của thầy 24/11/2026, mục 6; TODO.md, việc W12): suy giảm đo được, ảnh EarVN1.0 nhóm train 30%, tăng
+# nhánh est: suy giảm đo được, ảnh EarVN1.0 nhóm train 30%, tăng
 # cường độ sáng, 20.000 bước, lô 64, tốc độ học 2e-4, seed bằng số fold. Thêm nhánh bicubic cùng fold để so cùng điều kiện.
 # Câu hỏi: với một transformer, kiểu suy giảm khi huấn luyện có còn quan trọng hơn kiến trúc như với SPAN và RRDB không.
-# Theo thầy chỉ cần 1–2 fold: mặc định fold 2 và 3 (fold phát triển; fold 1 và 5 giữ kín, không dùng ở đây).
+# Mặc định fold 2 và 3 (fold phát triển; fold 1 và 5 giữ kín, không dùng ở đây).
 # Bật --amp như RRDB để vừa bộ nhớ RTX 3080; đặt AMP=0 nếu đủ bộ nhớ. Mã lần chạy mang tiền tố SWIN_.
 # Công thức chốt trước khi chạy, không dò; nếu phép thử ảnh sáng báo KHÔNG ỔN ĐỊNH thì ghi lại, không chỉnh để "đẹp".
 # Dùng (từ gốc repo):  bash scripts/make_swinir_jobs.sh                       # -> jobs/swinir.txt (4 lệnh)

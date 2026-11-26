@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Đo nhận dạng tai trên ảnh nhỏ THẬT sau khi phóng bằng từng phương pháp (việc 2 của docs/story-imavis.md).
+"""Đo nhận dạng tai trên ảnh nhỏ THẬT sau khi phóng bằng từng phương pháp.
 
   python scripts/recog_eval.py --root data/raw/EarVN1.0 --roles splits/earvn_roles.json \
       --recognizer runs/RECOG_resnet18/ckpt.pt --models bicubic span_ch48 disp26 --runs runs/N2_*+* \
@@ -9,7 +9,7 @@ Giao thức: với mỗi người của nhóm chấm (chưa từng dùng để h
 ảnh đăng ký, mẫu của người đó là trung bình đặc trưng. Ảnh dò là ảnh nhỏ thật (cạnh ngắn trong --probe-short), phóng ×4
 bằng từng phương pháp rồi đưa về cỡ vào của mạng nhận dạng bằng cùng một phép thu phóng. Phương pháp ``direct`` bỏ
 bước phóng; ``ref_large`` dùng nửa ảnh lớn còn lại làm ảnh dò, cho biết mạng nhận dạng làm được tới đâu.
-Với --synth KIỂU (kiểm toán 04/11; TODO.md, việc Q2): ảnh dò là nửa ảnh lớn không dùng làm ảnh đăng ký, thu về cạnh ngắn
+Với --synth KIỂU: ảnh dò là nửa ảnh lớn không dùng làm ảnh đăng ký, thu về cạnh ngắn
 4×--synth-short như khi dựng benchmark (scripts/build_wild.py), rồi suy giảm bằng earsr.degrade (bic, bicjpeg93, ...). Cùng
 người, cùng ảnh, chỉ đổi kiểu suy giảm: tách được tác dụng của mức nén khỏi mọi khác biệt khác giữa ảnh nhỏ thật và ảnh lớn.
 Mỗi phương pháp ghi <tên>.csv (theo ảnh dò, cùng thứ tự với probes.csv) và <tên>.npy (điểm với mẫu của mọi người;
@@ -104,7 +104,7 @@ def main(argv=None) -> None:
     ap.add_argument("--synth-short", type=int, default=36, help="cạnh ngắn của ảnh dò tổng hợp")
     ap.add_argument("--degrade-params", default=None, help="file tham số cho --synth est")
     ap.add_argument("--probe-jpeg", type=int, default=None,
-                    help="nén lại ảnh dò thật ở mức JPEG này trước khi phóng (góp ý của thầy, mục 8: kiểm giả thuyết AWEx)")
+                    help="nén lại ảnh dò thật ở mức JPEG này trước khi phóng")
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args(argv)

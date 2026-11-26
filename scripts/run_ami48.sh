@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lấp hai ô trống của Bảng A.1 trên AMI (kiểm toán bảng ngày 04/11; TODO.md, việc P6). Chỉ chấm, không huấn luyện.
+# Lấp hai ô trống của Bảng A.1 trên AMI. Chỉ chấm, không huấn luyện.
 #   1. Ảnh vào 48 px (đáp án 192): JPEG 93, 85, 60 (mức 75 và ảnh sạch đã có), để tính được điểm đổi dấu ở Bảng 2.
 #   2. Suy giảm đo được (est) ở cả ba cỡ 24, 36, 48 px, cho cột Measured.
 # Mọi mô hình có trọng số công bố, như scripts/run_wild_t2.sh; ghi thêm vào results/t2 (file đã có thì bỏ qua).

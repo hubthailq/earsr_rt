@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mốc cho vòng phản biện (08/10/2026): tinh chỉnh một mạng lớn (RRDB, 16,7 triệu tham số, trọng số công bố bản PSNR)
+# Mốc bổ sung (08/10/2026): tinh chỉnh một mạng lớn (RRDB, 16,7 triệu tham số, trọng số công bố bản PSNR)
 # với ĐÚNG công thức của SPAN nhánh est: suy giảm đo được, ảnh EarVN1.0 nhóm train 30%, tăng cường độ sáng, 20.000 bước,
 # lô 64, tốc độ học 2e-4, seed bằng số fold. Câu hỏi: khi mạng lớn cũng học có nén thì nó hơn SPAN bao nhiêu.
 # Khác duy nhất so với SPAN: bật --amp (độ chính xác hỗn hợp), vì RRDB ở lô 64 cần khoảng 12 GB ở FP32, quá RTX 3080.

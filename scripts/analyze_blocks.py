@@ -1,4 +1,4 @@
-"""Phần dư nén nằm ở đâu: theo vị trí trong khối 8×8 của ảnh vào và theo tần số (phản biện ngày 04/11).
+"""Phần dư nén nằm ở đâu: theo vị trí trong khối 8×8 của ảnh vào và theo tần số.
 
 Với mỗi mô hình m và mỗi mức nén Q, phần dư theo phân rã của mục 4.2 là
     (b-1) E_c = [E'_m - E_m] - [E'_bic - E_bic],

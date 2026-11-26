@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# AWEx nén lại ở JPEG 75 (góp ý của thầy 24/11/2026, mục 8; TODO.md, việc W7). Chỉ chấm, không huấn luyện.
+# AWEx nén lại ở JPEG 75. Chỉ chấm, không huấn luyện.
 # Giả thuyết trong bài (mục 7): AWEx không có mức tăng vì ảnh dò không mang lỗi nén JPEG. Phép kiểm: giải nén ảnh dò thật
 # của AWEx rồi nén lại ở JPEG 75 (libjpeg 4:2:0, như benchmark), rồi chấm lại theo giao thức chính, tức mỗi cách phóng
 # dùng đúng bộ nhận dạng đã học trên ảnh phóng bằng chính nó (runs/RECOG_resnet18_up-<cách>, từ run_recog_upscaled.sh).

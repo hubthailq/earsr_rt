@@ -1,4 +1,4 @@
-"""Kiểu suy giảm cho đối chứng thứ tự (phản biện 04/11) và phép tách phần dư của scripts/analyze_blocks.py."""
+"""Kiểu suy giảm cho đối chứng thứ tự và phép tách phần dư của scripts/analyze_blocks.py."""
 import sys
 from pathlib import Path
 
