@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 from types import SimpleNamespace
 import sys
 from pathlib import Path
@@ -830,7 +832,9 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
             if any(v is None for v in sr_clean.values()):
                 continue
             pts = {}
-            for q in (93, 85, 75, 60):
+            lv_ = sorted({int(m_.group(1)) for f_ in os.listdir(res / per)
+                          for m_ in [re.match(rf"bicubic__hr{t}_x4_bicjpeg(\d+)\.csv$", f_)] if m_}, reverse=True)
+            for q in lv_:   # mọi mức JPEG đã đo cho bộ ảnh và cỡ này (lưới dày trên AMI từ 26/11)
                 bj = mse(per, "bicubic", t, f"bicjpeg{q}")
                 sj = {m_: mse(per, m_, t, f"bicjpeg{q}") for m_ in PSNR16}
                 if bj is None or any(v is None for v in sj.values()):
@@ -934,18 +938,25 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         if tag != "All":
             put(f"CrossQ{tag}Min", int(round(X[sel].q.min())))
             put(f"CrossQ{tag}Max", int(round(X[sel].q.max())))
-    # Khoảng lưới đo chứa điểm đổi dấu: số nội suy chính xác hơn dữ liệu cho phép, nên văn bản dùng
-    # hai mức đo kề nhau, bảng giữ số nội suy. Mức JPEG của benchmark: 60, 75, 85, 93.
-    L = [60, 75, 85, 93]
-    for tag, sel in (("Nat", X.set == "DIV2K"), ("Ami", X.set == "AMI")):
-        lo_, hi_ = [l for l in L if l < X[sel].q.min()], [l for l in L if l > X[sel].q.max()]
-        if not lo_ or not hi_ or len([l for l in L if lo_[-1] < l < hi_[0]]):
-            print(f"CHÚ Ý: điểm đổi dấu {tag} không nằm trong một khoảng lưới; sửa tóm tắt, phần mở đầu và mục 4.2")
-        put(f"CrossGrid{tag}Lo", lo_[-1] if lo_ else "TBD")
-        put(f"CrossGrid{tag}Hi", hi_[0] if hi_ else "TBD")
-        hl_ = Path(__file__).resolve().parent.parent / "paper" / "highlights.txt"
-        if lo_ and hi_ and hl_.exists() and f"quality {lo_[-1]} and {hi_[0]}" not in hl_.read_text():
-            print(f"CHÚ Ý: highlights.txt không còn khớp khoảng {lo_[-1]}–{hi_[0]} ({tag}); sửa highlights")
+    # Khoảng giữa hai mức đã đo chứa điểm đổi dấu (b_lo, b_hi của từng bộ ảnh và cỡ ảnh): văn bản dùng các khoảng này,
+    # bảng phụ lục giữ số nội suy. AMI có lưới dày (11 mức) nên khoảng hẹp và khác nhau theo cỡ ảnh.
+    hl_ = Path(__file__).resolve().parent.parent / "paper" / "highlights.txt"
+    for tag, sel in (("Nat", X.set == "DIV2K"), ("Ami", X.set == "AMI"), ("Wild", X.set.isin(["EarVN1.0", "AWEx"]))):
+        lo_, hi_ = int(X[sel].b_lo.min()), int(X[sel].b_hi.max())
+        put(f"CrossGrid{tag}Lo", lo_)
+        put(f"CrossGrid{tag}Hi", hi_)
+        if tag in ("Nat", "Ami") and hl_.exists() and f"quality {lo_} and {hi_}" not in hl_.read_text():
+            print(f"CHÚ Ý: highlights.txt không còn khớp khoảng {lo_}–{hi_} ({tag}); sửa highlights")
+    for r_ in X[X.set == "AMI"].to_dict("records"):
+        sz = {24: "S", 36: "M", 48: "L"}.get(int(r_["px"]))
+        if sz:
+            put(f"CrossGridAmi{sz}Lo", int(r_["b_lo"]))
+            put(f"CrossGridAmi{sz}Hi", int(r_["b_hi"]))
+    A_ = X[X.set == "AMI"].sort_values("px")
+    if not (np.all(np.diff(A_.b_lo) > 0) and np.all(np.diff(A_.b_hi) > 0)):
+        print("CHÚ Ý: khoảng đổi dấu đo trực tiếp trên AMI không còn dời đều theo cỡ ảnh; sửa câu ở mục 4.2")
+    put("AmiLevels", int(X[X.set == "AMI"].levels.max()))
+    put("WildLevels", int(X[X.set.isin(["EarVN1.0", "AWEx"])].levels.max()))
     # AMI theo cỡ ảnh vào: điểm đổi dấu dời về nén nhẹ hơn khi ảnh vào lớn hơn
     A = X[X.set == "AMI"].sort_values("px")
     if not (np.all(np.diff(A.q) > 0) and np.all(np.diff(A.ratio) < 0)):
@@ -998,7 +1009,7 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     for ax_ in (a1, a2):
         ax_.axhline(0, color="0.6", lw=0.7, ls=":")
     a1.invert_xaxis()
-    a1.set_xticks([93, 85, 75, 60])
+    a1.set_xticks([97, 93, 89, 85, 80, 75, 60])
     a1.set_xlabel("JPEG quality of the input", fontsize=7)
     a1.set_ylabel("Median PSNR gain over bicubic (dB)", fontsize=7)
     a1.set_title("(a) Against the JPEG quality", fontsize=8)
@@ -1019,22 +1030,25 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     # Hình 1 theo kiểu Hình 4 (06/11): (a) mức lợi theo mức JPEG ở 36 px, đường liền có chấm tròn, chú giải trong ô, đường
     # chấm mảnh cho bicubic, khoảng đổi dấu tô rất nhạt; (b) phân bố mức JPEG của ảnh tai nhỏ thật.
     f, (ax, bx) = plt.subplots(1, 2, figsize=(6.6, 2.7), gridspec_kw={"width_ratios": [1.25, 1]})
+    br_ = {st: X[(X.set == st) & (X.px == 36)].iloc[0] for st in ("AMI", "DIV2K")}
     for ax_ in (ax, bx):
-        ax_.axvspan(85, 93, color=col["AMI"], alpha=0.08, lw=0, zorder=0)
-        ax_.axvspan(60, 75, color="0.35", alpha=0.08, lw=0, zorder=0)
+        ax_.axvspan(br_["AMI"].b_lo, br_["AMI"].b_hi, color=col["AMI"], alpha=0.10, lw=0, zorder=0)
+        ax_.axvspan(br_["DIV2K"].b_lo, br_["DIV2K"].b_hi, color="0.35", alpha=0.08, lw=0, zorder=0)
     lab = {"AMI": "ear images (AMI)", "DIV2K": "natural images (DIV2K)"}
     for st in ("AMI", "DIV2K"):
         g = R[(R.set == st) & (R.px == 36)].sort_values("q")
         ax.plot(g.q, g.gain, color=col[st], lw=1.4, marker="o", ms=3.5, label=f"{lab[st]}, 36-pixel inputs")
     ax.axhline(0, color="0.6", lw=0.7, ls=":")
     top_ = ax.get_ylim()[1]
-    ax.text(89, top_, "sign change,\nears", ha="center", va="top", fontsize=6, color=col["AMI"])
-    ax.text(67.5, top_, "sign change,\nnatural images", ha="center", va="top", fontsize=6, color="0.35")
+    ax.text((br_["AMI"].b_lo + br_["AMI"].b_hi) / 2, top_, "sign change,\nears", ha="center", va="top", fontsize=6,
+            color=col["AMI"])
+    ax.text((br_["DIV2K"].b_lo + br_["DIV2K"].b_hi) / 2, top_, "sign change,\nnatural images", ha="center", va="top",
+            fontsize=6, color="0.35")
     ax.set_ylabel("Median PSNR gain over bicubic (dB)", fontsize=7)
     ax.legend(fontsize=6, frameon=False, handlelength=3, loc="upper left", bbox_to_anchor=(0.0, 0.86))
     ax.set_xlabel("JPEG quality of the input", fontsize=7)
-    ax.set_xlim(58, 95)
-    ax.set_xticks([60, 75, 85, 93])
+    ax.set_xlim(58, 99)
+    ax.set_xticks([60, 75, 85, 93, 97])
     ax.set_title("(a) Gain of the 16 published models", fontsize=8)
     qs_ = [int(q_) for q_, _ in jq]
     sh_ = [100 * float(v_) for _, v_ in jq]
@@ -1046,8 +1060,8 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
     bx.set_ylabel("Share of images (%)", fontsize=7)
     bx.set_xlabel("JPEG quality of the input", fontsize=7)
     bx.set_title("(b) Real small ear images (EarVN1.0)", fontsize=8)
-    bx.set_xlim(58, 95)
-    bx.set_xticks([60, 65, 70, 75, 80, 85, 90, 93])
+    bx.set_xlim(58, 99)
+    bx.set_xticks([60, 65, 70, 75, 80, 85, 90, 93, 97])
     f.tight_layout(w_pad=1.5)
     f.savefig(fig / "fig_overview.png", dpi=600)
     plt.close(f)
@@ -1060,9 +1074,10 @@ def error_ratio(res: Path, out: Path, fig: Path) -> None:
         g = R[(R.set == st) & (R.px == px)].sort_values("q", ascending=False)
         if g.empty:
             continue
-        xs = [str(q) for q in g.q]
-        ax.plot(xs, g.excess, color=col[st], marker="o", ms=3.5, lw=1.4, label=lab)
+        ax.plot(g.q, g.excess, color=col[st], marker="o", ms=3.5 if st != "AMI" else 2.8, lw=1.4, label=lab)
         ax.axhline(float(g.saving.median()), color=col[st], lw=0.9, ls="--")
+    ax.invert_xaxis()
+    ax.set_xticks([97, 93, 89, 85, 80, 75, 60])
     ax.set_xlabel("JPEG quality of the input")
     ax.set_ylabel("Error relative to $E_i$")
     ax.text(0.01, 0.97, "solid: excess $(b-1)E_c$; dashed: saving $(1-a)E_i$", transform=ax.transAxes, fontsize=6.5, va="top")
@@ -1821,6 +1836,62 @@ def recog_curves_tab(res: Path, out: Path) -> None:
         print("CHÚ Ý: TAR@FAR 1% của SPAN est không còn hơn bicubic; sửa câu ở mục 6.5")
 
 
+def awex_recompress(res: Path, out: Path) -> None:
+    """AWEx với ảnh dò thật nén lại ở JPEG 75, giao thức chính (scripts/run_awex_recompress.sh): kiểm giả thuyết ở phần
+    thảo luận rằng AWEx không có mức tăng vì ảnh dò không mang lỗi nén. Bảng phụ lục tab_awex_q75.tex, macro AwexQ*."""
+    why = "awex-q75"
+    names = ["AwexQBic", "AwexQBicOrig", "AwexQRef", "AwexQPub", "AwexQEst", "AwexQRrdb", "AwexQBsr", "AwexQResr", "AwexQFb",
+             "AwexQEstPt", "AwexQRrdbPt", "AwexQBsrPt", "AwexQPubPt", "AwexQSig"]
+    H, ok = {}, True
+    for m, cs, name, tag in UP_ALL:
+        pat = "N2_*.csv" if m == "est" else ("REV_*.csv" if m == "rrdb_est" else f"{m}.csv")
+        for kind in ("orig", "q75"):
+            d = res / "recog_up" / (f"awex_{m}" if kind == "orig" else f"awex_q75_{m}")
+            fs = sorted(d.glob(pat)) if d.is_dir() else []
+            if not fs:
+                ok = False
+                break
+            ts = [pd.read_csv(f, dtype={"subject": str}) for f in fs]
+            H[(tag, kind)] = (np.mean([(t["rank"].to_numpy() == 1).astype(float) for t in ts], 0), ts[0]["subject"].to_numpy())
+    if not ok:
+        for n_ in names:
+            put(n_, None, why)
+        write(out / "tab_awex_q75.tex", "\\todo{--} \\\\\n")
+        return
+    subj = H[("Bic", "q75")][1]
+    rows, sig = [], 0
+    for m, cs, name, tag in UP_ALL:
+        cells = []
+        for kind in ("orig", "q75"):
+            h, sj = H[(tag, kind)]
+            if not np.array_equal(sj, subj):
+                raise SystemExit(f"awex_recompress: ảnh dò của {tag} ({kind}) không khớp")
+            cells.append(f"{100 * h.mean():.1f}")
+            if tag == "Bic":
+                cells.append("--")
+                continue
+            e = paired_diff(100 * h, 100 * H[("Bic", kind)][0], subj, n_boot=1000)
+            cells.append(est_cell(e, 1))
+            if kind == "q75":
+                put(f"AwexQ{tag}", est_cell(e, 1).replace("{\\scriptsize", "").replace("}", ""))
+                put(f"AwexQ{tag}Pt", num(e.point, 1, True))
+                sig += int(e.lo > 0 or e.hi < 0)
+        rows.append(f"{name} & " + " & ".join(cells) + " \\\\")
+    rows.insert(3, "\\midrule")
+    write(out / "tab_awex_q75.tex", "\n".join(rows) + "\n")
+    put("AwexQBic", f"{100 * H[('Bic', 'q75')][0].mean():.1f}")
+    put("AwexQBicOrig", f"{100 * H[('Bic', 'orig')][0].mean():.1f}")
+    ref = res / "recog_up" / "awex_q75_bicubic" / "ref_large.csv"
+    put("AwexQRef", f"{100 * (pd.read_csv(ref)['rank'] == 1).mean():.1f}" if ref.exists() else None, why)
+    put("AwexQSig", WORDS.get(sig, str(sig)) if sig else "none")
+    if sig:
+        print("CHÚ Ý: có cách phóng khác bicubic có ý nghĩa trên AWEx nén lại; sửa đoạn AWEx ở thảo luận")
+    for t_ in ("Resr", "Fb"):   # câu ở thảo luận: hai cách này "stayed within one point"
+        e_ = paired_diff(100 * H[(t_, "q75")][0], 100 * H[("Bic", "q75")][0], subj, n_boot=200)
+        if abs(e_.point) >= 1:
+            print(f"CHÚ Ý: {t_} trên AWEx nén lại lệch bicubic {e_.point:+.1f} điểm, quá 1; sửa câu ở thảo luận")
+
+
 ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
                ("shiftjpeg75", "Same, block grid offset 1--7 px"), ("dbljpeg93to75", "JPEG 93 with offset grid, then 75"),
                ("jpeg75bic", "JPEG 75, then downsize"), ("bicjpeg93", "Downsize, then JPEG 93 (as in the paper)"),
@@ -1923,25 +1994,28 @@ def figures(pub: dict, tr: dict, fig: Path) -> None:
 
     fig.mkdir(parents=True, exist_ok=True)
     q, P = pub["q"], tr["P"]["ami"]
-    kinds = ["bicjpeg60", "bicjpeg75", "bicjpeg85", "bicjpeg93", "bic"]
+    lvls = sorted({int(k[7:]) for k in q.degrade.unique() if re.fullmatch(r"bicjpeg\d+", k)})
+    kinds = [f"bicjpeg{l}" for l in lvls] + ["bic"]
     # Hình 2 theo kiểu Hình 4: hai ô (a)/(b), đường liền có chấm tròn, chú giải
     # trong ô, đường chấm mảnh cho bicubic. Trung vị 16 mô hình công bố (liền), mô hình thấp nhất và cao nhất (đứt, mảnh).
     f, axes = plt.subplots(1, 2, figsize=(6.6, 2.7), sharey=True)
-    labs = ["60", "75", "85", "93", "clean"]
-    x = np.arange(5)
+    labs = [str(l) for l in lvls] + ["clean"]
+    x = np.arange(len(kinds))
     for n_, (ax, tier) in enumerate(zip(axes, (96, 144))):
         g = q[(q.tier == tier) & q.model.isin(PSNR16) & q.degrade.isin(kinds)].pivot(index="model", columns="degrade",
                                                                                       values="gain")[kinds]
         ax.plot(x, g.median(), color="0.35", lw=1.4, marker="o", ms=3.5, label=f"{len(g)} published models, median")
         ax.plot(x, g.min(), color="0.35", lw=0.8, ls="--", label="lowest and highest of them")
         ax.plot(x, g.max(), color="0.35", lw=0.8, ls="--")
-        ours = [paired(P, "span/est", "bicubic", tier, k) for k in ("bicjpeg75", "bicjpeg93", "bic")]
-        if all(ours):
-            ax.errorbar([1, 3, 4], [e.point for e in ours], yerr=[[e.point - e.lo for e in ours], [e.hi - e.point for e in ours]],
+        oi = [(i_, paired(P, "span/est", "bicubic", tier, k)) for i_, k in enumerate(kinds)]
+        oi = [(i_, e) for i_, e in oi if e]
+        ours = [e for _, e in oi]
+        if ours:
+            ax.errorbar([i_ for i_, _ in oi], [e.point for e in ours], yerr=[[e.point - e.lo for e in ours], [e.hi - e.point for e in ours]],
                         color="C3", lw=1.4, marker="o", ms=3.5, elinewidth=0.8, capsize=1.5,
                         label="SPAN-S, measured degradation (ours)")
         ax.axhline(0, color="0.6", lw=0.7, ls=":")
-        ax.set_xticks(x, labs)
+        ax.set_xticks(x, labs, fontsize=6)
         ax.set_xlabel("JPEG quality of the input", fontsize=7)
         ax.set_title(f"({'ab'[n_]}) AMI, {tier // 4}-pixel inputs", fontsize=8)
     axes[0].set_ylabel("PSNR-Y gain over bicubic (dB)", fontsize=7)
@@ -2049,6 +2123,7 @@ def main(argv=None) -> None:
     recog_upscaled(res, out)
     recog_upscaled_all(res, out)
     recog_curves_tab(res, out)
+    awex_recompress(res, out)
     fid_recog(res, out, fig)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))

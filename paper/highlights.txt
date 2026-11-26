@@ -1,4 +1,4 @@
-Efficient SR models fall below interpolation between JPEG quality 85 and 93 on ears
+Efficient SR models fall below interpolation between JPEG quality 87 and 93 on ears
 Natural images reach the same point only between JPEG quality 60 and 75
 Every bicubic-trained model adds an excess to the compression error
 Real small ear images are stored on both sides of this point

@@ -243,6 +243,27 @@ Upscaling & Rank 1 & Rank 5 & Rank 10 & FAR 1\% & FAR 0.1\% \\
 \end{tabular}}
 \end{table}
 
+\section{AWEx probes recompressed at JPEG 75}
+\label{app:awexq75}
+Table~\ref{tab:awexq75} repeats the AWEx columns of Table~\ref{tab:recogall} after the real AWEx probes were decoded and compressed again at JPEG 75 (libjpeg, 4:2:0 chroma subsampling, as in the benchmark). Each method is scored with the recogniser trained on images upscaled by that method; recognisers and templates are unchanged.
+
+\begin{table}[H]
+\centering
+\caption{Rank-1 rate (\%) of real AWEx probes under the main protocol, as distributed and recompressed at JPEG 75, with the paired difference from bicubic upscaling in percentage points (95\% confidence intervals, bootstrap over subjects).}
+\label{tab:awexq75}
+\small
+\fitbox{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{As distributed} & \multicolumn{2}{c}{Recompressed at JPEG 75} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Upscaling & Rank-1 & Minus bicubic & Rank-1 & Minus bicubic \\
+\midrule
+\tabinput{generated/tab_awex_q75}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Synthesised probes}
 \label{app:recogsynth}
 The two quality groups of Table~\ref{tab:recogquality} differ in subjects as well as in compression. To vary compression on fixed images, we downsized the large images of the \SynSubj{} test subjects not used for enrolment (\SynProbes{} images; the real probes come from \RecSubj{} of these subjects) to probes of 24 or 36 pixels, clean, at JPEG 75 or with the measured degradation, with conditions fixed before the run (Table~\ref{tab:recogsynth}). These probes are easier than real ones (\SynBicEstS{}\% against \RecRankBic{}\% with bicubic upscaling and Ear-R18). The clearest result is at 24 pixels and JPEG 75, where bicubic-trained models lose \SynJpgBicTrMin{} to \SynJpgBicTrMax{} points and models trained with compression gain \SynJpgCmpTrMin{} to \SynJpgCmpTrMax{}, every interval excluding zero; on clean 36-pixel probes, models trained with compression are lower by \SynCleanCmpTrLMin{} to \SynCleanCmpTrLMax{} points. The recognisers were trained on large images only, so the differences may partly reflect how closely upscaled probes resemble the enrolment images.

@@ -31,6 +31,8 @@ vận hành; transformer chọn SwinIR-light; mã đăng GitHub cộng Zenodo.
 bộ nhận dạng pretrain trên dữ liệu tai lớn hay không (mục 7); điều khoản dữ liệu AMI, AWEx (mục 9).
 
 ### Tuần 1
+Ghi chú git (26/11): commit `cb87ac3` mang nhầm thông điệp "Denser JPEG grid ... results" nhưng thực chất là W3, W4, W10, W11,
+W13 (không có kết quả); hai file thiếu được bổ sung ở `df93964`. Không ghi đè lịch sử. Kết quả W6, W7 commit riêng trên labai217.
 - [x] 26/11 W1 [Claude] Mục 1 (xong: macro \KeyFinding trong main.tex, dùng nguyên văn ở tóm tắt, cuối mở đầu, kết luận;
   câu viết sát dữ liệu "follows the ratio ... more closely than it follows the quality setting", căn cứ tương quan hạng
   −0,93 so với 0,75; "bookkeeping" thay bằng "identity ... empirical", ghi rõ 38 tổ hợp JPEG cộng WebP, AVIF; đóng góp
@@ -51,14 +53,19 @@ bộ nhận dạng pretrain trên dữ liệu tai lớn hay không (mục 7); đ
   `recog_eval.py` cộng `scripts/run_awex_recompress.sh` (W7), bí danh `swinir` trong `earsr/train/finetune.py` cộng
   `scripts/make_swinir_jobs.sh` và `scripts/score_swinir.sh` (W12; 3 bước tinh chỉnh thử chạy được, qua phép thử ảnh sáng),
   `scripts/recog_curves.py` (W10, W11; CMC hạng 1 khớp đúng Bảng 5)). Gốc: Viết script cho mục 2 (lưới JPEG dày), 8 (AWEx nén lại), 6 (SwinIR-light), 7 (TAR@FAR); thử ngắn trên Mac.
-- [ ] W6 [labai217] Mục 2: AMI thêm JPEG 80, 83, 87, 89, 91, 95, 97 (16 mô hình, 3 cỡ, cả bicubic và SPAN tinh chỉnh);
+- [x] 26/11 W6 [labai217] (xong, commit 31ce870: 357 file AMI, 147 SPAN tinh chỉnh, 34 EarVN1.0, 68 AWEx; không lỗi). Gốc: Mục 2: AMI thêm JPEG 80, 83, 87, 89, 91, 95, 97 (16 mô hình, 3 cỡ, cả bicubic và SPAN tinh chỉnh);
   EarVN1.0 và AWEx thêm 85, 60. Chỉ suy luận, ước 3–6 giờ.
-- [ ] W7 [labai217] Mục 8: nén lại ảnh dò AWEx ở JPEG 75, chấm bằng các bộ nhận dạng của giao thức chính. Ước 1 giờ.
+- [x] 26/11 W7 [labai217] (xong, commit 31ce870: 7 thư mục awex_q75_*). Gốc: Mục 8: nén lại ảnh dò AWEx ở JPEG 75, chấm bằng các bộ nhận dạng của giao thức chính. Ước 1 giờ.
 
 ### Tuần 2
-- [ ] W8 [Claude] Đưa kết quả W6 vào bài (Bảng 2, Hình 1, 2, 5, Bảng D.1, các câu về khoảng đổi dấu; bỏ cột nội suy nếu
+- [x] 26/11 W8 [Claude] (xong: make_paper.py nhận mọi mức đo được; summarize_t2 chạy lại (ô cũ không đổi). AMI đổi dấu
+  87–89 (24 px), 89–91 (36 px), 91–93 (48 px): dời theo cỡ ảnh nay đo trực tiếp, khớp số nội suy cũ 86,8/89,0/91,3;
+  EarVN1.0, AWEx 75–85; DIV2K 60–75. b > 1 ở cả 65 tổ hợp; phần dư tăng ở 176/176; Spearman −0,94 so với 0,73. Tóm tắt,
+  mở đầu, 4.2, hạn chế, highlights (87 và 93), Hình 1, 2, 3, 5 cập nhật; tóm tắt vẫn gọn trang 1). Gốc: Đưa kết quả W6 vào bài (Bảng 2, Hình 1, 2, 5, Bảng D.1, các câu về khoảng đổi dấu; bỏ cột nội suy nếu
   lưới đã đủ dày); viết theo đúng số đo.
-- [ ] W9 [Claude] Đưa kết quả W7 vào thảo luận AWEx (củng cố hoặc bác giả thuyết, ghi đúng như kết quả).
+- [x] 26/11 W9 [Claude] (xong: AWEx nén lại JPEG 75, giao thức chính: bicubic 36,7→32,5%; SPAN công bố −3,5, ours +1,6,
+  RRDB +2,3, BSRNet +3,7, Real-ESRNet −0,5, FBCNN rồi SPAN −0,2; không khác biệt nào có ý nghĩa; ảnh lớn 34,6% nên dư địa
+  vẫn nhỏ. Viết vào thảo luận: chỉ nén không tạo ra mức tăng; vai trò dư địa chưa kiểm. Bảng phụ lục app:awexq75). Gốc: Đưa kết quả W7 vào thảo luận AWEx (củng cố hoặc bác giả thuyết, ghi đúng như kết quả).
 - [x] 26/11 W10 [Claude] Mục 7: CMC (hạng 1, 5, 10) trong bảng phụ lục app:curves (`recog_curves_tab` trong
   make_paper.py); câu ở 6.5: hạng 5 ours 69,2% so với 62,9%, +6,3 [0,4; 12,7]. Hạng 1 khớp Bảng 5.
 - [x] 26/11 W11 [Claude] Mục 7: TAR@FAR 1% và 0,1% cùng bảng app:curves; câu ở 6.5: ours 29,0% so với bicubic 24,9%,

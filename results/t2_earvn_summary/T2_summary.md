@@ -29,6 +29,28 @@
 | realesrgan | perceptual | 29.17 [28.69, 29.67] | -3.16 [-3.71, -2.72] | 0.8449 | 27.03 | 29.04 |
 | realesr_compact | perceptual | 29.03 [28.46, 29.60] | -3.30 [-3.75, -2.94] | 0.8713 | 26.90 | 29.96 |
 
+## ×4, đáp án 96 px, suy giảm bicjpeg60 (158 ảnh)
+
+| Mô hình | Nhóm | PSNR-Y (dB) [KTC 95%] | Hơn bicubic (dB) [KTC 95%] | SSIM-Y | PSNR-RGB | PSNR-Y vùng giữa |
+|---|---|---|---|---|---|---|
+| bicubic | mốc | 29.72 [29.24, 30.26] |  | 0.8089 | 26.98 | 29.85 |
+| edsr_baseline | mid | 29.43 [28.99, 29.95] | -0.28 [-0.32, -0.25] | 0.7914 | 26.75 | 29.40 |
+| smfan | light | 29.43 [28.98, 29.95] | -0.29 [-0.32, -0.25] | 0.7906 | 26.75 | 29.38 |
+| span_ch48 | light | 29.40 [28.95, 29.92] | -0.32 [-0.35, -0.28] | 0.7905 | 26.72 | 29.37 |
+| msrresnet | mid | 29.39 [28.94, 29.92] | -0.33 [-0.36, -0.28] | 0.7900 | 26.71 | 29.37 |
+| pkdsr26 | light | 29.38 [28.93, 29.90] | -0.33 [-0.38, -0.28] | 0.7908 | 26.73 | 29.38 |
+| span_ch28 | light | 29.37 [28.91, 29.89] | -0.35 [-0.40, -0.30] | 0.7893 | 26.70 | 29.34 |
+| pds26 | light | 29.37 [28.92, 29.89] | -0.35 [-0.40, -0.30] | 0.7894 | 26.71 | 29.35 |
+| span_ch26 | light | 29.36 [28.91, 29.89] | -0.35 [-0.40, -0.30] | 0.7898 | 26.70 | 29.36 |
+| swinir_light | mid | 29.35 [28.91, 29.87] | -0.36 [-0.41, -0.32] | 0.7887 | 26.68 | 29.34 |
+| dscf26 | light | 29.35 [28.89, 29.88] | -0.37 [-0.41, -0.32] | 0.7895 | 26.69 | 29.36 |
+| rrdb_psnr | upper | 29.34 [28.89, 29.85] | -0.38 [-0.43, -0.33] | 0.7884 | 26.66 | 29.33 |
+| safmnpp | light | 29.32 [28.88, 29.83] | -0.40 [-0.45, -0.35] | 0.7862 | 26.66 | 29.30 |
+| disp26 | light | 29.31 [28.85, 29.84] | -0.41 [-0.45, -0.36] | 0.7870 | 26.65 | 29.29 |
+| rlfn | light | 29.28 [28.83, 29.80] | -0.44 [-0.48, -0.38] | 0.7867 | 26.63 | 29.26 |
+| errn26 | light | 29.26 [28.81, 29.79] | -0.45 [-0.50, -0.40] | 0.7856 | 26.62 | 29.26 |
+| efdn | light | 29.22 [28.76, 29.75] | -0.50 [-0.55, -0.44] | 0.7845 | 26.58 | 29.19 |
+
 ## ×4, đáp án 96 px, suy giảm bicjpeg75 (158 ảnh)
 
 | Mô hình | Nhóm | PSNR-Y (dB) [KTC 95%] | Hơn bicubic (dB) [KTC 95%] | SSIM-Y | PSNR-RGB | PSNR-Y vùng giữa |
@@ -57,6 +79,28 @@
 | esrgan | perceptual | 28.52 [27.99, 29.13] | -1.99 [-2.14, -1.79] | 0.7471 | 26.09 | 28.48 |
 | realesrgan | perceptual | 28.33 [27.89, 28.82] | -2.17 [-2.66, -1.80] | 0.8116 | 26.34 | 27.94 |
 | realesr_compact | perceptual | 27.69 [27.15, 28.22] | -2.82 [-3.25, -2.51] | 0.8264 | 25.87 | 28.19 |
+
+## ×4, đáp án 96 px, suy giảm bicjpeg85 (158 ảnh)
+
+| Mô hình | Nhóm | PSNR-Y (dB) [KTC 95%] | Hơn bicubic (dB) [KTC 95%] | SSIM-Y | PSNR-RGB | PSNR-Y vùng giữa |
+|---|---|---|---|---|---|---|
+| smfan | light | 31.82 [31.37, 32.32] | +0.57 [+0.47, +0.70] | 0.8496 | 28.92 | 31.74 |
+| edsr_baseline | mid | 31.80 [31.36, 32.30] | +0.55 [+0.46, +0.67] | 0.8504 | 28.91 | 31.77 |
+| span_ch48 | light | 31.78 [31.35, 32.28] | +0.54 [+0.44, +0.66] | 0.8504 | 28.90 | 31.76 |
+| rrdb_psnr | upper | 31.78 [31.34, 32.28] | +0.53 [+0.44, +0.65] | 0.8497 | 28.88 | 31.73 |
+| msrresnet | mid | 31.76 [31.31, 32.27] | +0.52 [+0.43, +0.62] | 0.8495 | 28.87 | 31.73 |
+| swinir_light | mid | 31.76 [31.32, 32.26] | +0.51 [+0.42, +0.63] | 0.8488 | 28.87 | 31.72 |
+| span_ch26 | light | 31.71 [31.26, 32.23] | +0.46 [+0.37, +0.59] | 0.8493 | 28.86 | 31.72 |
+| span_ch28 | light | 31.71 [31.26, 32.23] | +0.46 [+0.37, +0.58] | 0.8488 | 28.85 | 31.67 |
+| pkdsr26 | light | 31.71 [31.26, 32.23] | +0.46 [+0.38, +0.58] | 0.8497 | 28.87 | 31.70 |
+| pds26 | light | 31.70 [31.26, 32.21] | +0.45 [+0.37, +0.57] | 0.8484 | 28.86 | 31.68 |
+| dscf26 | light | 31.69 [31.23, 32.21] | +0.44 [+0.34, +0.57] | 0.8490 | 28.84 | 31.71 |
+| safmnpp | light | 31.68 [31.24, 32.19] | +0.43 [+0.34, +0.57] | 0.8461 | 28.83 | 31.63 |
+| disp26 | light | 31.65 [31.20, 32.15] | +0.40 [+0.31, +0.52] | 0.8461 | 28.80 | 31.63 |
+| rlfn | light | 31.64 [31.20, 32.15] | +0.39 [+0.30, +0.51] | 0.8461 | 28.79 | 31.58 |
+| errn26 | light | 31.57 [31.12, 32.08] | +0.32 [+0.24, +0.44] | 0.8449 | 28.75 | 31.57 |
+| efdn | light | 31.54 [31.09, 32.05] | +0.29 [+0.20, +0.41] | 0.8439 | 28.71 | 31.50 |
+| bicubic | mốc | 31.25 [30.73, 31.81] |  | 0.8530 | 28.55 | 31.64 |
 
 ## ×4, đáp án 96 px, suy giảm bicjpeg93 (158 ảnh)
 
@@ -120,6 +164,6 @@
 
 **×4, 96 px.** τ-b (có hòa) = 0.13; cặp cùng chiều 54, đổi chiều có ý nghĩa 40; τ trên thứ hạng trung bình = 0.17 [-0.01, 0.27]. Kết luận theo quy tắc ghi trước: **thứ hạng đảo**.
 
-- thứ tự ở bic: swinir_light, span_ch48, msrresnet, edsr_baseline, rlfn, smfan, span_ch48_t44, efdn, disp26, safmnpp, errn26, pds26, pkdsr26, span26, span_ch28, span_ch26, dscf26
+- thứ tự ở bic: swinir_light, span_ch48, msrresnet, edsr_baseline, rlfn, smfan, span_ch48_t44, efdn, disp26, safmnpp, errn26, pds26, pkdsr26, span_ch28, span26, span_ch26, dscf26
 - thứ tự ở bicjpeg75: smfan, edsr_baseline, span_ch48, msrresnet, pkdsr26, swinir_light, pds26, span_ch26, span_ch28, span26, span_ch48_t44, dscf26, safmnpp, disp26, rlfn, errn26, efdn
 - cặp đổi chiều: dscf26 / disp26, dscf26 / errn26, edsr_baseline / swinir_light, efdn / dscf26, efdn / errn26, efdn / pds26, efdn / pkdsr26, efdn / safmnpp, efdn / span26, msrresnet / edsr_baseline, pds26 / disp26, pds26 / errn26, pds26 / pkdsr26, pkdsr26 / disp26, pkdsr26 / errn26, rlfn / dscf26, rlfn / pds26, rlfn / pkdsr26, rlfn / safmnpp, rlfn / smfan, rlfn / span26, safmnpp / disp26, safmnpp / pds26, safmnpp / pkdsr26, smfan / msrresnet, smfan / swinir_light, span26 / disp26, span26 / errn26, span_ch26 / disp26, span_ch26 / efdn, span_ch26 / errn26, span_ch26 / rlfn, span_ch26 / safmnpp, span_ch28 / disp26, span_ch28 / efdn, span_ch28 / errn26, span_ch28 / rlfn, span_ch48 / edsr_baseline, span_ch48 / smfan, span_ch48_t44 / rlfn
