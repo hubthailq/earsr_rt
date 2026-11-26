@@ -17,6 +17,60 @@ phân tích trên máy Mac.
 - Các dòng cũ bên dưới còn ghi "hỏi thầy", "chờ thầy đồng ý" (mục 2, 2b, 2c, và mục 1.1, E7 của kế hoạch) đọc là: quyết
   định thuộc về người dùng.
 
+## 00. KẾ HOẠCH SỬA THEO GÓP Ý CỦA THẦY (thầy gửi 24/11/2026; người dùng duyệt 26/11/2026). LÀM MỤC NÀY TRƯỚC
+
+Thầy đã đọc bản hoàn chỉnh (bản Overleaf 07/11, giống hệt repo) và gửi kế hoạch 13 mục; mục này thay cho mục 0 bên dưới.
+Cách làm: Claude làm phần trên máy Mac và đánh dấu xong kèm ngày; việc [labai217] Claude đưa lệnh, người dùng chạy rồi gửi
+kết quả, Claude kiểm rồi mới đánh dấu xong. Không commit tự ý; mỗi tuần đưa lệnh commit.
+
+Mặc định đã chọn khi duyệt (người dùng không đổi): câu phát hiện chính viết sát dữ liệu (ý của thầy, nhưng không nói
+"không do mức JPEG" vì ngưỡng tỉ số khác nhau giữa loại ảnh và codec); tóm tắt theo bản của thầy, thêm một vế điều kiện
+vận hành; transformer chọn SwinIR-light; mã đăng GitHub cộng Zenodo.
+
+**Chờ người dùng:** thông tin bản thảo span_tiny (tên, tác giả, tình trạng, một câu nội dung); xác nhận nơi đăng mã; có thử
+bộ nhận dạng pretrain trên dữ liệu tai lớn hay không (mục 7); điều khoản dữ liệu AMI, AWEx (mục 9).
+
+### Tuần 1
+- [x] 26/11 W1 [Claude] Mục 1 (xong: macro \KeyFinding trong main.tex, dùng nguyên văn ở tóm tắt, cuối mở đầu, kết luận;
+  câu viết sát dữ liệu "follows the ratio ... more closely than it follows the quality setting", căn cứ tương quan hạng
+  −0,93 so với 0,75; "bookkeeping" thay bằng "identity ... empirical", ghi rõ 38 tổ hợp JPEG cộng WebP, AVIF; đóng góp
+  thành 3 gạch đầu dòng. Tóm tắt tạm thời 273 từ, vượt 250 cho tới khi làm W2). Gốc: bỏ "bookkeeping", thay câu "Equation 1 is an identity; the finding is empirical: b > 1 holds in all
+  38 settings and three codecs"; một câu phát hiện chính nguyên văn ở tóm tắt, cuối mở đầu, kết luận; đóng góp 3 gạch đầu
+  dòng (phân tích đổi dấu; benchmark; công thức tinh chỉnh và đánh giá ảnh thật).
+- [x] 26/11 W2 [Claude] Mục 4 (xong: theo bản của thầy, số qua macro; câu "set by the ratio" của thầy thay bằng \KeyFinding;
+  thêm vế "for crops that keep their compression error"; ghi rõ nhận dạng theo bộ nhận dạng học ảnh phóng. 220 từ (đếm
+  trên PDF), cả tóm tắt nằm gọn trang 1 trước chú thích tác giả. Đã bỏ khỏi tóm tắt: RRDB lớn gấp 39 lần và cái giá trên
+  ảnh sạch, vẫn có ở mở đầu và hạn chế. Tiêu đề đã bỏ \\ (phần đầu của W3)). Gốc: tóm tắt theo bản của thầy (~170 từ, số qua macro) cộng vế điều kiện vận hành.
+- [ ] W3 [Claude] Mục 12: (đã bỏ `\\` trong tiêu đề 26/11); từ khóa "JPEG artefacts"; rà † và chữ đậm ở Bảng 1, 3, G.1.
+- [ ] W4 [Claude] Mục 3: tìm và kiểm (Crossref/arXiv) 10–15 tài liệu: SR ảnh nén 2023–2026, SR khuếch tán/một bước
+  (1–2 câu lý do loại), nhận dạng tai gần đây (UERC 2023, transformer/foundation model); span_tiny khi có thông tin.
+- [x] 26/11 W5 [Claude] (xong, đã thử ngắn trên Mac: `scripts/run_jpeg_grid.sh` (W6), `--probe-jpeg` trong
+  `recog_eval.py` cộng `scripts/run_awex_recompress.sh` (W7), bí danh `swinir` trong `earsr/train/finetune.py` cộng
+  `scripts/make_swinir_jobs.sh` và `scripts/score_swinir.sh` (W12; 3 bước tinh chỉnh thử chạy được, qua phép thử ảnh sáng),
+  `scripts/recog_curves.py` (W10, W11; CMC hạng 1 khớp đúng Bảng 5)). Gốc: Viết script cho mục 2 (lưới JPEG dày), 8 (AWEx nén lại), 6 (SwinIR-light), 7 (TAR@FAR); thử ngắn trên Mac.
+- [ ] W6 [labai217] Mục 2: AMI thêm JPEG 80, 83, 87, 89, 91, 95, 97 (16 mô hình, 3 cỡ, cả bicubic và SPAN tinh chỉnh);
+  EarVN1.0 và AWEx thêm 85, 60. Chỉ suy luận, ước 3–6 giờ.
+- [ ] W7 [labai217] Mục 8: nén lại ảnh dò AWEx ở JPEG 75, chấm bằng các bộ nhận dạng của giao thức chính. Ước 1 giờ.
+
+### Tuần 2
+- [ ] W8 [Claude] Đưa kết quả W6 vào bài (Bảng 2, Hình 1, 2, 5, Bảng D.1, các câu về khoảng đổi dấu; bỏ cột nội suy nếu
+  lưới đã đủ dày); viết theo đúng số đo.
+- [ ] W9 [Claude] Đưa kết quả W7 vào thảo luận AWEx (củng cố hoặc bác giả thuyết, ghi đúng như kết quả).
+- [ ] W10 [Claude] Mục 7: đường CMC từ kết quả có sẵn (Mac).
+- [ ] W11 [Claude] Mục 7: TAR@FAR (đổi từ labai217 sang Mac 26/11: ma trận điểm .npy đã có trong results/recog_up,
+  tính bằng `scripts/recog_curves.py`, không cần chạy lại).
+- [ ] W12 [labai217] Mục 6: tinh chỉnh SwinIR-light, 2 fold, suy giảm đo được (thêm bicubic nếu kịp). Ước 4–12 giờ.
+- [ ] W13 [Claude] Mục 5: chạy `scripts/make_release.sh`, rà sạch dấu vết nội bộ; chuẩn bị README phát hành.
+
+### Tuần 3
+- [ ] W14 [Claude] Đưa kết quả W11, W12 vào bài (Bảng K.1, mục 6.2, 6.5, hạn chế).
+- [ ] W15 [Claude] Mục 10: mỗi đoạn một ý, tối đa 2–3 số; bớt rào đón ở mục 4–6.
+- [ ] W16 [Claude] Mục 11: tách phụ lục thành Supplementary material; Bảng 2 lên ngay sau Hình 1; bài chính 25–28 trang.
+- [ ] W17 [Bạn] Mục 5: tạo repo GitHub, đăng bản phát hành, Zenodo DOI; [Claude] ghi URL vào Data availability.
+- [ ] W18 [Bạn] Mục 9: kiểm điều khoản AMI, AWEx; [Claude] ghi câu vào Data availability.
+- [ ] W19 [Claude] Mục 13: cover letter (khác biệt với span_tiny).
+- [ ] W20 [Claude] Kiểm cuối: số liệu bảng/hình/văn bản khớp, văn phong, tài liệu có thật, không dấu vết AI, gói Overleaf mới.
+
 ## 0. LÀM GÌ TIẾP (đọc mục này trước; cập nhật 08/10/2026)
 
 **Bài này:** phát hiện cộng benchmark cộng cách huấn luyện, không có kiến trúc mới (kiến trúc để bài sau); đích IMAVIS; thầy

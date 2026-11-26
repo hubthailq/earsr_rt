@@ -31,7 +31,7 @@ def _load_ckpt_model(path: str | Path) -> dict:
 
 
 # Mã lần chạy không cho gạch dưới trong tên thân (earsr/runid.py), nên mô hình trong kho có gạch dưới cần tên ngắn.
-TRAIN_ALIAS = {"rrdb": "rrdb_psnr"}
+TRAIN_ALIAS = {"rrdb": "rrdb_psnr", "swinir": "swinir_light"}
 
 
 def build_trainable(backbone: str, variant: str, pretrain: str, scale: int,

@@ -103,6 +103,8 @@ def main(argv=None) -> None:
     ap.add_argument("--synth", default=None, help="ảnh dò tổng hợp từ nửa ảnh lớn, kiểu suy giảm này (bic, bicjpeg75, ...)")
     ap.add_argument("--synth-short", type=int, default=36, help="cạnh ngắn của ảnh dò tổng hợp")
     ap.add_argument("--degrade-params", default=None, help="file tham số cho --synth est")
+    ap.add_argument("--probe-jpeg", type=int, default=None,
+                    help="nén lại ảnh dò thật ở mức JPEG này trước khi phóng (góp ý của thầy, mục 8: kiểm giả thuyết AWEx)")
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args(argv)
@@ -117,6 +119,12 @@ def main(argv=None) -> None:
         raise SystemExit(f"DỪNG: mạng nhận dạng đã học trên {len(leak)} người của nhóm chấm (ví dụ {sorted(leak)[:3]})")
     sp = split_gallery_probe(rows, tuple(a.probe_short), a.gallery_min_short)
     prep = None
+    if a.synth and a.probe_jpeg:
+        raise SystemExit("--synth và --probe-jpeg không dùng chung")
+    if a.probe_jpeg:   # ảnh dò thật giải nén rồi nén lại một lần nữa ở mức này (cùng libjpeg 4:2:0 như benchmark)
+        from earsr.degrade.ops import jpeg as _jpeg
+
+        prep = (lambda img, r, q=a.probe_jpeg: _jpeg(img, q))
     if a.synth:
         from earsr.degrade.pipelines import DegradeParams
 
@@ -135,13 +143,13 @@ def main(argv=None) -> None:
     g_subj = np.array([r["subject"] for r in sp["gallery"]])
     uniq, temp = templates(embed(model, root, sp["gallery"], a.device), g_subj)
     for r in sp["probe"]:   # mức nén JPEG của chính file ảnh dò (None nếu không phải JPEG), để tách kết quả theo mức nén
-        r["jpeg_q"] = None if a.synth else jpeg_quality_from_file(root / r["path"])
+        r["jpeg_q"] = None if a.synth else jpeg_quality_from_file(root / r["path"])   # mức của file gốc
     meta = {"root": str(a.root), "role": a.role if a.roles else ["all"], "recognizer": a.recognizer, "recognizer_cfg": ck["cfg"], "subjects": uniq.tolist(),
             "n_gallery": len(sp["gallery"]), "n_ref": len(sp["ref"]), "n_probe": len(sp["probe"]),
             "dropped_subjects": sp["dropped"], "gallery_only_subjects": sp["gallery_only"],
             "n_probe_subjects": len({r["subject"] for r in sp["probe"]}), "probe_short": a.probe_short, "gallery_min_short": a.gallery_min_short,
             "scale": a.scale, "input_hw": list(INPUT_HW), "limit": a.limit,
-            "synth": a.synth, "synth_short": a.synth_short if a.synth else None}
+            "synth": a.synth, "synth_short": a.synth_short if a.synth else None, "probe_jpeg": a.probe_jpeg}
     (out / "meta.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False))
     for nm in ("probe", "ref", "gallery"):
         with open(out / f"{nm}s.csv" if nm != "gallery" else out / "gallery.csv", "w", newline="") as fh:

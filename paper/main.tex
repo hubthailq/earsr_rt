@@ -8,13 +8,14 @@
 \newcommand{\fitbox}[1]{\sbox{\fitboxbox}{#1}\ifdim\wd\fitboxbox>\linewidth\resizebox{\linewidth}{!}{\usebox{\fitboxbox}}\else\usebox{\fitboxbox}\fi}
 \makeatletter\newcommand{\tabinput}[1]{\@@input #1.tex }\makeatother
 \input{generated/numbers}
+\newcommand{\KeyFinding}{Within a codec, the compression level at which efficient SR models fall below bicubic interpolation follows the ratio of compression error to interpolation error, which is high for smooth images such as ears, more closely than it follows the quality setting}
 \setlength{\belowcaptionskip}{4pt}
 \makeatletter
 \def\ps@pprintTitle{\let\@oddhead\@empty\let\@evenhead\@empty\def\@oddfoot{}\let\@evenfoot\@oddfoot}
 \makeatother
 \begin{document}
 \begin{frontmatter}
-\title{Efficient Super-Resolution of Small Compressed Ear Images:\\ Compression Error, Image Content and Training Degradation}
+\title{Efficient Super-Resolution of Small Compressed Ear Images: Compression Error, Image Content and Training Degradation}
 \author[a,b]{Thai Le Quang}
 \ead{thailq@hub.edu.vn}
 \author[a]{Vinh Truong Hoang\texorpdfstring{\corref{cor1}}{}}
