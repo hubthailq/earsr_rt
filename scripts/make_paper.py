@@ -1892,6 +1892,96 @@ def awex_recompress(res: Path, out: Path) -> None:
             print(f"CHÚ Ý: {t_} trên AWEx nén lại lệch bicubic {e_.point:+.1f} điểm, quá 1; sửa câu ở thảo luận")
 
 
+SWIN_FOLDS = (2, 3)
+
+
+def swin_control(res: Path, out: Path, folds_path: Path = Path("splits/ami_5fold.json")) -> None:
+    """SwinIR-light tinh chỉnh bằng cùng công thức (scripts/make_swinir_jobs.sh, score_swinir.sh), fold 2 và 3. So với trọng số
+    công bố, với chính nó tinh chỉnh bicubic, với SPAN và RRDB tinh chỉnh có nén trên ĐÚNG người test của hai fold này
+    (AMI) hoặc trung bình hai mô hình fold đó (ảnh ngoài thực tế). Bảng phụ lục tab_swin.tex và macro Swin*."""
+    why = "swin"
+    names = ["SwinGainQMin", "SwinGainQMax", "SwinVsSpanQMin", "SwinVsSpanQMax", "SwinVsSpanMin", "SwinVsSpanMax",
+             "SwinBicTrQLow", "SwinCleanVsPub", "SwinAmiGainQ", "SwinParams"]
+    fj = json.loads(folds_path.read_text())["folds"]
+    sub = set().union(*[set(fj[str(f)]["test"]) for f in SWIN_FOLDS])
+
+    def rd(d, name, t, k):
+        f = res / d / f"{name}__hr{t}_x4_{k}.csv"
+        return pd.read_csv(f, dtype={"subject": str}).set_index("key")[["psnr_y", "subject"]] if f.exists() else None
+
+    def arm(d, t, k, kind_):   # một cách: bicubic, pub, swin_est, swin_bic, span_est, rrdb_est
+        if kind_ in ("bicubic", "pub"):
+            return rd(d, "bicubic" if kind_ == "bicubic" else "swinir_light", t, k)
+        pre = {"swin_est": "SWIN_swinir-zero+xearvn_pub_rand_x4_hrall_est_f", "swin_bic": "SWIN_swinir-zero+xearvn_pub_rand_x4_hrall_bic_f",
+               "span_est": "N2_span-zero+xearvn_pub_rand_x4_hrall_est_f", "rrdb_est": "REV_rrdb-zero+xearvn_pub_rand_x4_hrall_est_f"}[kind_]
+        dd = {"swin_est": d, "swin_bic": d, "span_est": d.replace("swin", "n2"), "rrdb_est": d.replace("swin", "rev")}[kind_]
+        vs = [rd(dd, f"{pre}{f}", t, k) for f in SWIN_FOLDS]
+        if any(v is None for v in vs):
+            return None
+        if d == "swin":   # AMI: mỗi mô hình fold chỉ có ảnh của người test của fold nó; ghép lại
+            return pd.concat(vs)
+        o = vs[0].copy()
+        o["psnr_y"] = np.mean([v.psnr_y.loc[o.index] for v in vs], 0)
+        return o
+
+    sets = (("swin", 144, "AMI, 36 px"), ("swin_earvn", 96, "EarVN1.0, 24 px"), ("swin_awex", 96, "AWEx, 24 px"),
+            ("swin_awex", 144, "AWEx, 36 px"))
+    if not all((res / d).is_dir() for d, _, _ in sets) or not (res / "rev").is_dir():
+        for n_ in names:
+            put(n_, None, why)
+        write(out / "tab_swin.tex", "\\todo{--} \\\\\n")
+        return
+
+    def frame(d, t, k):
+        A = {a: arm(d, t, k, a) for a in ("bicubic", "pub", "swin_est", "swin_bic", "span_est", "rrdb_est")}
+        if any(v is None for v in A.values()):
+            return None
+        idx = A["bicubic"].index if d != "swin" else A["bicubic"][A["bicubic"].subject.isin(sub)].index
+        return {a: v.psnr_y.loc[idx].to_numpy() for a, v in A.items()}, A["bicubic"].subject.loc[idx].to_numpy()
+
+    gq, vsq, vsall = [], [], []
+    for d, t, _ in sets:
+        for k in ("bicjpeg75", "bicjpeg93", "est"):
+            fr = frame(d, t, k)
+            if fr is None:
+                continue
+            A, s_ = fr
+            e = paired_diff(A["swin_est"], A["span_est"], s_, n_boot=1000)
+            vsall.append(e.point)
+            if k == "bicjpeg75":
+                g = paired_diff(A["swin_est"], A["pub"], s_, n_boot=1000)
+                gq.append(g)
+                vsq.append(e.point)
+                if not g.lo > 0:
+                    print(f"CHÚ Ý: SwinIR có nén không hơn trọng số công bố có ý nghĩa ở {d} {t}; sửa mục 6.2")
+    put("SwinGainQMin", num(min(g.point for g in gq)))
+    put("SwinGainQMax", num(max(g.point for g in gq)))
+    put("SwinVsSpanQMin", num(min(vsq), 2, True))
+    put("SwinVsSpanQMax", num(max(vsq), 2, True))
+    put("SwinVsSpanMin", num(min(vsall), 2, True))
+    put("SwinVsSpanMax", num(max(vsall), 2, True))
+    if max(abs(v) for v in vsq) > 0.3:
+        print("CHÚ Ý: SwinIR và SPAN có nén lệch nhau quá 0,3 dB ở JPEG 75; sửa câu \"kiến trúc chỉ một phần decibel\"")
+    A, s_ = frame("swin", 144, "bicjpeg75")
+    put("SwinBicTrQLow", num(paired_diff(A["swin_bic"], A["bicubic"], s_, n_boot=1000).point, 2, True))
+    put("SwinAmiGainQ", num(paired_diff(A["swin_est"], A["pub"], s_, n_boot=1000).point))
+    A, s_ = frame("swin", 144, "bic")
+    put("SwinCleanVsPub", num(paired_diff(A["swin_est"], A["pub"], s_, n_boot=1000).point, 2, True))
+    put("SwinParams", "0.93")
+    # bảng: PSNR-Y trung bình trên người test của fold 2 và 3 (AMI) / trung bình hai mô hình fold (ảnh ngoài thực tế)
+    cols = [("swin", 144, "bic"), ("swin", 144, "bicjpeg93"), ("swin", 144, "bicjpeg75"), ("swin", 144, "est"),
+            ("swin_earvn", 96, "bicjpeg75"), ("swin_awex", 96, "bicjpeg75")]
+    lab = [("bicubic", "Bicubic"), ("pub", "SwinIR-light, published"), ("swin_bic", "SwinIR-light, fine-tuned bicubic"),
+           ("swin_est", "SwinIR-light, measured"), ("span_est", "SPAN-S, measured (ours)"), ("rrdb_est", "RRDB, measured")]
+    F = [frame(d, t, k) for d, t, k in cols]
+    rows = []
+    for a, name in lab:
+        rows.append(f"{name} & " + " & ".join(f"{float(np.mean(fr[0][a])):.2f}" for fr in F) + " \\\\")
+        if a == "pub":
+            rows.append("\\midrule")
+    write(out / "tab_swin.tex", "\n".join(rows) + "\n")
+
+
 ORDER_KINDS = [("bicjpeg75", "Downsize, then JPEG 75 (as in the paper)"), ("bicjpeg75c444", "Same, 4:4:4 chroma"),
                ("shiftjpeg75", "Same, block grid offset 1--7 px"), ("dbljpeg93to75", "JPEG 93 with offset grid, then 75"),
                ("jpeg75bic", "JPEG 75, then downsize"), ("bicjpeg93", "Downsize, then JPEG 93 (as in the paper)"),
@@ -2124,6 +2214,7 @@ def main(argv=None) -> None:
     recog_upscaled_all(res, out)
     recog_curves_tab(res, out)
     awex_recompress(res, out)
+    swin_control(res, out)
     fid_recog(res, out, fig)
     figures(pub, tr, fig)
     write(out / "fig_qualitative.tex", "\\includegraphics[width=\\linewidth]{figures/fig_qualitative.png}\n" if qualitative(res, fig, Path(a.earvn_raw))

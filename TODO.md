@@ -71,7 +71,8 @@ W13 (không có kết quả); hai file thiếu được bổ sung ở `df93964`.
 - [x] 26/11 W11 [Claude] Mục 7: TAR@FAR 1% và 0,1% cùng bảng app:curves; câu ở 6.5: ours 29,0% so với bicubic 24,9%,
   nằm trong 28,6–30,5% của các cách có tính đến nén (FBCNN rồi SPAN cao nhất, 30,5%). Gốc: TAR@FAR (đổi từ labai217 sang Mac 26/11: ma trận điểm .npy đã có trong results/recog_up,
   tính bằng `scripts/recog_curves.py`, không cần chạy lại).
-- [ ] W12 [labai217] Mục 6: tinh chỉnh SwinIR-light, 2 fold, suy giảm đo được (thêm bicubic nếu kịp). Ước 4–12 giờ.
+- [x] 26/11 W12 [labai217] (xong, commit b609141: 4 lần chạy SWIN (est, bic × fold 2, 3), đều qua phép thử ảnh sáng;
+  chấm 90/24/48 file). Gốc: Mục 6: tinh chỉnh SwinIR-light, 2 fold, suy giảm đo được (thêm bicubic nếu kịp). Ước 4–12 giờ.
 - [x] 26/11 W13 [Claude] Mục 5 (xong phần chuẩn bị: bỏ tham chiếu nội bộ (TODO.md, mã việc, "phản biện", "góp ý của
   thầy", "người dùng") khỏi chú thích của 35 file mã, chỉ đổi chú thích; `make_release.sh` viết lại: bỏ paper/, *.log, ghi
   chú nội bộ; tách results/ thành gói riêng cho Zenodo (thử: 225 MB nén); README tiếng Anh `docs/README_release.md` thành
@@ -80,7 +81,10 @@ W13 (không có kết quả); hai file thiếu được bổ sung ở `df93964`.
   DOI Zenodo vào README và Data availability (W17)). Gốc: Mục 5: chạy `scripts/make_release.sh`, rà sạch dấu vết nội bộ; chuẩn bị README phát hành.
 
 ### Tuần 3
-- [ ] W14 [Claude] Đưa kết quả W11, W12 vào bài (Bảng K.1, mục 6.2, 6.5, hạn chế).
+- [x] 26/11 W14 [Claude] (xong phần SwinIR: `swin_control` trong make_paper.py, bảng phụ lục app:swin (SPAN, RRDB tính lại
+  trên đúng người test fold 2, 3). JPEG 75: SwinIR có nén hơn trọng số công bố 1,39–2,05 dB, lệch SPAN có nén −0,01 đến
+  +0,11 dB; SwinIR học bicubic vẫn dưới nội suy (−0,44 dB AMI); ảnh sạch kém trọng số gốc 1,01 dB. 6.2, mở đầu, thảo luận
+  đổi "hai họ" thành "ba họ mạng". W11 đã đưa vào bài từ trước). Gốc: Đưa kết quả W11, W12 vào bài (Bảng K.1, mục 6.2, 6.5, hạn chế).
 - [ ] W15 [Claude] Mục 10: mỗi đoạn một ý, tối đa 2–3 số; bớt rào đón ở mục 4–6.
 - [ ] W16 [Claude] Mục 11: tách phụ lục thành Supplementary material; Bảng 2 lên ngay sau Hình 1; bài chính 25–28 trang.
 - [ ] W17 [Bạn] Mục 5: tạo repo GitHub, đăng bản phát hành, Zenodo DOI; [Claude] ghi URL vào Data availability.

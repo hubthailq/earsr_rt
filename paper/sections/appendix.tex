@@ -222,6 +222,27 @@ Dataset & Recogniser trained on & Bicubic & Published SPAN & Ours & Ours minus b
 \end{tabular}}
 \end{table}
 
+\section{A transformer fine-tuned with the same procedure}
+\label{app:swin}
+SwinIR-light was fine-tuned from its published weights with the procedure of our model and, for comparison, with bicubic downsampling, on folds 2 and 3 only. Table~\ref{tab:swin} compares it with SPAN and RRDB fine-tuned with the measured degradation on the same folds: on AMI the means are over the test subjects of these two folds, and on the in-the-wild sets the scores of the two fold models are averaged per image.
+
+\begin{table}[H]
+\centering
+\caption{PSNR-Y (dB) of SwinIR-light fine-tuned with the procedure of our model, compared with SPAN and RRDB fine-tuned in the same way and with bicubic interpolation, on the test subjects of folds 2 and 3 (AMI, 36-pixel inputs) and on the in-the-wild sets at 24-pixel inputs.}
+\label{tab:swin}
+\small
+\fitbox{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{4}{c}{AMI} & EarVN1.0 & AWEx \\
+\cmidrule(lr){2-5}
+Method & Clean & JPEG 93 & JPEG 75 & Measured & JPEG 75 & JPEG 75 \\
+\midrule
+\tabinput{generated/tab_swin}
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Cumulative match and verification rates}
 \label{app:curves}
 Table~\ref{tab:recogcurves} gives, for the main protocol of Section~\ref{sec:recog}, the cumulative match characteristic at ranks 1, 5 and 10 and the true acceptance rate at false acceptance rates of 1\% and 0.1\%. Each probe is compared with every enrolled template; comparisons with the template of the probe's own subject are genuine and the others impostor. All values are computed from the stored similarity scores, without running any network again; fine-tuned rows average the five fold models.
